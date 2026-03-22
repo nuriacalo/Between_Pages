@@ -1,6 +1,7 @@
 package com.calonuria.backend.controller.catalog;
 
 import com.calonuria.backend.dto.catalog.FanfictionRespuestaDTO;
+import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,5 +36,25 @@ public class FanfictionController {
         return fanfictionService.obtenerFanficPorId(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Añadir en FanfictionController
+    @Operation(summary = "Guardar fanfic en base de datos local")
+    @PostMapping
+    public ResponseEntity<FanfictionRespuestaDTO> guardarFanfic(@RequestBody FanfictionRespuestaDTO dto) {
+        Fanfiction fanfic = new Fanfiction();
+        fanfic.setAo3Id(dto.getAo3Id());
+        fanfic.setTitulo(dto.getTitulo());
+        fanfic.setAutor(dto.getAutor());
+        fanfic.setHistoriaBase(dto.getHistoriaBase());
+        fanfic.setDescripcion(dto.getDescripcion());
+        fanfic.setPortadaUrl(dto.getPortadaUrl());
+        fanfic.setGenero(dto.getGenero());
+        fanfic.setShipPrincipal(dto.getShipPrincipal());
+        fanfic.setTematica(dto.getTematica());
+        fanfic.setCapituloActual(dto.getCapituloActual());
+        fanfic.setTotalCapitulos(dto.getTotalCapitulos());
+        fanfic.setEstadoPublicacion(dto.getEstadoPublicacion());
+        return ResponseEntity.ok(fanfictionService.guardarSiNoExiste(fanfic));
     }
 }

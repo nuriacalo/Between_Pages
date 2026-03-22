@@ -1,6 +1,7 @@
 package com.calonuria.backend.controller.catalog;
 
 import com.calonuria.backend.dto.catalog.MangaRespuestaDTO;
+import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.service.catalog.MangaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,5 +36,24 @@ public class MangaController {
         return mangaService.obtenerMangaPorId(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Añadir en MangaController
+    @Operation(summary = "Guardar manga en base de datos local")
+    @PostMapping
+    public ResponseEntity<MangaRespuestaDTO> guardarManga(@RequestBody MangaRespuestaDTO dto) {
+        Manga manga = new Manga();
+        manga.setMangadexId(dto.getMangadexId());
+        manga.setFuente("MangaDex");
+        manga.setTitulo(dto.getTitulo());
+        manga.setMangaka(dto.getMangaka());
+        manga.setDemografia(dto.getDemografia());
+        manga.setGenero(dto.getGenero());
+        manga.setDescripcion(dto.getDescripcion());
+        manga.setPortadaUrl(dto.getPortadaUrl());
+        manga.setTotalCapitulos(dto.getTotalCapitulos());
+        manga.setTotalVolumenes(dto.getTotalVolumenes());
+        manga.setEstadoPublicacion(dto.getEstadoPublicacion());
+        return ResponseEntity.ok(mangaService.guardarSiNoExiste(manga));
     }
 }
