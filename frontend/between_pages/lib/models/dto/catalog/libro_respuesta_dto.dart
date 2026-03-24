@@ -1,7 +1,6 @@
-// lib/features/catalog/models/libro_model.dart
-class LibroModel {
-  final int? idLibro;
-  final String? googleBooksId;
+class LibroRespuestaDTO {
+  final int idLibro;
+  final String googleBooksId;
   final String titulo;
   final String autor;
   final String? isbn;
@@ -12,9 +11,9 @@ class LibroModel {
   final String? tipoLibro;
   final int? anioPublicacion;
 
-  LibroModel({
-    this.idLibro,
-    this.googleBooksId,
+  LibroRespuestaDTO({
+    required this.idLibro,
+    required this.googleBooksId,
     required this.titulo,
     required this.autor,
     this.isbn,
@@ -26,24 +25,25 @@ class LibroModel {
     this.anioPublicacion,
   });
 
-  factory LibroModel.fromJson(Map<String, dynamic> json) {
-    return LibroModel(
-      idLibro: json['idLibro'],
-      googleBooksId: json['googleBooksId'],
-      titulo: json['titulo'] ?? 'Sin título',
-      autor: json['autor'] ?? 'Autor desconocido',
-      isbn: json['isbn'],
-      editorial: json['editorial'],
-      descripcion: json['descripcion'],
-      portadaUrl: json['portadaUrl'],
-      genero: json['genero'],
-      tipoLibro: json['tipoLibro'],
-      anioPublicacion: json['anioPublicacion'],
+  factory LibroRespuestaDTO.fromJson(Map<String, dynamic> json) {
+    return LibroRespuestaDTO(
+      idLibro: json['idLibro'] as int,
+      googleBooksId: json['googleBooksId'] as String,
+      titulo: json['titulo'] as String,
+      autor: json['autor'] as String,
+      isbn: json['isbn'] as String?,
+      editorial: json['editorial'] as String?,
+      descripcion: json['descripcion'] as String?,
+      portadaUrl: json['portadaUrl'] as String?,
+      genero: json['genero'] as String?,
+      tipoLibro: json['tipoLibro'] as String?,
+      anioPublicacion: json['anioPublicacion'] as int?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'idLibro': idLibro,
       'googleBooksId': googleBooksId,
       'titulo': titulo,
       'autor': autor,
