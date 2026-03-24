@@ -12,6 +12,7 @@ import com.calonuria.backend.service.catalog.FanfictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +30,39 @@ public class FanficJournalService {
     public FanficJournalRespuestaDTO guardarProgreso(FanficJournalRegistroDTO dto) {
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        Fanfiction fanfic = fanfictionRepository.findById(dto.getIdFanfic())
-                .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado"));
+        
+        Fanfiction fanfic;
+
+        // Si el DTO trae un idFanfiction, buscamos por ese ID en la base de datos
+        if (dto.getIdFanfiction() != null) {
+            fanfic = fanfictionRepository.findById(dto.getIdFanfiction())
+                    .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado con id: " + dto.getIdFanfiction()));
+        } else if (dto.getAo3Id() != null) {
+            // Si trae ao3Id (pero no idFanfiction), lo buscamos o lo creamos
+            Optional<Fanfiction> existente = fanfictionRepository.findByAo3Id(dto.getAo3Id());
+            if (existente.isPresent()) {
+                fanfic = existente.get();
+            } else {
+                // El fanfic es nuevo, lo registramos en el catálogo antes de agregarlo al Journal
+                Fanfiction nuevoFanfic = new Fanfiction();
+                nuevoFanfic.setAo3Id(dto.getAo3Id());
+                // Validar campos obligatorios que vienen de la API de AO3/similar
+                nuevoFanfic.setTitulo(dto.getTitulo() != null ? dto.getTitulo() : "Título Desconocido");
+                nuevoFanfic.setAutor(dto.getAutor() != null ? dto.getAutor() : "Autor Desconocido");
+                nuevoFanfic.setHistoriaBase(dto.getHistoriaBase());
+                nuevoFanfic.setDescripcion(dto.getDescripcion());
+                nuevoFanfic.setPortadaUrl(dto.getPortadaUrl());
+                nuevoFanfic.setGenero(dto.getGenero());
+                nuevoFanfic.setShipPrincipal(dto.getShipPrincipal());
+                nuevoFanfic.setTematica(dto.getTematica());
+                nuevoFanfic.setTotalCapitulos(dto.getTotalCapitulos());
+                nuevoFanfic.setEstadoPublicacion(dto.getEstadoPublicacion());
+
+                fanfic = fanfictionRepository.save(nuevoFanfic);
+            }
+        } else {
+            throw new RuntimeException("Debe proporcionar un idFanfiction o un ao3Id");
+        }
 
         FanficJournal journal = fanficJournalRepository.findByUsuarioAndFanfic(usuario, fanfic)
                 .orElse(new FanficJournal());
@@ -46,8 +78,9 @@ public class FanficJournalService {
         journal.setShipPrincipal(dto.getShipPrincipal());
         journal.setShipsSecundarios(dto.getShipsSecundarios());
         journal.setTematica(dto.getTematica());
-        journal.setNivelAngst(dto.getNivelAngst());
-        journal.setFidelidadShip(dto.getFidelidadShip());
+        // Convertir los Integers a String para que coincidan con la BD
+        journal.setNivelAngst(dto.getNivelAngst() != null ? String.valueOf(dto.getNivelAngst()) : null);
+        journal.setFidelidadShip(dto.getFidelidadShip() != null ? String.valueOf(dto.getFidelidadShip()) : null);
         journal.setCanonVsAu(dto.getCanonVsAu());
         journal.setRelectura(dto.getRelectura());
         journal.setNotasPersonales(dto.getNotasPersonales());

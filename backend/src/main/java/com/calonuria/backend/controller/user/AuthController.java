@@ -2,6 +2,7 @@ package com.calonuria.backend.controller.user;
 
 import com.calonuria.backend.dto.user.LoginDTO;
 import com.calonuria.backend.dto.user.LoginRespuestaDTO;
+import com.calonuria.backend.dto.user.UsuarioRespuestaDTO;
 import com.calonuria.backend.model.user.Usuario;
 import com.calonuria.backend.repository.user.UsuarioRepository;
 import com.calonuria.backend.security.JwtUtil;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,5 +57,24 @@ public class AuthController {
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body("Email o contraseña incorrectos");
         }
+    }
+
+    @Operation(summary = "Obtener datos del usuario autenticado a partir del token JWT")
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        String email = authentication.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return ResponseEntity.ok(new UsuarioRespuestaDTO(
+                usuario.getIdUsuario(),
+                usuario.getNombre(),
+                usuario.getEmail(),
+                usuario.getRol()
+        ));
     }
 }

@@ -50,6 +50,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Rutas autenticadas (requiere token)
+                        .requestMatchers("/api/auth/me").authenticated()
                         // Solo ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Todo lo demás requiere token

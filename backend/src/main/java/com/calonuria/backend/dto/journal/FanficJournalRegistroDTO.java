@@ -10,8 +10,20 @@ public class FanficJournalRegistroDTO {
     @NotNull(message = "El usuario es obligatorio")
     private Long idUsuario;
 
-    @NotNull(message = "El fanfic es obligatorio")
-    private Long idFanfic;
+    private Long idFanfiction;
+
+    // --- Datos del fanfic (Por si es la primera vez que se añade a la app) ---
+    private String ao3Id;
+    private String titulo;
+    private String autor;
+    private String historiaBase;
+    private String descripcion;
+    private String portadaUrl;
+    private String genero;
+    private String tematica;
+    private Integer totalCapitulos;
+    private String estadoPublicacion;
+    // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
     @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado",
@@ -27,18 +39,18 @@ public class FanficJournalRegistroDTO {
 
     private String shipPrincipal;
     private String shipsSecundarios;
-    private String tematica;
-
-    @Pattern(regexp = "Ninguno|Bajo|Medio|Alto|Extremo",
-            message = "Nivel de angst no válido")
-    private String nivelAngst;
-
-    private String fidelidadShip;
-
-    @Pattern(regexp = "Canon|AU|Canon-Divergente",
-            message = "Canon vs AU no válido")
+    
+    @Min(value = 1, message = "El nivel de angst mínimo es 1")
+    @Max(value = 5, message = "El nivel de angst máximo es 5")
+    private Integer nivelAngst;
+    
+    @Min(value = 1, message = "La fidelidad del ship mínima es 1")
+    @Max(value = 5, message = "La fidelidad del ship máxima es 5")
+    private Integer fidelidadShip;
+    
+    @Pattern(regexp = "Canon|AU|Canon Divergence", message = "Valor no válido")
     private String canonVsAu;
-
+    
     private Boolean relectura;
     private String notasPersonales;
     private LocalDate fechaInicio;

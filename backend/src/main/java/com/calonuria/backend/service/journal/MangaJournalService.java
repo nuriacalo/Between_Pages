@@ -12,6 +12,7 @@ import com.calonuria.backend.service.catalog.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +30,39 @@ public class MangaJournalService {
     public MangaJournalRespuestaDTO guardarProgreso(MangaJournalRegistroDTO dto) {
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        Manga manga = mangaRepository.findById(dto.getIdManga())
-                .orElseThrow(() -> new RuntimeException("Manga no encontrado"));
+        
+        Manga manga;
+
+        // Si el DTO trae un idManga, buscamos por ese ID en la base de datos
+        if (dto.getIdManga() != null) {
+            manga = mangaRepository.findById(dto.getIdManga())
+                    .orElseThrow(() -> new RuntimeException("Manga no encontrado con id: " + dto.getIdManga()));
+        } else if (dto.getMangadexId() != null) {
+            // Si trae mangadexId (pero no idManga), lo buscamos o lo creamos
+            Optional<Manga> existente = mangaRepository.findByMangadexId(dto.getMangadexId());
+            if (existente.isPresent()) {
+                manga = existente.get();
+            } else {
+                // El manga es nuevo, lo registramos en el catálogo antes de agregarlo al Journal
+                Manga nuevoManga = new Manga();
+                nuevoManga.setMangadexId(dto.getMangadexId());
+                nuevoManga.setFuente(dto.getFuente() != null ? dto.getFuente() : "MangaDex");
+                // Validar campos obligatorios que vienen de MangaDex (o valores por defecto si vienen nulos)
+                nuevoManga.setTitulo(dto.getTitulo() != null ? dto.getTitulo() : "Título Desconocido");
+                nuevoManga.setMangaka(dto.getMangaka() != null ? dto.getMangaka() : "Mangaka Desconocido");
+                nuevoManga.setDemografia(dto.getDemografia());
+                nuevoManga.setGenero(dto.getGenero());
+                nuevoManga.setDescripcion(dto.getDescripcion());
+                nuevoManga.setPortadaUrl(dto.getPortadaUrl());
+                nuevoManga.setTotalCapitulos(dto.getTotalCapitulos());
+                nuevoManga.setTotalVolumenes(dto.getTotalVolumenes());
+                nuevoManga.setEstadoPublicacion(dto.getEstadoPublicacion());
+
+                manga = mangaRepository.save(nuevoManga);
+            }
+        } else {
+            throw new RuntimeException("Debe proporcionar un idManga o un mangadexId");
+        }
 
         MangaJournal journal = mangaJournalRepository.findByUsuarioAndManga(usuario, manga)
                 .orElse(new MangaJournal());

@@ -11,8 +11,21 @@ public class LibroJournalRegistroDTO {
     @NotNull(message = "El usuario es obligatorio")
     private Long idUsuario;
 
-    @NotNull(message = "El libro es obligatorio")
+    // Se elimina @NotNull para permitir guardar con los datos de Google Books directamente
     private Long idLibro;
+
+    // --- Datos del libro (Por si es la primera vez que se añade a la app) ---
+    private String googleBooksId;
+    private String titulo;
+    private String autor;
+    private String isbn;
+    private String editorial;
+    private String descripcion;
+    private String portadaUrl;
+    private String genero;
+    private String tipoLibro;
+    private Integer anioPublicacion;
+    // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
     @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado",
