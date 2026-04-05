@@ -1,7 +1,5 @@
 package com.calonuria.backend.controller.user;
 
-import com.calonuria.backend.dto.user.LoginDTO;
-import com.calonuria.backend.dto.user.LoginRespuestaDTO;
 import com.calonuria.backend.dto.user.UsuarioRespuestaDTO;
 import com.calonuria.backend.model.user.Usuario;
 import com.calonuria.backend.repository.user.UsuarioRepository;
