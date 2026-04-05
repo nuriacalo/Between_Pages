@@ -13,7 +13,7 @@ class AuthTokenStorage {
     return prefs.getString(_tokenKey);
   }
 
-  Future<void> clearToken() async {
+  Future<void> removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
   }

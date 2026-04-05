@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:8080/api';
+  static const String baseUrl = 'http://192.168.0.17:8080/api';
   // 10.0.2.2 = localhost desde el emulador Android
 
   // AUTENTICACIÓN (/api/auth)

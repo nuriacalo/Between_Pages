@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import 'auth_interceptor.dart';
 import 'auth_token_storage.dart';
 
 class ApiClient {
@@ -24,17 +25,8 @@ class ApiClient {
       ),
     );
 
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await tokenStorage.readToken();
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          handler.next(options);
-        },
-      ),
-    );
+    // Usamos el interceptor dedicado que maneja los errores 401
+    dio.interceptors.add(AuthInterceptor(tokenStorage));
 
     return ApiClient._(dio);
   }
