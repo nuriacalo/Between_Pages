@@ -1,5 +1,5 @@
-import 'package:between_pages/models/dto/journal/libro_journal_registro_dto.dart';
-import 'package:between_pages/models/dto/journal/libro_journal_respuesta_dto.dart';
+import 'package:between_pages/models/journal/libro_journal_registro_dto.dart';
+import 'package:between_pages/models/journal/libro_journal_respuesta_dto.dart';
 import 'package:dio/dio.dart';
 
 import '../api/api_client.dart';

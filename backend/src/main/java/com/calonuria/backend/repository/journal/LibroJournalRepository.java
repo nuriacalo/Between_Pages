@@ -37,4 +37,7 @@ public interface LibroJournalRepository extends JpaRepository<LibroJournal, Long
     // Empezados en un rango de fechas
     List<LibroJournal> findByUsuarioAndFechaInicioBetween(
             Usuario usuario, LocalDate desde, LocalDate hasta);
+
+    // Solo relecturas
+    List<LibroJournal> findByUsuarioAndRelecturaTrue(Usuario usuario);
 }

@@ -40,4 +40,18 @@ public class MangaJournalController {
             @RequestParam String estado) {
         return ResponseEntity.ok(mangaJournalService.obtenerPorEstado(idUsuario, estado));
     }
+
+    @Operation(summary = "Obtener relecturas del usuario")
+    @GetMapping("/usuario/{idUsuario}/relecturas")
+    public ResponseEntity<List<MangaJournalRespuestaDTO>> obtenerRelecturas(
+            @PathVariable Long idUsuario) {
+        return ResponseEntity.ok(mangaJournalService.obtenerRelecturas(idUsuario));
+    }
+
+    @Operation(summary = "Eliminar un registro de journal")
+    @DeleteMapping("/{idJournal}")
+    public ResponseEntity<?> eliminarJournal(@PathVariable Long idJournal) {
+        mangaJournalService.eliminarJournal(idJournal);
+        return ResponseEntity.noContent().build();
+    }
 }

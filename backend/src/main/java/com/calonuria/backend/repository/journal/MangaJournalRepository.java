@@ -33,4 +33,7 @@ public interface MangaJournalRepository extends JpaRepository<MangaJournal, Long
     // Leídos en un rango de fechas
     List<MangaJournal> findByUsuarioAndFechaFinBetween(
             Usuario usuario, LocalDate desde, LocalDate hasta);
+
+    // Solo relecturas
+    List<MangaJournal> findByUsuarioAndRelecturaTrue(Usuario usuario);
 }

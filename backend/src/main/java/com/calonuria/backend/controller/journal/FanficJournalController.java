@@ -47,4 +47,11 @@ public class FanficJournalController {
             @PathVariable Long idUsuario) {
         return ResponseEntity.ok(fanficJournalService.obtenerRelecturas(idUsuario));
     }
+
+    @Operation(summary = "Eliminar un registro de journal")
+    @DeleteMapping("/{idJournal}")
+    public ResponseEntity<?> eliminarJournal(@PathVariable Long idJournal) {
+        fanficJournalService.eliminarJournal(idJournal);
+        return ResponseEntity.noContent().build();
+    }
 }

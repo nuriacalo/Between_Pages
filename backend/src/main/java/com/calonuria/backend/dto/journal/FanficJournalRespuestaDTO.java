@@ -13,7 +13,8 @@ public class FanficJournalRespuestaDTO {
     private Integer valoracion;
     private String shipPrincipal;
     private String shipsSecundarios;
-    private String nivelAngst;
+    private Integer nivelAngst;
+    private Integer fidelidadShip;
     private String canonVsAu;
     private Boolean relectura;
     private String notasPersonales;

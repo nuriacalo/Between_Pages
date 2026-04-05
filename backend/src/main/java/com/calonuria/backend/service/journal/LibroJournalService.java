@@ -104,6 +104,19 @@ public class LibroJournalService {
                 .collect(Collectors.toList());
     }
 
+    public List<LibroJournalRespuestaDTO> obtenerRelecturas(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return libroJournalRepository.findByUsuarioAndRelecturaTrue(usuario)
+                .stream()
+                .map(this::mapearADTO)
+                .collect(Collectors.toList());
+    }
+
+    public void eliminarJournal(Long idJournal) {
+        libroJournalRepository.deleteById(idJournal);
+    }
+
     private LibroJournalRespuestaDTO mapearADTO(LibroJournal journal) {
         LibroJournalRespuestaDTO dto = new LibroJournalRespuestaDTO();
         dto.setIdLibroJournal(journal.getIdLibroJournal());

@@ -40,4 +40,18 @@ public class LibroJournalController {
             @RequestParam String estado) {
         return ResponseEntity.ok(libroJournalService.obtenerPorEstado(idUsuario, estado));
     }
+
+    @Operation(summary = "Obtener relecturas del usuario")
+    @GetMapping("/usuario/{idUsuario}/relecturas")
+    public ResponseEntity<List<LibroJournalRespuestaDTO>> obtenerRelecturas(
+            @PathVariable Long idUsuario) {
+        return ResponseEntity.ok(libroJournalService.obtenerRelecturas(idUsuario));
+    }
+
+    @Operation(summary = "Eliminar un registro de journal")
+    @DeleteMapping("/{idJournal}")
+    public ResponseEntity<?> eliminarJournal(@PathVariable Long idJournal) {
+        libroJournalService.eliminarJournal(idJournal);
+        return ResponseEntity.noContent().build();
+    }
 }

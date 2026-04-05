@@ -3,6 +3,8 @@ package com.calonuria.backend.model.journal;
 import com.calonuria.backend.model.user.Usuario;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,11 +48,13 @@ public class FanficJournal {
     @Column(length = 150)
     private String tematica;
 
-    @Column(name = "nivel_angst", length = 50)
-    private String nivelAngst;
+    @Column(name = "nivel_angst")
+    private Integer nivelAngst;
 
-    @Column(name = "fidelidad_ship", length = 50)
-    private String fidelidadShip;
+    @Column(name= "fidelidad_ship")
+    @Min(value = 1, message = "La fidelidad del ship mínima es 1")
+    @Max(value = 5, message = "La fidelidad del ship máxima es 5")
+    private Integer fidelidadShip;
 
     @Column(name = "canon_vs_au", length = 50)
     private String canonVsAu;

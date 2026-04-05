@@ -22,12 +22,20 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generarToken(String email, String rol) {
+    public String generarAccessToken(String email) {
         return Jwts.builder()
                 .subject(email)
-                .claim("rol", rol)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getKey())
+                .compact();
+    }
+
+    public String generarRefreshToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
                 .signWith(getKey())
                 .compact();
     }
@@ -36,13 +44,19 @@ public class JwtUtil {
         return extraerClaims(token).getSubject();
     }
 
-    public String extraerRol(String token) {
-        return extraerClaims(token).get("rol", String.class);
+    public boolean esTokenValido(String token, UserDetails userDetails) {
+        try {
+            String email = extraerEmail(token);
+            return email.equals(userDetails.getUsername()) && !estaExpirado(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public boolean validarToken(String token, UserDetails userDetails) {
-        String email = extraerEmail(token);
-        return email.equals(userDetails.getUsername()) && !estaExpirado(token);
+    // Sobrecarga sin UserDetails — para el endpoint /refresh
+    public boolean esTokenValido(String token) {
+        try { extraerClaims(token); return true; }
+        catch (Exception e) { return false; }
     }
 
     private Claims extraerClaims(String token) {

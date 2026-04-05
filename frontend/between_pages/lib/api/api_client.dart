@@ -39,6 +39,18 @@ class ApiClient {
     return ApiClient._(dio);
   }
 
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) {
+    return _dio.get<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   Future<Response<T>> post<T>(
     String path, {
     Object? data,
@@ -49,6 +61,28 @@ class ApiClient {
       path,
       data: data,
       queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
+  Future<Response<T>> put<T>(
+    String path, {
+    Object? data,
+    Options? options,
+  }) {
+    return _dio.put<T>(
+      path,
+      data: data,
+      options: options,
+    );
+  }
+
+  Future<Response<T>> delete_<T>(
+    String path, {
+    Options? options,
+  }) {
+    return _dio.delete<T>(
+      path,
       options: options,
     );
   }

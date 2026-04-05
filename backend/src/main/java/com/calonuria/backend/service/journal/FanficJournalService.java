@@ -78,9 +78,8 @@ public class FanficJournalService {
         journal.setShipPrincipal(dto.getShipPrincipal());
         journal.setShipsSecundarios(dto.getShipsSecundarios());
         journal.setTematica(dto.getTematica());
-        // Convertir los Integers a String para que coincidan con la BD
-        journal.setNivelAngst(dto.getNivelAngst() != null ? String.valueOf(dto.getNivelAngst()) : null);
-        journal.setFidelidadShip(dto.getFidelidadShip() != null ? String.valueOf(dto.getFidelidadShip()) : null);
+        journal.setNivelAngst(dto.getNivelAngst());
+        journal.setFidelidadShip(dto.getFidelidadShip());
         journal.setCanonVsAu(dto.getCanonVsAu());
         journal.setRelectura(dto.getRelectura());
         journal.setNotasPersonales(dto.getNotasPersonales());
@@ -116,6 +115,10 @@ public class FanficJournalService {
                 .collect(Collectors.toList());
     }
 
+    public void eliminarJournal(Long idJournal) {
+        fanficJournalRepository.deleteById(idJournal);
+    }
+
     private FanficJournalRespuestaDTO mapearADTO(FanficJournal journal) {
         FanficJournalRespuestaDTO dto = new FanficJournalRespuestaDTO();
         dto.setIdFanficJournal(journal.getIdFanficJournal());
@@ -126,6 +129,7 @@ public class FanficJournalService {
         dto.setShipPrincipal(journal.getShipPrincipal());
         dto.setShipsSecundarios(journal.getShipsSecundarios());
         dto.setNivelAngst(journal.getNivelAngst());
+        dto.setFidelidadShip(journal.getFidelidadShip());
         dto.setCanonVsAu(journal.getCanonVsAu());
         dto.setRelectura(journal.getRelectura());
         dto.setNotasPersonales(journal.getNotasPersonales());

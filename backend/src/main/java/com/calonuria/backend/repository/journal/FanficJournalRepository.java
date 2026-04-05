@@ -34,7 +34,7 @@ public interface FanficJournalRepository extends JpaRepository<FanficJournal, Lo
     List<FanficJournal> findByUsuarioAndRelecturaTrue(Usuario usuario);
 
     // Por nivel de angst
-    List<FanficJournal> findByUsuarioAndNivelAngst(Usuario usuario, String nivelAngst);
+    List<FanficJournal> findByUsuarioAndNivelAngst(Usuario usuario, Integer nivelAngst);
 
     // Leídos en un rango de fechas
     List<FanficJournal> findByUsuarioAndFechaFinBetween(
