@@ -1,4 +1,4 @@
-class LibroJournalRegistroDTO {
+class BookJournalRecordDTO {
   final int idUsuario;
   final int? idLibro;
 
@@ -25,7 +25,7 @@ class LibroJournalRegistroDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  LibroJournalRegistroDTO({
+  BookJournalRecordDTO({
     required this.idUsuario,
     this.idLibro,
     this.googleBooksId,
@@ -49,8 +49,8 @@ class LibroJournalRegistroDTO {
     this.fechaFin,
   });
 
-  factory LibroJournalRegistroDTO.fromJson(Map<String, dynamic> json) {
-    return LibroJournalRegistroDTO(
+  factory BookJournalRecordDTO.fromJson(Map<String, dynamic> json) {
+    return BookJournalRecordDTO(
       idUsuario: json['idUsuario'] as int,
       idLibro: json['idLibro'] as int?,
       googleBooksId: json['googleBooksId'] as String?,

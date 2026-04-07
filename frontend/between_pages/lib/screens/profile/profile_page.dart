@@ -29,7 +29,7 @@ class ProfilePage extends ConsumerWidget {
           data: (user) => Column(
             children: [
               Text(
-                user.nombre,
+                user.name,
                 textAlign: TextAlign.center,
                 style: textTheme.titleLarge,
               ),

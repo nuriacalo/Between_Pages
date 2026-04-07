@@ -1,5 +1,4 @@
-import 'package:between_pages/models/journal/libro_journal_registro_dto.dart';
-import 'package:between_pages/models/journal/libro_journal_respuesta_dto.dart';
+import 'package:between_pages/models/journal/book_journal_record_dto.dart';
 import 'package:dio/dio.dart';
 
 import '../api/api_client.dart';
@@ -9,8 +8,8 @@ class LibroJournalService {
 
   LibroJournalService(this._api);
 
-  Future<LibroJournalRespuestaDTO> saveOrUpdateLibroJournal(
-    LibroJournalRegistroDTO dto,
+  Future<BookJournalRecordDTO> saveOrUpdateLibroJournal(
+    BookJournalRecordDTO dto,
   ) async {
     try {
       final response = await _api.post<Map<String, dynamic>>(
@@ -28,7 +27,7 @@ class LibroJournalService {
         );
       }
 
-      return LibroJournalRespuestaDTO.fromJson(body);
+      return BookJournalRecordDTO.fromJson(body);
     } on DioException {
       rethrow;
     }

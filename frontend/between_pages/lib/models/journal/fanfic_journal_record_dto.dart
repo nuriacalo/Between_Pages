@@ -1,4 +1,4 @@
-class FanficJournalRegistroDTO {
+class FanficJournalRecordDTO {
   final int idUsuario;
   final int? idFanfiction;
 
@@ -31,7 +31,7 @@ class FanficJournalRegistroDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  FanficJournalRegistroDTO({
+  FanficJournalRecordDTO({
     required this.idUsuario,
     this.idFanfiction,
     this.ao3Id,
@@ -58,8 +58,8 @@ class FanficJournalRegistroDTO {
     this.fechaFin,
   });
 
-  factory FanficJournalRegistroDTO.fromJson(Map<String, dynamic> json) {
-    return FanficJournalRegistroDTO(
+  factory FanficJournalRecordDTO.fromJson(Map<String, dynamic> json) {
+    return FanficJournalRecordDTO(
       idUsuario: json['idUsuario'] as int,
       idFanfiction: json['idFanfiction'] as int?,
       ao3Id: json['ao3Id'] as String?,

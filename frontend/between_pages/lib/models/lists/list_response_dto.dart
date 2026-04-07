@@ -1,11 +1,11 @@
-class ListaRespuestaDTO {
+class ListResponseDTO {
   final int idLista;
   final String nombre;
 
-  ListaRespuestaDTO({required this.idLista, required this.nombre});
+  ListResponseDTO({required this.idLista, required this.nombre});
 
-  factory ListaRespuestaDTO.fromJson(Map<String, dynamic> json) {
-    return ListaRespuestaDTO(
+  factory ListResponseDTO.fromJson(Map<String, dynamic> json) {
+    return ListResponseDTO(
       idLista: json['idLista'] as int,
       nombre: json['nombre'] as String,
     );

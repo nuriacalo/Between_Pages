@@ -1,8 +1,8 @@
-import '../catalog/libro_respuesta_dto.dart';
+import '../catalog/book_response_dto.dart';
 
-class LibroJournalRespuestaDTO {
+class BookJournalResponseDto {
   final int idLibroJournal;
-  final LibroRespuestaDTO libro;
+  final BookResponseDTO libro;
   final String estado;
   final int? paginaActual;
   final int? valoracion;
@@ -13,7 +13,7 @@ class LibroJournalRespuestaDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  LibroJournalRespuestaDTO({
+  BookJournalResponseDto({
     required this.idLibroJournal,
     required this.libro,
     required this.estado,
@@ -27,10 +27,10 @@ class LibroJournalRespuestaDTO {
     this.fechaFin,
   });
 
-  factory LibroJournalRespuestaDTO.fromJson(Map<String, dynamic> json) {
-    return LibroJournalRespuestaDTO(
+  factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) {
+    return BookJournalResponseDto(
       idLibroJournal: json['idLibroJournal'] as int,
-      libro: LibroRespuestaDTO.fromJson(json['libro'] as Map<String, dynamic>),
+      libro: BookResponseDTO.fromJson(json['libro'] as Map<String, dynamic>),
       estado: json['estado'] as String,
       paginaActual: json['paginaActual'] as int?,
       valoracion: json['valoracion'] as int?,

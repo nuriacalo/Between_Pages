@@ -1,4 +1,6 @@
 import 'package:between_pages/l10n/app_localizations.dart';
+import 'package:between_pages/screens/home/feed_page.dart';
+import 'package:between_pages/screens/search/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:between_pages/screens/profile/profile_page.dart';
@@ -20,9 +22,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     // Aquí definiremos las distintas pantallas de la app.
     final screens = [
       // Pantalla de Inicio (Feed)
-      Center(child: Text(l10n.homeDescription)),
+      const FeedPage(),
       // Pantalla de Búsqueda
-      Center(child: Text(l10n.searchPlaceholder)),
+      const SearchPage(),
       // Pantalla de Perfil
       const ProfilePage(),
     ];

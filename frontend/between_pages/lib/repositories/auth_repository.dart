@@ -4,7 +4,7 @@ import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:between_pages/providers/api_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:between_pages/models/user/usuario_respuesta_dto.dart';
+import 'package:between_pages/models/user/user_response_dto.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -52,11 +52,11 @@ class AuthRepository {
   }
 
   // Obtener perfil del usuario autenticado
-  Future<UsuarioRespuestaDTO> getUserProfile() async {
+  Future<UserResponseDTO> getUserProfile() async {
     try {
       final response = await _apiClient.get(ApiConstants.me);
       // Transformamos el JSON al modelo que ya tienes creado
-      return UsuarioRespuestaDTO.fromJson(response.data);
+      return UserResponseDTO.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception('Error al obtener perfil: ${e.message}');
     }

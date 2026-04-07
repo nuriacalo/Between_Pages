@@ -1,8 +1,9 @@
-import '../catalog/fanfiction_respuesta_dto.dart';
 
-class FanficJournalRespuestaDTO {
+import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
+
+class FanficJournalResponseDTO {
   final int idFanficJournal;
-  final FanfictionRespuestaDTO fanfic;
+  final FanfictionResponseDTO fanfic;
   final String? estado;
   final int? capituloActual;
   final int? valoracion;
@@ -15,7 +16,7 @@ class FanficJournalRespuestaDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  FanficJournalRespuestaDTO({
+  FanficJournalResponseDTO({
     required this.idFanficJournal,
     required this.fanfic,
     this.estado,
@@ -31,10 +32,10 @@ class FanficJournalRespuestaDTO {
     this.fechaFin,
   });
 
-  factory FanficJournalRespuestaDTO.fromJson(Map<String, dynamic> json) {
-    return FanficJournalRespuestaDTO(
+  factory FanficJournalResponseDTO.fromJson(Map<String, dynamic> json) {
+    return FanficJournalResponseDTO(
       idFanficJournal: json['idFanficJournal'] as int,
-      fanfic: FanfictionRespuestaDTO.fromJson(
+      fanfic: FanfictionResponseDTO.fromJson(
         json['fanfic'] as Map<String, dynamic>,
       ),
       estado: json['estado'] as String?,

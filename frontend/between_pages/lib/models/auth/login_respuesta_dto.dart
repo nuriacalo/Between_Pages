@@ -1,26 +1,26 @@
-class LoginRespuestaDTO {
+class LoginResponseDTO {
   final String token;
   final String email;
-  final String nombre;
-  final String rol;
+  final String name;
+  final String role;
 
-  LoginRespuestaDTO({
+  LoginResponseDTO({
     required this.token,
     required this.email,
-    required this.nombre,
-    required this.rol,
+    required this.name,
+    required this.role,
   });
 
-  factory LoginRespuestaDTO.fromJson(Map<String, dynamic> json) {
-    return LoginRespuestaDTO(
+  factory LoginResponseDTO.fromJson(Map<String, dynamic> json) {
+    return LoginResponseDTO(
       token: json['token'] as String,
       email: json['email'] as String,
-      nombre: json['nombre'] as String,
-      rol: json['rol'] as String,
+      name: json['nombre'] as String,
+      role: json['rol'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'token': token, 'email': email, 'nombre': nombre, 'rol': rol};
+    return {'token': token, 'email': email, 'nombre': name, 'rol': role};
   }
 }

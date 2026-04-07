@@ -1,4 +1,4 @@
-class MangaJournalRegistroDTO {
+class MangaJournalRecordDTO {
   final int idUsuario;
   final int? idManga;
 
@@ -28,7 +28,7 @@ class MangaJournalRegistroDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  MangaJournalRegistroDTO({
+  MangaJournalRecordDTO({
     required this.idUsuario,
     this.idManga,
     this.mangadexId,
@@ -54,8 +54,8 @@ class MangaJournalRegistroDTO {
     this.fechaFin,
   });
 
-  factory MangaJournalRegistroDTO.fromJson(Map<String, dynamic> json) {
-    return MangaJournalRegistroDTO(
+  factory MangaJournalRecordDTO.fromJson(Map<String, dynamic> json) {
+    return MangaJournalRecordDTO(
       idUsuario: json['idUsuario'] as int,
       idManga: json['idManga'] as int?,
       mangadexId: json['mangadexId'] as String?,

@@ -1,8 +1,8 @@
-import '../catalog/manga_respuesta_dto.dart';
+import '../catalog/manga_response_dto.dart';
 
-class MangaJournalRespuestaDTO {
+class MangaJournalResponseDTO {
   final int idMangaJournal;
-  final MangaRespuestaDTO manga;
+  final MangaResponseDTO manga;
   final String? estado;
   final int? capituloActual;
   final int? volumenActual;
@@ -14,7 +14,7 @@ class MangaJournalRespuestaDTO {
   final String? fechaInicio;
   final String? fechaFin;
 
-  MangaJournalRespuestaDTO({
+  MangaJournalResponseDTO({
     required this.idMangaJournal,
     required this.manga,
     this.estado,
@@ -29,10 +29,10 @@ class MangaJournalRespuestaDTO {
     this.fechaFin,
   });
 
-  factory MangaJournalRespuestaDTO.fromJson(Map<String, dynamic> json) {
-    return MangaJournalRespuestaDTO(
+  factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) {
+    return MangaJournalResponseDTO(
       idMangaJournal: json['idMangaJournal'] as int,
-      manga: MangaRespuestaDTO.fromJson(json['manga'] as Map<String, dynamic>),
+      manga: MangaResponseDTO.fromJson(json['manga'] as Map<String, dynamic>),
       estado: json['estado'] as String?,
       capituloActual: json['capituloActual'] as int?,
       volumenActual: json['volumenActual'] as int?,
