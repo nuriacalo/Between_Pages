@@ -1,5 +1,5 @@
 import 'package:between_pages/controllers/auth_controller.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/providers/locale_provider.dart';
 import 'package:between_pages/providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -21,26 +21,33 @@ class ProfilePage extends ConsumerWidget {
     return ListView(
       children: [
         const SizedBox(height: 32),
-        const CircleAvatar(
-          radius: 50,
-          child: Icon(Icons.person, size: 50),
-        ),
+        const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
         const SizedBox(height: 16),
-        
+
         // Mostramos los datos reales del usuario o un indicador de carga
         userProfileAsync.when(
           data: (user) => Column(
             children: [
-              Text(user.nombre, textAlign: TextAlign.center, style: textTheme.titleLarge),
+              Text(
+                user.nombre,
+                textAlign: TextAlign.center,
+                style: textTheme.titleLarge,
+              ),
               Text(
                 user.email,
                 textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Text('Error al cargar datos', textAlign: TextAlign.center, style: TextStyle(color: colorScheme.error)),
+          error: (error, stack) => Text(
+            'Error al cargar datos',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colorScheme.error),
+          ),
         ),
         const SizedBox(height: 32),
 

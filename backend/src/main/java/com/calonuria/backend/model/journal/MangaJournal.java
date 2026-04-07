@@ -58,6 +58,9 @@ public class MangaJournal {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    @Column(name = "relectura")
+    private Boolean relectura;
+
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 

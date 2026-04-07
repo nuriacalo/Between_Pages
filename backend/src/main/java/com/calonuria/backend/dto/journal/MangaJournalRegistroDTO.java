@@ -51,4 +51,5 @@ public class MangaJournalRegistroDTO {
     private String notaPersonal;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private Boolean relectura;
 }

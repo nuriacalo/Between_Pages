@@ -82,6 +82,7 @@ public class MangaJournalService {
         journal.setNotaPersonal(dto.getNotaPersonal());
         journal.setFechaInicio(dto.getFechaInicio());
         journal.setFechaFin(dto.getFechaFin());
+        journal.setRelectura(dto.getRelectura());
 
         MangaJournal guardado = mangaJournalRepository.save(journal);
         return mapearADTO(guardado);
@@ -130,6 +131,7 @@ public class MangaJournalService {
         dto.setNotaPersonal(journal.getNotaPersonal());
         dto.setFechaInicio(journal.getFechaInicio());
         dto.setFechaFin(journal.getFechaFin());
+        dto.setRelectura(journal.getRelectura());
         return dto;
     }
 }
