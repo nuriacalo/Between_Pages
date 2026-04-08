@@ -11,6 +11,8 @@ import com.calonuria.backend.repository.user.UsuarioRepository;
 import com.calonuria.backend.service.catalog.LibroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -89,6 +91,7 @@ public class LibroJournalService {
         return mapearADTO(guardado);
     }
 
+    @Transactional(readOnly = true)
     public List<LibroJournalRespuestaDTO> obtenerJournalDeUsuario(Long idUsuario) {
         return libroJournalRepository.findByUsuario_IdUsuario(idUsuario)
                 .stream()

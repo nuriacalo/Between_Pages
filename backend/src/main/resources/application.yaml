@@ -19,7 +19,7 @@ spring:
 
 google:
   books:
-    api-key: 
+    api-key: ${GOOGLE_BOOKS_API_KEY:}
 
 jwt:
   secret: betweenpages_clave_secreta_muy_larga_para_que_sea_segura_2024

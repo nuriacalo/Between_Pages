@@ -3,21 +3,24 @@ import 'package:between_pages/models/catalog/book_response_dto.dart';
 import 'package:between_pages/providers/api_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:between_pages/core/constants/api_constants.dart';
 
 class BookRepository {
   final ApiClient _apiClient;
 
   BookRepository(this._apiClient);
 
-  // Obtener la lista de todos los libros
-  Future<List<BookResponseDTO>> getBooks() async {
+  // Obtener los libros que el usuario tiene en su Journal
+  Future<List<BookResponseDTO>> getUserBooks(int userId) async {
     try {
-      final response = await _apiClient.get('/libros');
+      // Llamamos al endpoint del journal pasando el ID del usuario
+      final response = await _apiClient.get('${ApiConstants.libroJournalUser}$userId');
       final List<dynamic> data = response.data;
-      return data.map((json) => BookResponseDTO.fromJson(json)).toList();
+      // De cada registro del journal, extraemos únicamente la información del 'libro'
+      return data.map((json) => BookResponseDTO.fromJson(json['libro'])).toList();
     } on DioException catch (e) {
-      // Manejar errores de la solicitud
-      throw Exception('Error al obtener los libros: ${e.message}');
+      // Imprimimos el error exacto que nos devuelve Spring Boot
+      throw Exception('Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}');
     }
   }
 }

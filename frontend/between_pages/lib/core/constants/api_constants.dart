@@ -15,20 +15,17 @@ class ApiConstants {
   static const fanficBuscar = '$baseUrl/fanfiction/buscar';
   static const fanficEstado = '$baseUrl/fanfiction/estado';
   static const fanficBuscarLocal = '$baseUrl/fanfiction/buscar/local';
-  static const fanfic = '$baseUrl/fanfiction/';
-  static const fanficCreate = '$baseUrl/fanfiction';
+  static const fanfic = '$baseUrl/fanfiction'; // Base para GET por ID, POST, etc.
 
   // LIBROS (/api/libro)
   static const libroBuscar = '$baseUrl/libro/buscar';
   static const libroBuscarLocal = '$baseUrl/libro/buscar/local';
-  static const libro = '$baseUrl/libro/';
-  static const libroCreate = '$baseUrl/libro';
+  static const libro = '$baseUrl/libro'; // Base para GET por ID, POST, etc.
 
   // MANGA (/api/manga)
   static const mangaBuscar = '$baseUrl/manga/buscar';
   static const mangaBuscarLocal = '$baseUrl/manga/buscar/local';
-  static const manga = '$baseUrl/manga/';
-  static const mangaCreate = '$baseUrl/manga';
+  static const manga = '$baseUrl/manga'; // Base para GET por ID, POST, etc.
 
   // TAGS FANFICTION (/api/fanfiction/{idFanfic}/tags)
   static const tagsFanfic = '$baseUrl/fanfiction/';           // GET {id}/tags

@@ -38,6 +38,12 @@ public class LibroController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Obtener todos los libros de la base de datos")
+    @GetMapping
+    public ResponseEntity<List<LibroRespuestaDTO>> obtenerTodos() {
+        return ResponseEntity.ok(libroService.obtenerTodosLosLibros());
+    }
+
     @Operation(summary = "Guardar libro en base de datos local")
     @PostMapping
     public ResponseEntity<LibroRespuestaDTO> guardarLibro(@RequestBody LibroRespuestaDTO dto) {

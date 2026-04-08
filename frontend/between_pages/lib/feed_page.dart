@@ -1,4 +1,4 @@
-import 'package:between_pages/providers/book_journal_provider.dart';
+import 'package:between_pages/providers/book_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,21 +9,60 @@ class FeedPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el proveedor que trae la lista de libros del backend
-    final journalsAsync = ref.watch(bookJournalProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return journalsAsync.when(
-      data: (journals) {
-        if (journals.isEmpty) {
-          return const Center(child: Text('No hay libros disponibles aún.'));
+    return DefaultTabController(
+      length: 3,
+      child: Column(
+        children: [
+          Container(
+            color: colorScheme.surface,
+            child: TabBar(
+              labelColor: colorScheme.primary,
+              unselectedLabelColor: colorScheme.onSurfaceVariant,
+              indicatorColor: colorScheme.primary,
+              dividerColor: colorScheme.outlineVariant.withAlpha(50),
+              tabs: const [
+                Tab(icon: Icon(Icons.book), text: 'Libros'),
+                Tab(icon: Icon(Icons.menu_book), text: 'Mangas'),
+                Tab(icon: Icon(Icons.article), text: 'Fanfics'),
+              ],
+            ),
+          ),
+          const Expanded(
+            child: TabBarView(
+              children: [
+                _BooksTab(),
+                _MangasTab(),
+                _FanficsTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BooksTab extends ConsumerWidget {
+  const _BooksTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Escuchamos el proveedor que trae la lista de libros del backend
+    final booksAsync = ref.watch(bookProvider);
+
+    return booksAsync.when(
+      data: (books) {
+        if (books.isEmpty) {
+          return const Center(child: Text('No hay libros en tu Journal.'));
         }
         
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: journals.length,
+          itemCount: books.length,
           itemBuilder: (context, index) {
-            final journal = journals[index];
-            final book = journal.libro;
+            final book = books[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 16),
               clipBehavior: Clip.antiAlias,
@@ -125,5 +164,23 @@ class FeedPage extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
     );
+  }
+}
+
+class _MangasTab extends ConsumerWidget {
+  const _MangasTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const Center(child: Text('Tus Mangas aparecerán aquí.'));
+  }
+}
+
+class _FanficsTab extends ConsumerWidget {
+  const _FanficsTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const Center(child: Text('Tus Fanfics aparecerán aquí.'));
   }
 }
