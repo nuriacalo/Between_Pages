@@ -3,17 +3,17 @@ import 'package:dio/dio.dart';
 
 import '../api/api_client.dart';
 
-class LibroJournalService {
+class BookJournalService {
   final ApiClient _api;
 
-  LibroJournalService(this._api);
+  BookJournalService(this._api);
 
-  Future<BookJournalRecordDTO> saveOrUpdateLibroJournal(
+  Future<BookJournalRecordDTO> saveOrUpdateBookJournal(
     BookJournalRecordDTO dto,
   ) async {
     try {
       final response = await _api.post<Map<String, dynamic>>(
-        '/api/libro-journal',
+        '/api/book-journal',
         data: dto.toJson(),
       );
 

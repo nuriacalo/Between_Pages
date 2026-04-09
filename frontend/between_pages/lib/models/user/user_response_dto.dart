@@ -13,19 +13,19 @@ class UserResponseDTO {
 
   factory UserResponseDTO.fromJson(Map<String, dynamic> json) {
     return UserResponseDTO(
-      idUser: json['idUsuario'] as int? ?? 0,
-      name: json['nombre'] as String? ?? 'Usuario',
+      idUser: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? 'Usuario',
       email: json['email'] as String? ?? '',
-      role: json['rol'] as String? ?? 'USER',
+      role: json['role'] as String? ?? 'USER',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idUsuario': idUser,
-      'nombre': name,
+      'id': idUser,
+      'name': name,
       'email': email,
-      'rol': role,
+      'role': role,
     };
   }
 }

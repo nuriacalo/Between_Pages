@@ -27,33 +27,33 @@ class BookResponseDTO {
 
   factory BookResponseDTO.fromJson(Map<String, dynamic> json) {
     return BookResponseDTO(
-      idBook: json['idLibro'] as int,
-      googleBooksId: json['googleBooksId'] as String,
-      title: json['titulo'] as String,
-      author: json['autor'] as String,
+      idBook: json['id'] as int,
+      googleBooksId: json['google_books_id'] as String,
+      title: json['title'] as String,
+      author: json['author'] as String,
       isbn: json['isbn'] as String?,
-      publisher: json['editorial'] as String?,
-      description: json['descripcion'] as String?,
-      coverUrl: json['portadaUrl'] as String?,
-      genre: json['genero'] as String?,
-      bookType: json['tipoLibro'] as String?,
-      publishYear: json['anioPublicacion'] as int?,
+      publisher: json['publisher'] as String?,
+      description: json['description'] as String?,
+      coverUrl: json['cover_url'] as String?,
+      genre: json['genre'] as String?,
+      bookType: json['book_type'] as String?,
+      publishYear: json['publication_year'] as int?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idLibro': idBook,
-      'googleBooksId': googleBooksId,
-      'titulo': title,
-      'autor': author,
+      'id': idBook,
+      'google_books_id': googleBooksId,
+      'title': title,
+      'author': author,
       'isbn': isbn,
-      'editorial': publisher,
-      'descripcion': description,
-      'portadaUrl': coverUrl,
-      'genero': genre,
-      'tipoLibro': bookType,
-      'anioPublicacion': publishYear,
+      'publisher': publisher,
+      'description': description,
+      'cover_url': coverUrl,
+      'genre': genre,
+      'book_type': bookType,
+      'publication_year': publishYear,
     };
   }
 }

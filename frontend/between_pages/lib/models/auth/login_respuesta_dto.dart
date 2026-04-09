@@ -15,12 +15,12 @@ class LoginResponseDTO {
     return LoginResponseDTO(
       token: json['token'] as String,
       email: json['email'] as String,
-      name: json['nombre'] as String,
-      role: json['rol'] as String,
+      name: json['name'] as String,
+      role: json['role'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'token': token, 'email': email, 'nombre': name, 'rol': role};
+    return {'token': token, 'email': email, 'name': name, 'role': role};
   }
 }

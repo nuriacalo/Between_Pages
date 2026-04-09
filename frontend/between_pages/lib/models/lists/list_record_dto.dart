@@ -1,17 +1,17 @@
 class ListaRecordDTO {
-  final int idUsuario;
-  final String nombre;
+  final int userId;
+  final String name;
 
-  ListaRecordDTO({required this.idUsuario, required this.nombre});
+  ListaRecordDTO({required this.userId, required this.name});
 
   factory ListaRecordDTO.fromJson(Map<String, dynamic> json) {
     return ListaRecordDTO(
-      idUsuario: json['idUsuario'] as int,
-      nombre: json['nombre'] as String,
+      userId: json['user_id'] as int,
+      name: json['name'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'idUsuario': idUsuario, 'nombre': nombre};
+    return {'user_id': userId, 'name': name};
   }
 }

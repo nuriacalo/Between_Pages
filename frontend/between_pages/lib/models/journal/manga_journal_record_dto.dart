@@ -1,112 +1,112 @@
 class MangaJournalRecordDTO {
-  final int idUsuario;
-  final int? idManga;
+  final int userId;
+  final int? mangaId;
 
   final String? mangadexId;
-  final String? fuente;
-  final String? titulo;
+  final String? source;
+  final String? title;
   final String? mangaka;
-  final String? demografia;
-  final String? genero;
-  final String? descripcion;
-  final String? portadaUrl;
-  final int? totalCapitulos;
-  final int? totalVolumenes;
-  final String? estadoPublicacion;
+  final String? demographic;
+  final String? genre;
+  final String? description;
+  final String? coverUrl;
+  final int? totalChapters;
+  final int? totalVolumes;
+  final String? publicationStatus;
 
-  final String estado;
-  final int? capituloActual;
-  final int? volumenActual;
-  final int? valoracion;
+  final String status;
+  final int? currentChapter;
+  final int? currentVolume;
+  final int? rating;
 
-  final String? formatoLectura;
+  final String? readingFormat;
 
-  final String? personajeFavorito;
-  final String? arcoFavorito;
-  final String? notaPersonal;
+  final String? favoriteCharacter;
+  final String? favoriteArc;
+  final String? personalNotes;
 
-  final String? fechaInicio;
-  final String? fechaFin;
+  final String? startDate;
+  final String? endDate;
 
   MangaJournalRecordDTO({
-    required this.idUsuario,
-    this.idManga,
+    required this.userId,
+    this.mangaId,
     this.mangadexId,
-    this.fuente,
-    this.titulo,
+    this.source,
+    this.title,
     this.mangaka,
-    this.demografia,
-    this.genero,
-    this.descripcion,
-    this.portadaUrl,
-    this.totalCapitulos,
-    this.totalVolumenes,
-    this.estadoPublicacion,
-    required this.estado,
-    this.capituloActual,
-    this.volumenActual,
-    this.valoracion,
-    this.formatoLectura,
-    this.personajeFavorito,
-    this.arcoFavorito,
-    this.notaPersonal,
-    this.fechaInicio,
-    this.fechaFin,
+    this.demographic,
+    this.genre,
+    this.description,
+    this.coverUrl,
+    this.totalChapters,
+    this.totalVolumes,
+    this.publicationStatus,
+    required this.status,
+    this.currentChapter,
+    this.currentVolume,
+    this.rating,
+    this.readingFormat,
+    this.favoriteCharacter,
+    this.favoriteArc,
+    this.personalNotes,
+    this.startDate,
+    this.endDate,
   });
 
   factory MangaJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return MangaJournalRecordDTO(
-      idUsuario: json['idUsuario'] as int,
-      idManga: json['idManga'] as int?,
-      mangadexId: json['mangadexId'] as String?,
-      fuente: json['fuente'] as String?,
-      titulo: json['titulo'] as String?,
+      userId: json['user_id'] as int,
+      mangaId: json['manga_id'] as int?,
+      mangadexId: json['mangadex_id'] as String?,
+      source: json['source'] as String?,
+      title: json['title'] as String?,
       mangaka: json['mangaka'] as String?,
-      demografia: json['demografia'] as String?,
-      genero: json['genero'] as String?,
-      descripcion: json['descripcion'] as String?,
-      portadaUrl: json['portadaUrl'] as String?,
-      totalCapitulos: json['totalCapitulos'] as int?,
-      totalVolumenes: json['totalVolumenes'] as int?,
-      estadoPublicacion: json['estadoPublicacion'] as String?,
-      estado: json['estado'] as String,
-      capituloActual: json['capituloActual'] as int?,
-      volumenActual: json['volumenActual'] as int?,
-      valoracion: json['valoracion'] as int?,
-      formatoLectura: json['formatoLectura'] as String?,
-      personajeFavorito: json['personajeFavorito'] as String?,
-      arcoFavorito: json['arcoFavorito'] as String?,
-      notaPersonal: json['notaPersonal'] as String?,
-      fechaInicio: json['fechaInicio'] as String?,
-      fechaFin: json['fechaFin'] as String?,
+      demographic: json['demographic'] as String?,
+      genre: json['genre'] as String?,
+      description: json['description'] as String?,
+      coverUrl: json['cover_url'] as String?,
+      totalChapters: json['total_chapters'] as int?,
+      totalVolumes: json['total_volumes'] as int?,
+      publicationStatus: json['publication_status'] as String?,
+      status: json['status'] as String,
+      currentChapter: json['current_chapter'] as int?,
+      currentVolume: json['current_volume'] as int?,
+      rating: json['rating'] as int?,
+      readingFormat: json['reading_format'] as String?,
+      favoriteCharacter: json['favorite_character'] as String?,
+      favoriteArc: json['favorite_arc'] as String?,
+      personalNotes: json['personal_notes'] as String?,
+      startDate: json['start_date'] as String?,
+      endDate: json['end_date'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idUsuario': idUsuario,
-      'idManga': idManga,
-      'mangadexId': mangadexId,
-      'fuente': fuente,
-      'titulo': titulo,
+      'user_id': userId,
+      'manga_id': mangaId,
+      'mangadex_id': mangadexId,
+      'source': source,
+      'title': title,
       'mangaka': mangaka,
-      'demografia': demografia,
-      'genero': genero,
-      'descripcion': descripcion,
-      'portadaUrl': portadaUrl,
-      'totalCapitulos': totalCapitulos,
-      'totalVolumenes': totalVolumenes,
-      'estadoPublicacion': estadoPublicacion,
-      'estado': estado,
-      'capituloActual': capituloActual,
-      'volumenActual': volumenActual,
-      'valoracion': valoracion,
-      'formatoLectura': formatoLectura,
-      'personajeFavorito': personajeFavorito,
-      'arcoFavorito': arcoFavorito,
-      'notaPersonal': notaPersonal,
-      'fechaInicio': fechaInicio,
-      'fechaFin': fechaFin,
+      'demographic': demographic,
+      'genre': genre,
+      'description': description,
+      'cover_url': coverUrl,
+      'total_chapters': totalChapters,
+      'total_volumes': totalVolumes,
+      'publication_status': publicationStatus,
+      'status': status,
+      'current_chapter': currentChapter,
+      'current_volume': currentVolume,
+      'rating': rating,
+      'reading_format': readingFormat,
+      'favorite_character': favoriteCharacter,
+      'favorite_arc': favoriteArc,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
     };
   }
 }

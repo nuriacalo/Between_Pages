@@ -27,33 +27,33 @@ class MangaResponseDTO {
 
   factory MangaResponseDTO.fromJson(Map<String, dynamic> json) {
     return MangaResponseDTO(
-      idManga: json['idManga'] as int?,
-      mangadexId: json['mangadexId'] as String?,
-      title: json['titulo'] as String?,
-      mangaka: json['mangaka'] as String?,
-      demographic: json['demografia'] as String?,
-      genre: json['genero'] as String?,
-      description: json['descripcion'] as String?,
-      coverUrl: json['portadaUrl'] as String?,
-      totalChapters: json['totalCapitulos'] as int?,
-      totalVolumes: json['totalVolumenes'] as int?,
-      publicationStatus: json['estadoPublicacion'] as String?,
+      idManga: json['id'] as int?,
+      mangadexId: json['mangadex_id'] as String?,
+      title: json['title'] as String?,
+      mangaka: json['author'] as String?,
+      demographic: json['demographic'] as String?,
+      genre: json['genre'] as String?,
+      description: json['description'] as String?,
+      coverUrl: json['cover_url'] as String?,
+      totalChapters: json['total_chapters'] as int?,
+      totalVolumes: json['total_volumes'] as int?,
+      publicationStatus: json['publication_status'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idManga': idManga,
-      'mangadexId': mangadexId,
-      'titulo': title,
-      'mangaka': mangaka,
-      'demografia': demographic,
-      'genero': genre,
-      'descripcion': description,
-      'portadaUrl': coverUrl,
-      'totalCapitulos': totalChapters,
-      'totalVolumenes': totalVolumes,
-      'estadoPublicacion': publicationStatus,
+      'id': idManga,
+      'mangadex_id': mangadexId,
+      'title': title,
+      'author': mangaka,
+      'demographic': demographic,
+      'genre': genre,
+      'description': description,
+      'cover_url': coverUrl,
+      'total_chapters': totalChapters,
+      'total_volumes': totalVolumes,
+      'publication_status': publicationStatus,
     };
   }
 }

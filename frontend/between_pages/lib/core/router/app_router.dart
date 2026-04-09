@@ -1,7 +1,7 @@
 import 'package:between_pages/controllers/auth_controller.dart';
 import 'package:between_pages/screens/auth/login_page.dart';
 import 'package:between_pages/screens/auth/register_page.dart';
-import 'package:between_pages/screens/home/book_detail_page.dart';
+import 'package:between_pages/screens/detail/book_detail_page.dart';
 import 'package:between_pages/screens/home/home_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

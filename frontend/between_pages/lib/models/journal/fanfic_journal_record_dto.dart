@@ -1,118 +1,118 @@
 class FanficJournalRecordDTO {
-  final int idUsuario;
-  final int? idFanfiction;
+  final int userId;
+  final int? fanfictionId;
 
   final String? ao3Id;
-  final String? titulo;
-  final String? autor;
-  final String? historiaBase;
-  final String? descripcion;
-  final String? portadaUrl;
-  final String? genero;
-  final String? tematica;
-  final int? totalCapitulos;
-  final String? estadoPublicacion;
+  final String? title;
+  final String? author;
+  final String? sourceMaterial;
+  final String? description;
+  final String? coverUrl;
+  final String? genre;
+  final String? theme;
+  final int? totalChapters;
+  final String? publicationStatus;
 
-  final String estado;
-  final int? capituloActual;
-  final int? valoracion;
+  final String status;
+  final int? currentChapter;
+  final int? rating;
 
-  final String? shipPrincipal;
-  final String? shipsSecundarios;
+  final String? mainShip;
+  final String? secondaryShips;
 
-  final int? nivelAngst;
-  final int? fidelidadShip;
+  final String? angstLevel;
+  final String? shipLoyalty;
 
-  final String? canonVsAu;
+  final String? canonType;
 
-  final bool? relectura;
-  final String? notasPersonales;
+  final bool? rereading;
+  final String? personalNotes;
 
-  final String? fechaInicio;
-  final String? fechaFin;
+  final String? startDate;
+  final String? endDate;
 
   FanficJournalRecordDTO({
-    required this.idUsuario,
-    this.idFanfiction,
+    required this.userId,
+    this.fanfictionId,
     this.ao3Id,
-    this.titulo,
-    this.autor,
-    this.historiaBase,
-    this.descripcion,
-    this.portadaUrl,
-    this.genero,
-    this.tematica,
-    this.totalCapitulos,
-    this.estadoPublicacion,
-    required this.estado,
-    this.capituloActual,
-    this.valoracion,
-    this.shipPrincipal,
-    this.shipsSecundarios,
-    this.nivelAngst,
-    this.fidelidadShip,
-    this.canonVsAu,
-    this.relectura,
-    this.notasPersonales,
-    this.fechaInicio,
-    this.fechaFin,
+    this.title,
+    this.author,
+    this.sourceMaterial,
+    this.description,
+    this.coverUrl,
+    this.genre,
+    this.theme,
+    this.totalChapters,
+    this.publicationStatus,
+    required this.status,
+    this.currentChapter,
+    this.rating,
+    this.mainShip,
+    this.secondaryShips,
+    this.angstLevel,
+    this.shipLoyalty,
+    this.canonType,
+    this.rereading,
+    this.personalNotes,
+    this.startDate,
+    this.endDate,
   });
 
   factory FanficJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return FanficJournalRecordDTO(
-      idUsuario: json['idUsuario'] as int,
-      idFanfiction: json['idFanfiction'] as int?,
-      ao3Id: json['ao3Id'] as String?,
-      titulo: json['titulo'] as String?,
-      autor: json['autor'] as String?,
-      historiaBase: json['historiaBase'] as String?,
-      descripcion: json['descripcion'] as String?,
-      portadaUrl: json['portadaUrl'] as String?,
-      genero: json['genero'] as String?,
-      tematica: json['tematica'] as String?,
-      totalCapitulos: json['totalCapitulos'] as int?,
-      estadoPublicacion: json['estadoPublicacion'] as String?,
-      estado: json['estado'] as String,
-      capituloActual: json['capituloActual'] as int?,
-      valoracion: json['valoracion'] as int?,
-      shipPrincipal: json['shipPrincipal'] as String?,
-      shipsSecundarios: json['shipsSecundarios'] as String?,
-      nivelAngst: json['nivelAngst'] as int?,
-      fidelidadShip: json['fidelidadShip'] as int?,
-      canonVsAu: json['canonVsAu'] as String?,
-      relectura: json['relectura'] as bool?,
-      notasPersonales: json['notasPersonales'] as String?,
-      fechaInicio: json['fechaInicio'] as String?,
-      fechaFin: json['fechaFin'] as String?,
+      userId: json['user_id'] as int,
+      fanfictionId: json['fanfiction_id'] as int?,
+      ao3Id: json['ao3_id'] as String?,
+      title: json['title'] as String?,
+      author: json['author'] as String?,
+      sourceMaterial: json['source_material'] as String?,
+      description: json['description'] as String?,
+      coverUrl: json['cover_url'] as String?,
+      genre: json['genre'] as String?,
+      theme: json['theme'] as String?,
+      totalChapters: json['total_chapters'] as int?,
+      publicationStatus: json['publication_status'] as String?,
+      status: json['status'] as String,
+      currentChapter: json['current_chapter'] as int?,
+      rating: json['rating'] as int?,
+      mainShip: json['main_ship'] as String?,
+      secondaryShips: json['secondary_ships'] as String?,
+      angstLevel: json['angst_level'] as String?,
+      shipLoyalty: json['ship_loyalty'] as String?,
+      canonType: json['canon_type'] as String?,
+      rereading: json['rereading'] as bool?,
+      personalNotes: json['personal_notes'] as String?,
+      startDate: json['start_date'] as String?,
+      endDate: json['end_date'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idUsuario': idUsuario,
-      'idFanfiction': idFanfiction,
-      'ao3Id': ao3Id,
-      'titulo': titulo,
-      'autor': autor,
-      'historiaBase': historiaBase,
-      'descripcion': descripcion,
-      'portadaUrl': portadaUrl,
-      'genero': genero,
-      'tematica': tematica,
-      'totalCapitulos': totalCapitulos,
-      'estadoPublicacion': estadoPublicacion,
-      'estado': estado,
-      'capituloActual': capituloActual,
-      'valoracion': valoracion,
-      'shipPrincipal': shipPrincipal,
-      'shipsSecundarios': shipsSecundarios,
-      'nivelAngst': nivelAngst,
-      'fidelidadShip': fidelidadShip,
-      'canonVsAu': canonVsAu,
-      'relectura': relectura,
-      'notasPersonales': notasPersonales,
-      'fechaInicio': fechaInicio,
-      'fechaFin': fechaFin,
+      'user_id': userId,
+      'fanfiction_id': fanfictionId,
+      'ao3_id': ao3Id,
+      'title': title,
+      'author': author,
+      'source_material': sourceMaterial,
+      'description': description,
+      'cover_url': coverUrl,
+      'genre': genre,
+      'theme': theme,
+      'total_chapters': totalChapters,
+      'publication_status': publicationStatus,
+      'status': status,
+      'current_chapter': currentChapter,
+      'rating': rating,
+      'main_ship': mainShip,
+      'secondary_ships': secondaryShips,
+      'angst_level': angstLevel,
+      'ship_loyalty': shipLoyalty,
+      'canon_type': canonType,
+      'rereading': rereading,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
     };
   }
 }

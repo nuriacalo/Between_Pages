@@ -14,13 +14,19 @@ class BookRepository {
   Future<List<BookResponseDTO>> getUserBooks(int userId) async {
     try {
       // Llamamos al endpoint del journal pasando el ID del usuario
-      final response = await _apiClient.get('${ApiConstants.libroJournalUser}$userId');
+      final response = await _apiClient.get(
+        '${ApiConstants.bookJournalUser}$userId',
+      );
       final List<dynamic> data = response.data;
       // De cada registro del journal, extraemos únicamente la información del 'libro'
-      return data.map((json) => BookResponseDTO.fromJson(json['libro'])).toList();
+      return data
+          .map((json) => BookResponseDTO.fromJson(json['book']))
+          .toList();
     } on DioException catch (e) {
       // Imprimimos el error exacto que nos devuelve Spring Boot
-      throw Exception('Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}');
+      throw Exception(
+        'Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}',
+      );
     }
   }
 }

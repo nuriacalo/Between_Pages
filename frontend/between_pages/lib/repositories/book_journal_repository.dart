@@ -12,11 +12,15 @@ class BookJournalRepository {
 
   Future<List<BookJournalResponseDto>> getBooksForUser(int userId) async {
     try {
-      final response = await _apiClient.get('${ApiConstants.libroJournalUser}$userId');
+      final response = await _apiClient.get(
+        '${ApiConstants.bookJournalUser}$userId',
+      );
       final List<dynamic> data = response.data;
       return data.map((json) => BookJournalResponseDto.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw Exception('Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}');
+      throw Exception(
+        'Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}',
+      );
     }
   }
 }

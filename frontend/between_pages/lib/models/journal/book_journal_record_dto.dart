@@ -1,103 +1,103 @@
 class BookJournalRecordDTO {
-  final int idUsuario;
-  final int? idLibro;
+  final int userId;
+  final int? bookId;
 
   final String? googleBooksId;
-  final String? titulo;
-  final String? autor;
+  final String? title;
+  final String? author;
   final String? isbn;
-  final String? editorial;
-  final String? descripcion;
-  final String? portadaUrl;
-  final String? genero;
-  final String? tipoLibro;
-  final int? anioPublicacion;
+  final String? publisher;
+  final String? description;
+  final String? coverUrl;
+  final String? genre;
+  final String? bookType;
+  final int? publicationYear;
 
-  final String estado;
-  final int? paginaActual;
-  final int? valoracion;
-  final String? formatoLectura;
+  final String status;
+  final int? currentPage;
+  final int? rating;
+  final String? readingFormat;
 
-  final List<String>? emociones;
-  final String? citasFavoritas;
-  final String? notaPersonal;
+  final List<String>? emotions;
+  final String? favoriteQuotes;
+  final String? personalNotes;
 
-  final String? fechaInicio;
-  final String? fechaFin;
+  final String? startDate;
+  final String? endDate;
 
   BookJournalRecordDTO({
-    required this.idUsuario,
-    this.idLibro,
+    required this.userId,
+    this.bookId,
     this.googleBooksId,
-    this.titulo,
-    this.autor,
+    this.title,
+    this.author,
     this.isbn,
-    this.editorial,
-    this.descripcion,
-    this.portadaUrl,
-    this.genero,
-    this.tipoLibro,
-    this.anioPublicacion,
-    required this.estado,
-    this.paginaActual,
-    this.valoracion,
-    this.formatoLectura,
-    this.emociones,
-    this.citasFavoritas,
-    this.notaPersonal,
-    this.fechaInicio,
-    this.fechaFin,
+    this.publisher,
+    this.description,
+    this.coverUrl,
+    this.genre,
+    this.bookType,
+    this.publicationYear,
+    required this.status,
+    this.currentPage,
+    this.rating,
+    this.readingFormat,
+    this.emotions,
+    this.favoriteQuotes,
+    this.personalNotes,
+    this.startDate,
+    this.endDate,
   });
 
   factory BookJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return BookJournalRecordDTO(
-      idUsuario: json['idUsuario'] as int,
-      idLibro: json['idLibro'] as int?,
-      googleBooksId: json['googleBooksId'] as String?,
-      titulo: json['titulo'] as String?,
-      autor: json['autor'] as String?,
+      userId: json['user_id'] as int,
+      bookId: json['book_id'] as int?,
+      googleBooksId: json['google_books_id'] as String?,
+      title: json['title'] as String?,
+      author: json['author'] as String?,
       isbn: json['isbn'] as String?,
-      editorial: json['editorial'] as String?,
-      descripcion: json['descripcion'] as String?,
-      portadaUrl: json['portadaUrl'] as String?,
-      genero: json['genero'] as String?,
-      tipoLibro: json['tipoLibro'] as String?,
-      anioPublicacion: json['anioPublicacion'] as int?,
-      estado: json['estado'] as String,
-      paginaActual: json['paginaActual'] as int?,
-      valoracion: json['valoracion'] as int?,
-      formatoLectura: json['formatoLectura'] as String?,
-      emociones: (json['emociones'] as List?)?.cast<String>(),
-      citasFavoritas: json['citasFavoritas'] as String?,
-      notaPersonal: json['notaPersonal'] as String?,
-      fechaInicio: json['fechaInicio'] as String?,
-      fechaFin: json['fechaFin'] as String?,
+      publisher: json['publisher'] as String?,
+      description: json['description'] as String?,
+      coverUrl: json['cover_url'] as String?,
+      genre: json['genre'] as String?,
+      bookType: json['book_type'] as String?,
+      publicationYear: json['publication_year'] as int?,
+      status: json['status'] as String,
+      currentPage: json['current_page'] as int?,
+      rating: json['rating'] as int?,
+      readingFormat: json['reading_format'] as String?,
+      emotions: (json['emotions'] as List?)?.cast<String>(),
+      favoriteQuotes: json['favorite_quotes'] as String?,
+      personalNotes: json['personal_notes'] as String?,
+      startDate: json['start_date'] as String?,
+      endDate: json['end_date'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idUsuario': idUsuario,
-      'idLibro': idLibro,
-      'googleBooksId': googleBooksId,
-      'titulo': titulo,
-      'autor': autor,
+      'user_id': userId,
+      'book_id': bookId,
+      'google_books_id': googleBooksId,
+      'title': title,
+      'author': author,
       'isbn': isbn,
-      'editorial': editorial,
-      'descripcion': descripcion,
-      'portadaUrl': portadaUrl,
-      'genero': genero,
-      'tipoLibro': tipoLibro,
-      'anioPublicacion': anioPublicacion,
-      'estado': estado,
-      'paginaActual': paginaActual,
-      'valoracion': valoracion,
-      'formatoLectura': formatoLectura,
-      'emociones': emociones,
-      'citasFavoritas': citasFavoritas,
-      'notaPersonal': notaPersonal,
-      'fechaInicio': fechaInicio,
-      'fechaFin': fechaFin,
+      'publisher': publisher,
+      'description': description,
+      'cover_url': coverUrl,
+      'genre': genre,
+      'book_type': bookType,
+      'publication_year': publicationYear,
+      'status': status,
+      'current_page': currentPage,
+      'rating': rating,
+      'reading_format': readingFormat,
+      'emotions': emotions,
+      'favorite_quotes': favoriteQuotes,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
     };
   }
 }

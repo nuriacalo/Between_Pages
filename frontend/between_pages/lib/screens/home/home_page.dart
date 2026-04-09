@@ -1,5 +1,6 @@
+import 'package:between_pages/feed_page.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
-import 'package:between_pages/screens/home/feed_page.dart';
+import 'package:between_pages/screens/journal/journal_page.dart';
 import 'package:between_pages/screens/search/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +22,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     // Aquí definiremos las distintas pantallas de la app.
     final screens = [
-      // Pantalla de Inicio (Feed)
+      // Pantalla de Inicio (Lecturas en progreso)
       const FeedPage(),
       // Pantalla de Búsqueda
       const SearchPage(),
+      // Pantalla de Journal (Antes FeedPage, tu biblioteca completa)
+      const JournalPage(),
       // Pantalla de Perfil
       const ProfilePage(),
     ];
@@ -33,6 +36,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final titles = [
       l10n.homeTitle,
       l10n.searchTitle,
+      'Journal', // TODO: Añadir este texto a tus archivos .arb de traducciones
       l10n.profileTitle,
     ];
 
@@ -51,6 +55,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         destinations: [
           NavigationDestination(icon: const Icon(Icons.home), label: l10n.homeTitle),
           NavigationDestination(icon: const Icon(Icons.search), label: l10n.searchTitle),
+          const NavigationDestination(icon: Icon(Icons.book), label: 'Journal'),
           NavigationDestination(icon: const Icon(Icons.person), label: l10n.profileTitle),
         ],
       ),

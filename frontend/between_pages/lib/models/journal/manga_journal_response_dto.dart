@@ -1,65 +1,65 @@
 import '../catalog/manga_response_dto.dart';
 
 class MangaJournalResponseDTO {
-  final int idMangaJournal;
+  final int id;
   final MangaResponseDTO manga;
-  final String? estado;
-  final int? capituloActual;
-  final int? volumenActual;
-  final int? valoracion;
-  final String? formatoLectura;
-  final String? personajeFavorito;
-  final String? arcoFavorito;
-  final String? notaPersonal;
-  final String? fechaInicio;
-  final String? fechaFin;
+  final String? status;
+  final int? currentChapter;
+  final int? currentVolume;
+  final int? rating;
+  final String? readingFormat;
+  final String? favoriteCharacter;
+  final String? favoriteArc;
+  final String? personalNotes;
+  final String? startDate;
+  final String? endDate;
 
   MangaJournalResponseDTO({
-    required this.idMangaJournal,
+    required this.id,
     required this.manga,
-    this.estado,
-    this.capituloActual,
-    this.volumenActual,
-    this.valoracion,
-    this.formatoLectura,
-    this.personajeFavorito,
-    this.arcoFavorito,
-    this.notaPersonal,
-    this.fechaInicio,
-    this.fechaFin,
+    this.status,
+    this.currentChapter,
+    this.currentVolume,
+    this.rating,
+    this.readingFormat,
+    this.favoriteCharacter,
+    this.favoriteArc,
+    this.personalNotes,
+    this.startDate,
+    this.endDate,
   });
 
   factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) {
     return MangaJournalResponseDTO(
-      idMangaJournal: json['idMangaJournal'] as int,
+      id: json['id'] as int,
       manga: MangaResponseDTO.fromJson(json['manga'] as Map<String, dynamic>),
-      estado: json['estado'] as String?,
-      capituloActual: json['capituloActual'] as int?,
-      volumenActual: json['volumenActual'] as int?,
-      valoracion: json['valoracion'] as int?,
-      formatoLectura: json['formatoLectura'] as String?,
-      personajeFavorito: json['personajeFavorito'] as String?,
-      arcoFavorito: json['arcoFavorito'] as String?,
-      notaPersonal: json['notaPersonal'] as String?,
-      fechaInicio: json['fechaInicio'] as String?,
-      fechaFin: json['fechaFin'] as String?,
+      status: json['status'] as String?,
+      currentChapter: json['current_chapter'] as int?,
+      currentVolume: json['current_volume'] as int?,
+      rating: json['rating'] as int?,
+      readingFormat: json['reading_format'] as String?,
+      favoriteCharacter: json['favorite_character'] as String?,
+      favoriteArc: json['favorite_arc'] as String?,
+      personalNotes: json['personal_notes'] as String?,
+      startDate: json['start_date'] as String?,
+      endDate: json['end_date'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idMangaJournal': idMangaJournal,
+      'id': id,
       'manga': manga.toJson(),
-      'estado': estado,
-      'capituloActual': capituloActual,
-      'volumenActual': volumenActual,
-      'valoracion': valoracion,
-      'formatoLectura': formatoLectura,
-      'personajeFavorito': personajeFavorito,
-      'arcoFavorito': arcoFavorito,
-      'notaPersonal': notaPersonal,
-      'fechaInicio': fechaInicio,
-      'fechaFin': fechaFin,
+      'status': status,
+      'current_chapter': currentChapter,
+      'current_volume': currentVolume,
+      'rating': rating,
+      'reading_format': readingFormat,
+      'favorite_character': favoriteCharacter,
+      'favorite_arc': favoriteArc,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
     };
   }
 }
