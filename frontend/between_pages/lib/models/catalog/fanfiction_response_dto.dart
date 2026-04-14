@@ -33,7 +33,7 @@ class FanfictionResponseDTO {
 
   factory FanfictionResponseDTO.fromJson(Map<String, dynamic> json) {
     return FanfictionResponseDTO(
-      idFanfic: json['id'] as int?,
+      idFanfic: int.tryParse(json['id']?.toString() ?? '0'),
       ao3Id: json['ao3_id'] as String?,
       title: json['title'] as String?,
       author: json['author'] as String?,

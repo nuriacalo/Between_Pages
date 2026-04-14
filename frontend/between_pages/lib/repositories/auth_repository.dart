@@ -1,7 +1,7 @@
 import 'package:between_pages/api/api_client.dart';
 import 'package:between_pages/api/auth_token_storage.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
-import 'package:between_pages/providers/api_provider.dart';
+import 'package:between_pages/providers/auth/api_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:between_pages/models/user/user_response_dto.dart';
@@ -25,10 +25,14 @@ class AuthRepository {
       if (token != null) {
         await _authTokenStorage.saveToken(token);
       } else {
-        throw Exception('Token no encontrado. El servidor devolvió: ${response.data}');
+        throw Exception(
+          'Token no encontrado. El servidor devolvió: ${response.data}',
+        );
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Error al iniciar sesión: ${e.message}');
+      throw Exception(
+        e.response?.data['message'] ?? 'Error al iniciar sesión: ${e.message}',
+      );
     }
   }
 
@@ -36,12 +40,13 @@ class AuthRepository {
   Future<void> register(String name, String email, String password) async {
     try {
       await _apiClient.post(
-        ApiConstants.usuarioRegistrar,
+        ApiConstants.userRegister,
         data: {'name': name, 'email': email, 'password': password},
       );
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? 'Error al registrar usuario: ${e.message}',
+        e.response?.data['message'] ??
+            'Error al registrar usuario: ${e.message}',
       );
     }
   }

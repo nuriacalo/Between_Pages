@@ -15,7 +15,7 @@ class CustomListDTO {
 
   factory CustomListDTO.fromJson(Map<String, dynamic> json) {
     return CustomListDTO(
-      idList: json['id'] as int,
+      idList: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name'] as String,
       description: json['description'] as String?,
       items:

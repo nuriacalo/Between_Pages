@@ -1,6 +1,6 @@
 package com.calonuria.backend.service.catalog;
 
-import com.calonuria.backend.dto.catalog.FanfictionRespuestaDTO;
+import com.calonuria.backend.dto.catalog.FanfictionResponseDTO;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.catalog.FanficTag;
 import com.calonuria.backend.repository.catalog.FanfictionRepository;
@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio para la gestión de fanfictions en el catálogo.
+ */
 @Service
 public class FanfictionService {
 
@@ -20,48 +23,72 @@ public class FanfictionService {
     @Autowired
     private FanficTagRepository fanficTagRepository;
 
-    // Guarda solo si no existe ya por ao3Id
-    public FanfictionRespuestaDTO guardarSiNoExiste(Fanfiction fanfic) {
+    /**
+     * Guarda un fanfiction solo si no existe ya por ao3Id.
+     * @param fanfic fanfiction a guardar
+     * @return DTO con la información del fanfiction guardado
+     */
+    public FanfictionResponseDTO saveIfNotExists(Fanfiction fanfic) {
         if (fanfic.getAo3Id() != null) {
-            Optional<Fanfiction> existente = fanfictionRepository.findByAo3Id(fanfic.getAo3Id());
-            if (existente.isPresent()) {
-                return mapearADTO(existente.get());
+            Optional<Fanfiction> existing = fanfictionRepository.findByAo3Id(fanfic.getAo3Id());
+            if (existing.isPresent()) {
+                return mapToDTO(existing.get());
             }
         }
-        return mapearADTO(fanfictionRepository.save(fanfic));
+        return mapToDTO(fanfictionRepository.save(fanfic));
     }
 
-    public Optional<FanfictionRespuestaDTO> obtenerFanficPorId(Long id) {
-        return fanfictionRepository.findById(id).map(this::mapearADTO);
+    /**
+     * Obtiene un fanfiction por su ID.
+     * @param id ID del fanfiction
+     * @return Optional con el DTO del fanfiction
+     */
+    public Optional<FanfictionResponseDTO> getFanficById(Long id) {
+        return fanfictionRepository.findById(id).map(this::mapToDTO);
     }
 
-    public List<FanfictionRespuestaDTO> buscarPorTitulo(String titulo) {
-        return fanfictionRepository.findByTituloContainingIgnoreCase(titulo)
-                .stream().map(this::mapearADTO).collect(Collectors.toList());
+    /**
+     * Busca fanfictions por título.
+     * @param title título a buscar
+     * @return lista de fanfictions encontrados
+     */
+    public List<FanfictionResponseDTO> searchByTitle(String title) {
+        return fanfictionRepository.findByTitleContainingIgnoreCase(title)
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    public List<FanfictionRespuestaDTO> buscarPorEstado(String estado) {
-        return fanfictionRepository.findByEstadoPublicacionIgnoreCase(estado)
-                .stream().map(this::mapearADTO).collect(Collectors.toList());
+    /**
+     * Busca fanfictions por estado de publicación.
+     * @param status estado a buscar
+     * @return lista de fanfictions encontrados
+     */
+    public List<FanfictionResponseDTO> searchByStatus(String status) {
+        return fanfictionRepository.findByPublicationStatusIgnoreCase(status)
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    public FanfictionRespuestaDTO mapearADTO(Fanfiction fanfic) {
-        FanfictionRespuestaDTO dto = new FanfictionRespuestaDTO();
-        dto.setIdFanfic(fanfic.getIdFanfic());
+    /**
+     * Mapea un fanfiction a su DTO de respuesta.
+     * @param fanfic fanfiction
+     * @return DTO de respuesta
+     */
+    public FanfictionResponseDTO mapToDTO(Fanfiction fanfic) {
+        FanfictionResponseDTO dto = new FanfictionResponseDTO();
+        dto.setId(fanfic.getId());
         dto.setAo3Id(fanfic.getAo3Id());
-        dto.setTitulo(fanfic.getTitulo());
-        dto.setAutor(fanfic.getAutor());
-        dto.setHistoriaBase(fanfic.getHistoriaBase());
-        dto.setDescripcion(fanfic.getDescripcion());
-        dto.setPortadaUrl(fanfic.getPortadaUrl());
-        dto.setGenero(fanfic.getGenero());
-        dto.setShipPrincipal(fanfic.getShipPrincipal());
-        dto.setTematica(fanfic.getTematica());
-        dto.setCapituloActual(fanfic.getCapituloActual());
-        dto.setTotalCapitulos(fanfic.getTotalCapitulos());
-        dto.setEstadoPublicacion(fanfic.getEstadoPublicacion());
+        dto.setTitle(fanfic.getTitle());
+        dto.setAuthor(fanfic.getAuthor());
+        dto.setSourceMaterial(fanfic.getSourceMaterial());
+        dto.setDescription(fanfic.getDescription());
+        dto.setCoverUrl(fanfic.getCoverUrl());
+        dto.setGenre(fanfic.getGenre());
+        dto.setMainShip(fanfic.getMainShip());
+        dto.setTheme(fanfic.getTheme());
+        dto.setCurrentChapter(fanfic.getCurrentChapter());
+        dto.setTotalChapters(fanfic.getTotalChapters());
+        dto.setPublicationStatus(fanfic.getPublicationStatus());
         // Cargar tags desde la tabla fanfic_tag
-        List<String> tags = fanficTagRepository.findByFanfic_IdFanfic(fanfic.getIdFanfic())
+        List<String> tags = fanficTagRepository.findByFanfic_Id(fanfic.getId())
                 .stream().map(FanficTag::getTag).collect(Collectors.toList());
         dto.setTags(tags);
         return dto;

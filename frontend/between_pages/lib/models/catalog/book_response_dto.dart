@@ -27,10 +27,10 @@ class BookResponseDTO {
 
   factory BookResponseDTO.fromJson(Map<String, dynamic> json) {
     return BookResponseDTO(
-      idBook: json['id'] as int,
-      googleBooksId: json['google_books_id'] as String,
-      title: json['title'] as String,
-      author: json['author'] as String,
+      idBook: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      googleBooksId: json['google_books_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      author: json['author'] as String? ?? '',
       isbn: json['isbn'] as String?,
       publisher: json['publisher'] as String?,
       description: json['description'] as String?,

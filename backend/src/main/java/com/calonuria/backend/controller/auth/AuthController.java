@@ -1,11 +1,11 @@
 package com.calonuria.backend.controller.auth;
 
-import com.calonuria.backend.dto.auth.AuthRespuestaDTO;
+import com.calonuria.backend.dto.auth.AuthResponseDTO;
 import com.calonuria.backend.dto.auth.LoginDTO;
 import com.calonuria.backend.dto.auth.RefreshTokenRequestDTO;
-import com.calonuria.backend.dto.user.UsuarioRespuestaDTO;
-import com.calonuria.backend.model.user.Usuario;
-import com.calonuria.backend.repository.user.UsuarioRepository;
+import com.calonuria.backend.dto.user.UserResponseDTO;
+import com.calonuria.backend.model.user.User;
+import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador para la autenticación de usuarios.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticación", description = "Login y gestión de tokens JWT")
@@ -25,7 +28,7 @@ public class AuthController {
 
     @Autowired private AuthenticationManager authenticationManager;
     @Autowired private JwtUtil jwtUtil;
-    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private UserRepository userRepository;
 
     @Operation(summary = "Login — devuelve accessToken y refreshToken")
     @PostMapping("/login")
@@ -36,15 +39,15 @@ public class AuthController {
                             loginDTO.getEmail(), loginDTO.getPassword()
                     )
             );
-            Usuario usuario = usuarioRepository.findByEmail(loginDTO.getEmail())
+            User user = userRepository.findByEmail(loginDTO.getEmail())
                     .orElseThrow();
 
-            return ResponseEntity.ok(new AuthRespuestaDTO(
-                    jwtUtil.generarAccessToken(usuario.getEmail()),
-                    jwtUtil.generarRefreshToken(usuario.getEmail()),
-                    usuario.getEmail(),
-                    usuario.getNombre(),
-                    usuario.getRol()
+            return ResponseEntity.ok(new AuthResponseDTO(
+                    jwtUtil.generateAccessToken(user.getEmail()),
+                    jwtUtil.generateRefreshToken(user.getEmail()),
+                    user.getEmail(),
+                    user.getName(),
+                    user.getRole()
             ));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body("Email o contraseña incorrectos");
@@ -56,18 +59,18 @@ public class AuthController {
     public ResponseEntity<?> refresh(
             @Valid @RequestBody RefreshTokenRequestDTO request) {
         try {
-            String email = jwtUtil.extraerEmail(request.getRefreshToken());
-            if (!jwtUtil.esTokenValido(request.getRefreshToken())) {
+            String email = jwtUtil.extractEmail(request.getRefreshToken());
+            if (!jwtUtil.isTokenValid(request.getRefreshToken())) {
                 return ResponseEntity.status(401).body("Token inválido o expirado");
             }
-            Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow();
+            User user = userRepository.findByEmail(email).orElseThrow();
 
-            return ResponseEntity.ok(new AuthRespuestaDTO(
-                    jwtUtil.generarAccessToken(email),
-                    jwtUtil.generarRefreshToken(email),
-                    usuario.getEmail(),
-                    usuario.getNombre(),
-                    usuario.getRol()
+            return ResponseEntity.ok(new AuthResponseDTO(
+                    jwtUtil.generateAccessToken(email),
+                    jwtUtil.generateRefreshToken(email),
+                    user.getEmail(),
+                    user.getName(),
+                    user.getRole()
             ));
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Refresh token inválido");
@@ -80,14 +83,14 @@ public class AuthController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-        Usuario usuario = usuarioRepository.findByEmail(authentication.getName())
+        User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow();
 
-        return ResponseEntity.ok(new UsuarioRespuestaDTO(
-                usuario.getIdUsuario(),
-                usuario.getNombre(),
-                usuario.getEmail(),
-                usuario.getRol()
+        return ResponseEntity.ok(new UserResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
         ));
     }
 }

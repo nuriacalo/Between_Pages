@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Entidad que representa un fanfiction en el catálogo.
+ * Mapea la tabla "fanfiction" de la base de datos.
+ */
 @Entity
 @Table(name = "fanfiction")
 @Data
@@ -12,44 +16,82 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Fanfiction {
 
+    /**
+     * Identificador único del fanfiction.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_fanfic")
-    private Long idFanfic;
+    private Long id;
 
+    /**
+     * Identificador del fanfiction en AO3.
+     */
     @Column(name = "ao3_id", unique = true, length = 50)
     private String ao3Id;
 
-    @Column(nullable = false)
-    private String titulo;
+    /**
+     * Título del fanfiction.
+     */
+    @Column(nullable = false, length = 255)
+    private String title;
 
-    @Column(nullable = false)
-    private String autor;
+    /**
+     * Autor del fanfiction.
+     */
+    @Column(nullable = false, length = 255)
+    private String author;
 
-    @Column(name = "historia_base")
-    private String historiaBase;
+    /**
+     * Material original del que deriva el fanfiction.
+     */
+    @Column(name = "source_material", length = 255)
+    private String sourceMaterial;
 
+    /**
+     * Descripción del fanfiction.
+     */
     @Column(columnDefinition = "TEXT")
-    private String descripcion;
+    private String description;
 
-    @Column(name = "portada_url")
-    private String portadaUrl;
+    /**
+     * URL de la portada del fanfiction.
+     */
+    @Column(name = "cover_url", length = 255)
+    private String coverUrl;
 
+    /**
+     * Género del fanfiction.
+     */
     @Column(length = 100)
-    private String genero;
+    private String genre;
 
-    @Column(name = "ship_principal", length = 150)
-    private String shipPrincipal;
+    /**
+     * Ship principal del fanfiction.
+     */
+    @Column(name = "main_ship", length = 150)
+    private String mainShip;
 
+    /**
+     * Temática del fanfiction.
+     */
     @Column(length = 150)
-    private String tematica;
+    private String theme;
 
-    @Column(name = "capitulo_actual")
-    private Integer capituloActual;
+    /**
+     * Capítulo actual de lectura.
+     */
+    @Column(name = "current_chapter")
+    private Integer currentChapter = 0;
 
-    @Column(name = "total_capitulos")
-    private Integer totalCapitulos;
+    /**
+     * Total de capítulos del fanfiction.
+     */
+    @Column(name = "total_chapters")
+    private Integer totalChapters;
 
-    @Column(name = "estado_publicacion", length = 50)
-    private String estadoPublicacion;
+    /**
+     * Estado de publicación: ONGOING, COMPLETED, ABANDONED.
+     */
+    @Column(name = "publication_status", length = 50)
+    private String publicationStatus;
 }

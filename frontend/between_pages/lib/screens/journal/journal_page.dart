@@ -1,5 +1,4 @@
-import 'package:between_pages/providers/book_journal_provider.dart';
-import 'package:between_pages/providers/list_provider.dart';
+import 'package:between_pages/providers/journal/book_journal_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,73 +9,40 @@ class JournalPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return DefaultTabController(
-      length: 4,
-      child: Column(
-        children: [
-          const TabBar(
-            tabs: [
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Journal',
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: colorScheme.surface,
+          bottom: TabBar(
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: colorScheme.onSurfaceVariant,
+            indicatorColor: colorScheme.primary,
+            tabs: const [
               Tab(text: 'Libros'),
               Tab(text: 'Mangas'),
               Tab(text: 'Fanfics'),
-              Tab(text: 'Listas'),
             ],
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                // Pestaña 1: Libros con portadas
-                const _BooksGridTab(),
+        ),
+        body: const TabBarView(
+          children: [
+            // Pestaña 1: Libros con portadas
+            _BooksGridTab(),
 
-                // Pestaña 2, 3 y 4: Placeholders temporales
-                const Center(child: Text('Tus mangas (Próximamente)')),
-                const Center(child: Text('Tus fanfics (Próximamente)')),
-                const _ListsTab(),
-              ],
-            ),
-          ),
-        ],
+            // Pestaña 2 y 3: Placeholders temporales
+            Center(child: Text('Tus mangas (Próximamente)')),
+            Center(child: Text('Tus fanfics (Próximamente)')),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class _ListsTab extends ConsumerWidget {
-  const _ListsTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el proveedor que trae las listas del backend
-    final listsAsync = ref.watch(listProvider);
-
-    return listsAsync.when(
-      data: (lists) {
-        if (lists.isEmpty) {
-          return const Center(child: Text('No tienes listas creadas aún.'));
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: lists.length,
-          itemBuilder: (context, index) {
-            final list = lists[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: const Icon(Icons.list),
-                title: Text(list.name),
-                subtitle: Text('${list.items.length} elementos guardados'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  // TODO: Navegar a la pantalla de detalles de la lista para ver las portadas
-                },
-              ),
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
     );
   }
 }

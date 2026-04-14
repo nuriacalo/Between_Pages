@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
+/**
+ * Filtro de autenticación JWT para Spring Security.
+ * Intercepta las peticiones HTTP y valida el token JWT en el header Authorization.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -23,6 +27,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    /**
+     * Procesa el filtro de autenticación JWT.
+     * Extrae el token del header, valida y establece la autenticación en el contexto de seguridad.
+     * @param request petición HTTP
+     * @param response respuesta HTTP
+     * @param filterChain cadena de filtros
+     * @throws ServletException si ocurre un error de servlet
+     * @throws IOException si ocurre un error de entrada/salida
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -39,12 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            String email = jwtUtil.extraerEmail(token);
+            String email = jwtUtil.extractEmail(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                if (jwtUtil.esTokenValido(token, userDetails)) {
+                if (jwtUtil.isTokenValid(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,

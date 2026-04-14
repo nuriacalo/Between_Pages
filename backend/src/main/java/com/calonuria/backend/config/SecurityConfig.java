@@ -22,6 +22,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
+/**
+ * Configuración de seguridad para la aplicación.
+ * Define la cadena de filtros de seguridad, autenticación JWT y configuración CORS.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -32,6 +36,12 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    /**
+     * Configura la cadena de filtros de seguridad.
+     * @param http configuración de seguridad HTTP
+     * @return cadena de filtros configurada
+     * @throws Exception si ocurre un error en la configuración
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -42,17 +52,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas
                         .requestMatchers(
-                                "/api/usuario/registrar",
+                                "/api/user/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
-                                "/api/libro/buscar",
-                                "/api/manga/buscar",
-                                "/api/fanfiction/buscar",
+                                // Búsqueda
+                                "/api/book/search",
+                                "/api/book/search/**",
+                                "/api/manga/search",
+                                "/api/manga/search/**",
+                                "/api/fanfiction/search",
+                                "/api/fanfiction/search/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/libro", "/api/libro/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/book", "/api/book/**").permitAll()
                         // Rutas autenticadas (requiere token)
                         .requestMatchers("/api/auth/me").authenticated()
                         // Solo ADMIN
@@ -67,6 +81,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Proveedor de autenticación que utiliza el servicio de detalles de usuario.
+     * @return proveedor de autenticación configurado
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -75,18 +93,30 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * Gestor de autenticación para la aplicación.
+     * @param config configuración de autenticación
+     * @return gestor de autenticación
+     * @throws Exception si ocurre un error
+     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Configuración de CORS para permitir peticiones desde el frontend.
+     * @return fuente de configuración CORS
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://192.168.0.17:8080",
+                "http://192.168.0.17"  // IP del dispositivo Android
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -97,6 +127,10 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Codificador de contraseñas utilizando BCrypt.
+     * @return codificador de contraseñas
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

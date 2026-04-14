@@ -56,7 +56,7 @@ class MangaJournalRecordDTO {
 
   factory MangaJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return MangaJournalRecordDTO(
-      userId: json['user_id'] as int,
+      userId: int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       mangaId: json['manga_id'] as int?,
       mangadexId: json['mangadex_id'] as String?,
       source: json['source'] as String?,
@@ -89,7 +89,7 @@ class MangaJournalRecordDTO {
       'mangadex_id': mangadexId,
       'source': source,
       'title': title,
-      'mangaka': mangaka,
+      'author': mangaka,
       'demographic': demographic,
       'genre': genre,
       'description': description,

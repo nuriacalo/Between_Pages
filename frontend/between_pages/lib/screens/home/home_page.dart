@@ -1,4 +1,4 @@
-import 'package:between_pages/feed_page.dart';
+import 'package:between_pages/screens/library/feed_page.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/screens/journal/journal_page.dart';
 import 'package:between_pages/screens/search/search_page.dart';
@@ -32,19 +32,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ProfilePage(),
     ];
 
-    // Títulos dinámicos según la pestaña seleccionada
-    final titles = [
-      l10n.homeTitle,
-      l10n.searchTitle,
-      'Journal', // TODO: Añadir este texto a tus archivos .arb de traducciones
-      l10n.profileTitle,
-    ];
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titles[_selectedIndex]),
-      ),
-      body: screens[_selectedIndex],
+      body: IndexedStack(index: _selectedIndex, children: screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
@@ -53,10 +42,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         destinations: [
-          NavigationDestination(icon: const Icon(Icons.home), label: l10n.homeTitle),
-          NavigationDestination(icon: const Icon(Icons.search), label: l10n.searchTitle),
+          NavigationDestination(
+            icon: const Icon(Icons.home),
+            label: l10n.homeTitle,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.search),
+            label: l10n.searchTitle,
+          ),
           const NavigationDestination(icon: Icon(Icons.book), label: 'Journal'),
-          NavigationDestination(icon: const Icon(Icons.person), label: l10n.profileTitle),
+          NavigationDestination(
+            icon: const Icon(Icons.person),
+            label: l10n.profileTitle,
+          ),
         ],
       ),
     );

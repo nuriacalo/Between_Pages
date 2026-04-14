@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Entidad que representa una etiqueta de un fanfiction.
+ * Mapea la tabla "fanfic_tag" de la base de datos.
+ */
 @Entity
 @Table(name = "fanfic_tag")
 @Data
@@ -12,15 +16,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FanficTag {
 
+    /**
+     * Identificador único de la etiqueta.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_tag")
-    private Long idTag;
+    private Long id;
 
+    /**
+     * Fanfiction al que pertenece la etiqueta.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_fanfic", nullable = false)
+    @JoinColumn(name = "fanfic_id", nullable = false)
     private Fanfiction fanfic;
 
+    /**
+     * Texto de la etiqueta.
+     */
     @Column(nullable = false, length = 100)
     private String tag;
 }

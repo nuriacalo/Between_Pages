@@ -60,7 +60,7 @@ class FanficJournalRecordDTO {
 
   factory FanficJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return FanficJournalRecordDTO(
-      userId: json['user_id'] as int,
+      userId: int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       fanfictionId: json['fanfiction_id'] as int?,
       ao3Id: json['ao3_id'] as String?,
       title: json['title'] as String?,

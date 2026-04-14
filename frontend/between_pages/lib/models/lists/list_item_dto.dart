@@ -1,6 +1,6 @@
 class ListItemDTO {
   final int itemId;
-  final String itemType; // 'LIBRO', 'MANGA' o 'FANFIC'
+  final String itemType; // 'BOOK', 'MANGA' o 'FANFIC'
   final String title;
   final String? coverUrl;
   final String author;
@@ -15,7 +15,7 @@ class ListItemDTO {
 
   factory ListItemDTO.fromJson(Map<String, dynamic> json) {
     return ListItemDTO(
-      itemId: json['itemId'] as int,
+      itemId: int.tryParse(json['itemId']?.toString() ?? '0') ?? 0,
       itemType: json['itemType'] as String,
       title: json['title'] as String,
       coverUrl: json['coverUrl'] as String?,

@@ -9,9 +9,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manejador global de excepciones para la aplicación.
+ * Captura y procesa errores de validación y excepciones generales,
+ * devolviendo respuestas JSON apropiadas al cliente.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Maneja errores de validación de campos (@Valid).
+     * @param ex excepción de validación
+     * @return mapa con campos y mensajes de error
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(
             MethodArgumentNotValidException ex) {
@@ -26,6 +36,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
     }
 
+    /**
+     * Maneja excepciones generales de tiempo de ejecución.
+     * @param ex excepción runtime
+     * @return mapa con mensaje de error
+     */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(
             RuntimeException ex) {

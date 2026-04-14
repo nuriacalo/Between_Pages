@@ -1,6 +1,6 @@
 package com.calonuria.backend.controller.catalog;
 
-import com.calonuria.backend.dto.catalog.FanfictionRespuestaDTO;
+import com.calonuria.backend.dto.catalog.FanfictionResponseDTO;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * Controlador para la gestión del catálogo de fanfictions.
+ */
 @RestController
 @RequestMapping("/api/fanfiction")
 @Tag(name = "Catálogo de Fanfiction", description = "Endpoints para búsqueda y consulta de fanfictions")
@@ -19,42 +22,41 @@ public class FanfictionController {
     private FanfictionService fanfictionService;
 
     @Operation(summary = "Buscar fanfics por título")
-    @GetMapping("/buscar")
-    public ResponseEntity<List<FanfictionRespuestaDTO>> buscarPorTitulo(@RequestParam("q") String titulo) {
-        return ResponseEntity.ok(fanfictionService.buscarPorTitulo(titulo));
+    @GetMapping("/search")
+    public ResponseEntity<List<FanfictionResponseDTO>> searchByTitle(@RequestParam("q") String title) {
+        return ResponseEntity.ok(fanfictionService.searchByTitle(title));
     }
 
     @Operation(summary = "Buscar fanfics por estado de publicación")
-    @GetMapping("/estado")
-    public ResponseEntity<List<FanfictionRespuestaDTO>> buscarPorEstado(@RequestParam String estado) {
-        return ResponseEntity.ok(fanfictionService.buscarPorEstado(estado));
+    @GetMapping("/status")
+    public ResponseEntity<List<FanfictionResponseDTO>> searchByStatus(@RequestParam String status) {
+        return ResponseEntity.ok(fanfictionService.searchByStatus(status));
     }
 
     @Operation(summary = "Obtener fanfic por ID")
     @GetMapping("/{id}")
-    public ResponseEntity<FanfictionRespuestaDTO> obtenerPorId(@PathVariable Long id) {
-        return fanfictionService.obtenerFanficPorId(id)
+    public ResponseEntity<FanfictionResponseDTO> getById(@PathVariable Long id) {
+        return fanfictionService.getFanficById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Añadir en FanfictionController
     @Operation(summary = "Guardar fanfic en base de datos local")
     @PostMapping
-    public ResponseEntity<FanfictionRespuestaDTO> guardarFanfic(@RequestBody FanfictionRespuestaDTO dto) {
+    public ResponseEntity<FanfictionResponseDTO> saveFanfic(@RequestBody FanfictionResponseDTO dto) {
         Fanfiction fanfic = new Fanfiction();
         fanfic.setAo3Id(dto.getAo3Id());
-        fanfic.setTitulo(dto.getTitulo());
-        fanfic.setAutor(dto.getAutor());
-        fanfic.setHistoriaBase(dto.getHistoriaBase());
-        fanfic.setDescripcion(dto.getDescripcion());
-        fanfic.setPortadaUrl(dto.getPortadaUrl());
-        fanfic.setGenero(dto.getGenero());
-        fanfic.setShipPrincipal(dto.getShipPrincipal());
-        fanfic.setTematica(dto.getTematica());
-        fanfic.setCapituloActual(dto.getCapituloActual());
-        fanfic.setTotalCapitulos(dto.getTotalCapitulos());
-        fanfic.setEstadoPublicacion(dto.getEstadoPublicacion());
-        return ResponseEntity.ok(fanfictionService.guardarSiNoExiste(fanfic));
+        fanfic.setTitle(dto.getTitle());
+        fanfic.setAuthor(dto.getAuthor());
+        fanfic.setSourceMaterial(dto.getSourceMaterial());
+        fanfic.setDescription(dto.getDescription());
+        fanfic.setCoverUrl(dto.getCoverUrl());
+        fanfic.setGenre(dto.getGenre());
+        fanfic.setMainShip(dto.getMainShip());
+        fanfic.setTheme(dto.getTheme());
+        fanfic.setCurrentChapter(dto.getCurrentChapter());
+        fanfic.setTotalChapters(dto.getTotalChapters());
+        fanfic.setPublicationStatus(dto.getPublicationStatus());
+        return ResponseEntity.ok(fanfictionService.saveIfNotExists(fanfic));
     }
 }

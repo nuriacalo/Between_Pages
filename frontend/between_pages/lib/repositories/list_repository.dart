@@ -1,7 +1,7 @@
 import 'package:between_pages/api/api_client.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:between_pages/models/lists/custom_list_dto.dart';
-import 'package:between_pages/providers/api_provider.dart';
+import 'package:between_pages/providers/auth/api_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -13,7 +13,7 @@ class UserResponseDTO {
 
   factory UserResponseDTO.fromJson(Map<String, dynamic> json) {
     return UserResponseDTO(
-      idUser: json['id'] as int? ?? 0,
+      idUser: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name'] as String? ?? 'Usuario',
       email: json['email'] as String? ?? '',
       role: json['role'] as String? ?? 'USER',

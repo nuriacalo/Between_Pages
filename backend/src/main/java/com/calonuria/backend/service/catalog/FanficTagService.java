@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio para la gestión de tags de fanfictions.
+ */
 @Service
 public class FanficTagService {
 
@@ -19,38 +22,52 @@ public class FanficTagService {
     @Autowired
     private FanfictionRepository fanfictionRepository;
 
-    // Obtener todos los tags de un fanfic como lista de Strings
-    public List<String> obtenerTagsDeFanfic(Long idFanfic) {
-        return fanficTagRepository.findByFanfic_IdFanfic(idFanfic)
+    /**
+     * Obtiene todos los tags de un fanfic como lista de Strings.
+     * @param fanficId ID del fanfiction
+     * @return lista de tags
+     */
+    public List<String> getTagsByFanfic(Long fanficId) {
+        return fanficTagRepository.findByFanfic_Id(fanficId)
                 .stream()
                 .map(FanficTag::getTag)
                 .collect(Collectors.toList());
     }
 
-    // Añadir un tag a un fanfic
-    public String añadirTag(Long idFanfic, String tag) {
-        Fanfiction fanfic = fanfictionRepository.findById(idFanfic)
+    /**
+     * Añade un tag a un fanfic.
+     * @param fanficId ID del fanfiction
+     * @param tag tag a añadir
+     * @return el tag añadido
+     */
+    public String addTag(Long fanficId, String tag) {
+        Fanfiction fanfic = fanfictionRepository.findById(fanficId)
                 .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado"));
 
-        FanficTag nuevoTag = new FanficTag();
-        nuevoTag.setFanfic(fanfic);
-        nuevoTag.setTag(tag);
+        FanficTag newTag = new FanficTag();
+        newTag.setFanfic(fanfic);
+        newTag.setTag(tag);
 
-        fanficTagRepository.save(nuevoTag);
+        fanficTagRepository.save(newTag);
         return tag;
     }
 
-    // Reemplazar todos los tags de un fanfic (útil para el crawler de AO3)
+    /**
+     * Reemplaza todos los tags de un fanfic (útil para el crawler de AO3).
+     * @param fanficId ID del fanfiction
+     * @param newTags lista de nuevos tags
+     * @return lista de tags actualizados
+     */
     @Transactional
-    public List<String> actualizarTags(Long idFanfic, List<String> nuevosTags) {
-        fanfictionRepository.findById(idFanfic)
+    public List<String> updateTags(Long fanficId, List<String> newTags) {
+        fanfictionRepository.findById(fanficId)
                 .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado"));
 
-        fanficTagRepository.deleteByFanfic_IdFanfic(idFanfic);
+        fanficTagRepository.deleteByFanfic_Id(fanficId);
 
-        Fanfiction fanfic = fanfictionRepository.findById(idFanfic).get();
+        Fanfiction fanfic = fanfictionRepository.findById(fanficId).get();
 
-        List<FanficTag> tags = nuevosTags.stream().map(t -> {
+        List<FanficTag> tags = newTags.stream().map(t -> {
             FanficTag tag = new FanficTag();
             tag.setFanfic(fanfic);
             tag.setTag(t);
@@ -58,22 +75,29 @@ public class FanficTagService {
         }).collect(Collectors.toList());
 
         fanficTagRepository.saveAll(tags);
-        return nuevosTags;
+        return newTags;
     }
 
-    // Eliminar un tag por su ID
-    public void eliminarTag(Long idTag) {
-        if (!fanficTagRepository.existsById(idTag)) {
+    /**
+     * Elimina un tag por su ID.
+     * @param tagId ID del tag
+     */
+    public void deleteTag(Long tagId) {
+        if (!fanficTagRepository.existsById(tagId)) {
             throw new RuntimeException("Tag no encontrado");
         }
-        fanficTagRepository.deleteById(idTag);
+        fanficTagRepository.deleteById(tagId);
     }
 
-    // Buscar fanfics que tengan un tag concreto
-    public List<Long> buscarFanficsPorTag(String tag) {
+    /**
+     * Busca fanfics que tengan un tag concreto.
+     * @param tag tag a buscar
+     * @return lista de IDs de fanfictions
+     */
+    public List<Long> searchFanficsByTag(String tag) {
         return fanficTagRepository.findByTagIgnoreCase(tag)
                 .stream()
-                .map(t -> t.getFanfic().getIdFanfic())
+                .map(t -> t.getFanfic().getId())
                 .collect(Collectors.toList());
     }
 }

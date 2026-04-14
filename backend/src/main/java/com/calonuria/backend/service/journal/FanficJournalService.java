@@ -1,13 +1,13 @@
 package com.calonuria.backend.service.journal;
 
-import com.calonuria.backend.dto.journal.FanficJournalRegistroDTO;
-import com.calonuria.backend.dto.journal.FanficJournalRespuestaDTO;
+import com.calonuria.backend.dto.journal.FanficJournalRegistrationDTO;
+import com.calonuria.backend.dto.journal.FanficJournalResponseDTO;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.journal.FanficJournal;
-import com.calonuria.backend.model.user.Usuario;
+import com.calonuria.backend.model.user.User;
 import com.calonuria.backend.repository.catalog.FanfictionRepository;
 import com.calonuria.backend.repository.journal.FanficJournalRepository;
-import com.calonuria.backend.repository.user.UsuarioRepository;
+import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,126 +15,162 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio para la gestión del diario de lectura de fanfictions.
+ */
 @Service
 public class FanficJournalService {
 
     @Autowired
     private FanficJournalRepository fanficJournalRepository;
+
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
+
     @Autowired
     private FanfictionRepository fanfictionRepository;
+
     @Autowired
     private FanfictionService fanfictionService;
 
-    public FanficJournalRespuestaDTO guardarProgreso(FanficJournalRegistroDTO dto) {
-        Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
+    /**
+     * Guarda el progreso de lectura de un fanfiction.
+     * @param dto datos del progreso
+     * @return DTO con la información guardada
+     */
+    public FanficJournalResponseDTO saveProgress(FanficJournalRegistrationDTO dto) {
+        User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         Fanfiction fanfic;
 
-        // Si el DTO trae un idFanfiction, buscamos por ese ID en la base de datos
-        if (dto.getIdFanfiction() != null) {
-            fanfic = fanfictionRepository.findById(dto.getIdFanfiction())
-                    .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado con id: " + dto.getIdFanfiction()));
+        // Si el DTO trae un fanfictionId, buscamos por ese ID en la base de datos
+        if (dto.getFanfictionId() != null) {
+            fanfic = fanfictionRepository.findById(dto.getFanfictionId())
+                    .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado con id: " + dto.getFanfictionId()));
         } else if (dto.getAo3Id() != null) {
-            // Si trae ao3Id (pero no idFanfiction), lo buscamos o lo creamos
-            Optional<Fanfiction> existente = fanfictionRepository.findByAo3Id(dto.getAo3Id());
-            if (existente.isPresent()) {
-                fanfic = existente.get();
+            // Si trae ao3Id (pero no fanfictionId), lo buscamos o lo creamos
+            Optional<Fanfiction> existing = fanfictionRepository.findByAo3Id(dto.getAo3Id());
+            if (existing.isPresent()) {
+                fanfic = existing.get();
             } else {
                 // El fanfic es nuevo, lo registramos en el catálogo antes de agregarlo al Journal
-                Fanfiction nuevoFanfic = new Fanfiction();
-                nuevoFanfic.setAo3Id(dto.getAo3Id());
+                Fanfiction newFanfic = new Fanfiction();
+                newFanfic.setAo3Id(dto.getAo3Id());
                 // Validar campos obligatorios que vienen de la API de AO3/similar
-                nuevoFanfic.setTitulo(dto.getTitulo() != null ? dto.getTitulo() : "Título Desconocido");
-                nuevoFanfic.setAutor(dto.getAutor() != null ? dto.getAutor() : "Autor Desconocido");
-                nuevoFanfic.setHistoriaBase(dto.getHistoriaBase());
-                nuevoFanfic.setDescripcion(dto.getDescripcion());
-                nuevoFanfic.setPortadaUrl(dto.getPortadaUrl());
-                nuevoFanfic.setGenero(dto.getGenero());
-                nuevoFanfic.setShipPrincipal(dto.getShipPrincipal());
-                nuevoFanfic.setTematica(dto.getTematica());
-                nuevoFanfic.setTotalCapitulos(dto.getTotalCapitulos());
-                nuevoFanfic.setEstadoPublicacion(dto.getEstadoPublicacion());
+                newFanfic.setTitle(dto.getTitle() != null ? dto.getTitle() : "Título Desconocido");
+                newFanfic.setAuthor(dto.getAuthor() != null ? dto.getAuthor() : "Autor Desconocido");
+                newFanfic.setSourceMaterial(dto.getSourceMaterial());
+                newFanfic.setDescription(dto.getDescription());
+                newFanfic.setCoverUrl(dto.getCoverUrl());
+                newFanfic.setGenre(dto.getGenre());
+                newFanfic.setMainShip(dto.getMainShip());
+                newFanfic.setTheme(dto.getTheme());
+                newFanfic.setTotalChapters(dto.getTotalChapters());
+                newFanfic.setPublicationStatus(dto.getPublicationStatus());
 
-                fanfic = fanfictionRepository.save(nuevoFanfic);
+                fanfic = fanfictionRepository.save(newFanfic);
             }
         } else {
-            throw new RuntimeException("Debe proporcionar un idFanfiction o un ao3Id");
+            throw new RuntimeException("Debe proporcionar un fanfictionId o un ao3Id");
         }
 
-        FanficJournal journal = fanficJournalRepository.findByUsuarioAndFanfic(usuario, fanfic)
+        FanficJournal journal = fanficJournalRepository.findByUserAndFanfic(user, fanfic)
                 .orElse(new FanficJournal());
 
-        if (journal.getIdFanficJournal() == null) {
-            journal.setUsuario(usuario);
+        if (journal.getId() == null) {
+            journal.setUser(user);
             journal.setFanfic(fanfic);
         }
 
-        journal.setEstado(dto.getEstado());
-        journal.setCapituloActual(dto.getCapituloActual());
-        journal.setValoracion(dto.getValoracion());
-        journal.setShipPrincipal(dto.getShipPrincipal());
-        journal.setShipsSecundarios(dto.getShipsSecundarios());
-        journal.setTematica(dto.getTematica());
-        journal.setNivelAngst(dto.getNivelAngst());
-        journal.setFidelidadShip(dto.getFidelidadShip());
-        journal.setCanonVsAu(dto.getCanonVsAu());
-        journal.setRelectura(dto.getRelectura());
-        journal.setNotasPersonales(dto.getNotasPersonales());
-        journal.setFechaInicio(dto.getFechaInicio());
-        journal.setFechaFin(dto.getFechaFin());
+        journal.setStatus(dto.getStatus());
+        journal.setCurrentChapter(dto.getCurrentChapter());
+        journal.setRating(dto.getRating());
+        journal.setMainShip(dto.getMainShip());
+        journal.setSecondaryShips(dto.getSecondaryShips());
+        journal.setTheme(dto.getTheme());
+        journal.setAngstLevel(dto.getAngstLevel());
+        journal.setShipLoyalty(dto.getShipLoyalty());
+        journal.setCanonType(dto.getCanonType());
+        journal.setRereading(dto.getRereading());
+        journal.setPersonalNotes(dto.getPersonalNotes());
+        journal.setStartDate(dto.getStartDate());
+        journal.setEndDate(dto.getEndDate());
 
-        FanficJournal guardado = fanficJournalRepository.save(journal);
-        return mapearADTO(guardado);
+        FanficJournal saved = fanficJournalRepository.save(journal);
+        return mapToDTO(saved);
     }
 
-    public List<FanficJournalRespuestaDTO> obtenerJournalDeUsuario(Long idUsuario) {
-        return fanficJournalRepository.findByUsuario_IdUsuario(idUsuario)
+    /**
+     * Obtiene el journal de un usuario.
+     * @param userId ID del usuario
+     * @return lista de entradas del journal
+     */
+    public List<FanficJournalResponseDTO> getUserJournal(Long userId) {
+        return fanficJournalRepository.findByUserId(userId)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<FanficJournalRespuestaDTO> obtenerPorEstado(Long idUsuario, String estado) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
+    /**
+     * Obtiene entradas del journal filtradas por estado.
+     * @param userId ID del usuario
+     * @param status estado de lectura
+     * @return lista de entradas filtradas
+     */
+    public List<FanficJournalResponseDTO> getByStatus(Long userId, String status) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return fanficJournalRepository.findByUsuarioAndEstado(usuario, estado)
+        return fanficJournalRepository.findByUserAndStatus(user, status)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<FanficJournalRespuestaDTO> obtenerRelecturas(Long idUsuario) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
+    /**
+     * Obtiene las relecturas de un usuario.
+     * @param userId ID del usuario
+     * @return lista de relecturas
+     */
+    public List<FanficJournalResponseDTO> getRereadings(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return fanficJournalRepository.findByUsuarioAndRelecturaTrue(usuario)
+        return fanficJournalRepository.findByUserAndRereadingTrue(user)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public void eliminarJournal(Long idJournal) {
-        fanficJournalRepository.deleteById(idJournal);
+    /**
+     * Elimina una entrada del journal.
+     * @param journalId ID de la entrada
+     */
+    public void deleteJournal(Long journalId) {
+        fanficJournalRepository.deleteById(journalId);
     }
 
-    private FanficJournalRespuestaDTO mapearADTO(FanficJournal journal) {
-        FanficJournalRespuestaDTO dto = new FanficJournalRespuestaDTO();
-        dto.setIdFanficJournal(journal.getIdFanficJournal());
-        dto.setFanfic(fanfictionService.mapearADTO(journal.getFanfic()));
-        dto.setEstado(journal.getEstado());
-        dto.setCapituloActual(journal.getCapituloActual());
-        dto.setValoracion(journal.getValoracion());
-        dto.setShipPrincipal(journal.getShipPrincipal());
-        dto.setShipsSecundarios(journal.getShipsSecundarios());
-        dto.setNivelAngst(journal.getNivelAngst());
-        dto.setFidelidadShip(journal.getFidelidadShip());
-        dto.setCanonVsAu(journal.getCanonVsAu());
-        dto.setRelectura(journal.getRelectura());
-        dto.setNotasPersonales(journal.getNotasPersonales());
-        dto.setFechaInicio(journal.getFechaInicio());
-        dto.setFechaFin(journal.getFechaFin());
+    /**
+     * Mapea una entrada del journal a su DTO de respuesta.
+     * @param journal entrada del journal
+     * @return DTO de respuesta
+     */
+    private FanficJournalResponseDTO mapToDTO(FanficJournal journal) {
+        FanficJournalResponseDTO dto = new FanficJournalResponseDTO();
+        dto.setId(journal.getId());
+        dto.setFanfic(fanfictionService.mapToDTO(journal.getFanfic()));
+        dto.setStatus(journal.getStatus());
+        dto.setCurrentChapter(journal.getCurrentChapter());
+        dto.setRating(journal.getRating());
+        dto.setMainShip(journal.getMainShip());
+        dto.setSecondaryShips(journal.getSecondaryShips());
+        dto.setAngstLevel(journal.getAngstLevel());
+        dto.setShipLoyalty(journal.getShipLoyalty());
+        dto.setCanonType(journal.getCanonType());
+        dto.setRereading(journal.getRereading());
+        dto.setPersonalNotes(journal.getPersonalNotes());
+        dto.setStartDate(journal.getStartDate());
+        dto.setEndDate(journal.getEndDate());
         return dto;
     }
 }

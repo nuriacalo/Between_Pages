@@ -1,6 +1,13 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.0.17:8080/api';
+  static const String baseUrl = 'http://192.168.0.14:8080/api';
   // 10.0.2.2 = localhost desde el emulador Android
+
+  // JIKAN API (MyAnimeList - Unofficial)
+  // Documentación: https://api.jikan.moe/v4/
+  // Rate limits: 60 req/min, 3 req/seg
+  static const String jikanBaseUrl = 'https://api.jikan.moe/v4';
+  static const String jikanMangaSearch =
+      '$jikanBaseUrl/manga'; // GET ?q={query}
 
   // AUTENTICACIÓN (/api/auth)
   static const login = '$baseUrl/auth/login';
@@ -11,81 +18,63 @@ class ApiConstants {
   static const userRegister = '$baseUrl/user/register';
   static const user = '$baseUrl/user/';
 
-  // USUARIOS (/api/usuario)
-  static const usuarioRegistrar = '$baseUrl/usuario/registrar';
-  static const usuario = '$baseUrl/usuario/';
-
   // BOOKS (/api/book)
   static const bookSearch = '$baseUrl/book/search';
   static const bookSearchLocal = '$baseUrl/book/search/local';
   static const book = '$baseUrl/book';
 
-  // FANFICTION (/api/fanfiction)
-  static const fanficBuscar = '$baseUrl/fanfiction/buscar';
-  static const fanficEstado = '$baseUrl/fanfiction/estado';
-  static const fanficBuscarLocal = '$baseUrl/fanfiction/buscar/local';
-  static const fanfic =
-      '$baseUrl/fanfiction'; // Base para GET por ID, POST, etc.
-
-  // LIBROS (/api/libro)
-  static const libroBuscar = '$baseUrl/libro/buscar';
-  static const libroBuscarLocal = '$baseUrl/libro/buscar/local';
-  static const libro = '$baseUrl/libro'; // Base para GET por ID, POST, etc.
-
-  // LISTS (/api/list)
-  static const listCreate = '$baseUrl/list';
-  static const listUser = '$baseUrl/list/user/';
-  static const listGet = '$baseUrl/list/';
-  static const listUpdate = '$baseUrl/list/';
-  static const listDelete = '$baseUrl/list/';
-  static const listAddItem = '$baseUrl/list/{idList}/items';
-  static const listRemoveItem = '$baseUrl/list/{idList}/items';
-
   // MANGA (/api/manga)
-  static const mangaBuscar = '$baseUrl/manga/buscar';
-  static const mangaBuscarLocal = '$baseUrl/manga/buscar/local';
-  static const manga = '$baseUrl/manga'; // Base para GET por ID, POST, etc.
+  static const mangaSearch = '$baseUrl/manga/search';
+  static const mangaSearchLocal = '$baseUrl/manga/search/local';
+  static const manga = '$baseUrl/manga';
 
-  // TAGS FANFICTION (/api/fanfiction/{idFanfic}/tags)
-  static const tagsFanfic = '$baseUrl/fanfiction/'; // GET {id}/tags
-  static const tagsAdd = '$baseUrl/fanfiction/{id}/tags'; // POST ?tag=
-  static const tagsUpdate = '$baseUrl/fanfiction/{id}/tags'; // PUT
-  static const tagsDelete = '$baseUrl/fanfiction/{id}/tags/'; // DELETE {idTag}
-  static const tagsBuscar = '$baseUrl/fanfiction/{id}/tags/buscar'; // GET ?tag=
+  // FANFICTION (/api/fanfiction)
+  static const fanficSearch = '$baseUrl/fanfiction/search';
+  static const fanficStatus = '$baseUrl/fanfiction/status';
+  static const fanfic = '$baseUrl/fanfiction';
 
-  // JOURNAL - FANFICTION (/api/fanfic-journal)
-  static const fanficJournalCreate = '$baseUrl/fanfic-journal'; // POST
-  static const fanficJournalUser =
-      '$baseUrl/fanfic-journal/usuario/'; // GET {idUsuario}
+  // TAGS DE FANFICTION (/api/fanfiction/{fanficId}/tags)
+  static const tagsFanfic =
+      '$baseUrl/fanfiction/'; // Base para construir con el ID
+  static const tagsAdd = '$baseUrl/fanfiction/{fanficId}/tags';
+  static const tagsUpdate = '$baseUrl/fanfiction/{fanficId}/tags';
+  static const tagsDelete = '$baseUrl/fanfiction/{fanficId}/tags/';
+  static const tagsSearch = '$baseUrl/fanfiction/{fanficId}/tags/search';
 
-  // JOURNAL - FANFICTION (/api/fanfic-journal)
-  static const fanficJournalUserId = '$baseUrl/fanfic-journal/user/';
+  // MANGA EXTERNO (/api/external/manga)
+  static const externalMangaSearch = '$baseUrl/external/manga/search';
+  static const externalManga = '$baseUrl/external/manga';
 
-  // JOURNAL - LIBROS (/api/libro-journal)
-  static const libroJournalCreate = '$baseUrl/libro-journal'; // POST
-  static const libroJournalUser =
-      '$baseUrl/libro-journal/usuario/'; // GET {idUsuario}
+  // LISTAS DE LECTURA (/api/reading-list)
+  static const listCreate = '$baseUrl/reading-list';
+  static const listUser = '$baseUrl/reading-list/user/';
+  static const listGet = '$baseUrl/reading-list/';
+  static const listUpdate = '$baseUrl/reading-list/';
+  static const listDelete = '$baseUrl/reading-list/';
+  static const listAddItem = '$baseUrl/reading-list/{listId}/items';
+  static const listRemoveItem = '$baseUrl/reading-list/{listId}/items';
 
   // JOURNAL - BOOKS (/api/book-journal)
-  static const bookJournalCreate = '$baseUrl/book-journal';
+  static const bookJournal = '$baseUrl/book-journal';
   static const bookJournalUser = '$baseUrl/book-journal/user/';
+  static const bookJournalUserStatus =
+      '$baseUrl/book-journal/user/{userId}/status';
+  static const bookJournalUserRereadings =
+      '$baseUrl/book-journal/user/{userId}/rereadings';
 
   // JOURNAL - MANGA (/api/manga-journal)
-  static const mangaJournalCreate = '$baseUrl/manga-journal'; // POST
-  static const mangaJournalUser =
-      '$baseUrl/manga-journal/usuario/'; // GET {idUsuario}
+  static const mangaJournal = '$baseUrl/manga-journal';
+  static const mangaJournalUser = '$baseUrl/manga-journal/user/';
+  static const mangaJournalUserStatus =
+      '$baseUrl/manga-journal/user/{userId}/status';
+  static const mangaJournalUserRereadings =
+      '$baseUrl/manga-journal/user/{userId}/rereadings';
 
-  // JOURNAL - MANGA (/api/manga-journal)
-  static const mangaJournalUserId = '$baseUrl/manga-journal/user/';
-
-  // LISTAS PERSONALIZADAS (/api/lista)
-  static const listaCreate = '$baseUrl/lista'; // POST
-  static const listaUser = '$baseUrl/lista/usuario/'; // GET {idUsuario}
-  static const listaGet = '$baseUrl/lista/'; // GET {id}
-  static const listaUpdate = '$baseUrl/lista/'; // PUT {idLista}
-  static const listaDelete = '$baseUrl/lista/'; // DELETE {idLista}
-  static const listaAddItem =
-      '$baseUrl/lista/{idLista}/items'; // POST ?tipo=&idItem=
-  static const listaRemoveItem =
-      '$baseUrl/lista/{idLista}/items'; // DELETE ?tipo=&idItem=
+  // JOURNAL - FANFICTION (/api/fanfic-journal)
+  static const fanficJournal = '$baseUrl/fanfic-journal';
+  static const fanficJournalUser = '$baseUrl/fanfic-journal/user/';
+  static const fanficJournalUserStatus =
+      '$baseUrl/fanfic-journal/user/{userId}/status';
+  static const fanficJournalUserRereadings =
+      '$baseUrl/fanfic-journal/user/{userId}/rereadings';
 }

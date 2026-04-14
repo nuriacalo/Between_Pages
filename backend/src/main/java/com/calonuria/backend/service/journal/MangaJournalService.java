@@ -1,13 +1,13 @@
 package com.calonuria.backend.service.journal;
 
-import com.calonuria.backend.dto.journal.MangaJournalRegistroDTO;
-import com.calonuria.backend.dto.journal.MangaJournalRespuestaDTO;
+import com.calonuria.backend.dto.journal.MangaJournalRegistrationDTO;
+import com.calonuria.backend.dto.journal.MangaJournalResponseDTO;
 import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.model.journal.MangaJournal;
-import com.calonuria.backend.model.user.Usuario;
+import com.calonuria.backend.model.user.User;
 import com.calonuria.backend.repository.catalog.MangaRepository;
 import com.calonuria.backend.repository.journal.MangaJournalRepository;
-import com.calonuria.backend.repository.user.UsuarioRepository;
+import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,123 +15,159 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio para la gestión del diario de lectura de mangas.
+ */
 @Service
 public class MangaJournalService {
 
     @Autowired
     private MangaJournalRepository mangaJournalRepository;
+
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
+
     @Autowired
     private MangaRepository mangaRepository;
+
     @Autowired
     private MangaService mangaService;
 
-    public MangaJournalRespuestaDTO guardarProgreso(MangaJournalRegistroDTO dto) {
-        Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
+    /**
+     * Guarda el progreso de lectura de un manga.
+     * @param dto datos del progreso
+     * @return DTO con la información guardada
+     */
+    public MangaJournalResponseDTO saveProgress(MangaJournalRegistrationDTO dto) {
+        User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         Manga manga;
 
-        // Si el DTO trae un idManga, buscamos por ese ID en la base de datos
-        if (dto.getIdManga() != null) {
-            manga = mangaRepository.findById(dto.getIdManga())
-                    .orElseThrow(() -> new RuntimeException("Manga no encontrado con id: " + dto.getIdManga()));
+        // Si el DTO trae un mangaId, buscamos por ese ID en la base de datos
+        if (dto.getMangaId() != null) {
+            manga = mangaRepository.findById(dto.getMangaId())
+                    .orElseThrow(() -> new RuntimeException("Manga no encontrado con id: " + dto.getMangaId()));
         } else if (dto.getMangadexId() != null) {
-            // Si trae mangadexId (pero no idManga), lo buscamos o lo creamos
-            Optional<Manga> existente = mangaRepository.findByMangadexId(dto.getMangadexId());
-            if (existente.isPresent()) {
-                manga = existente.get();
+            // Si trae mangadexId (pero no mangaId), lo buscamos o lo creamos
+            Optional<Manga> existing = mangaRepository.findByMangadexId(dto.getMangadexId());
+            if (existing.isPresent()) {
+                manga = existing.get();
             } else {
                 // El manga es nuevo, lo registramos en el catálogo antes de agregarlo al Journal
-                Manga nuevoManga = new Manga();
-                nuevoManga.setMangadexId(dto.getMangadexId());
-                nuevoManga.setFuente(dto.getFuente() != null ? dto.getFuente() : "MangaDex");
+                Manga newManga = new Manga();
+                newManga.setMangadexId(dto.getMangadexId());
+                newManga.setSource(dto.getSource() != null ? dto.getSource() : "MangaDex");
                 // Validar campos obligatorios que vienen de MangaDex (o valores por defecto si vienen nulos)
-                nuevoManga.setTitulo(dto.getTitulo() != null ? dto.getTitulo() : "Título Desconocido");
-                nuevoManga.setMangaka(dto.getMangaka() != null ? dto.getMangaka() : "Mangaka Desconocido");
-                nuevoManga.setDemografia(dto.getDemografia());
-                nuevoManga.setGenero(dto.getGenero());
-                nuevoManga.setDescripcion(dto.getDescripcion());
-                nuevoManga.setPortadaUrl(dto.getPortadaUrl());
-                nuevoManga.setTotalCapitulos(dto.getTotalCapitulos());
-                nuevoManga.setTotalVolumenes(dto.getTotalVolumenes());
-                nuevoManga.setEstadoPublicacion(dto.getEstadoPublicacion());
+                newManga.setTitle(dto.getTitle() != null ? dto.getTitle() : "Título Desconocido");
+                newManga.setAuthor(dto.getAuthor() != null ? dto.getAuthor() : "Autor Desconocido");
+                newManga.setDemographic(dto.getDemographic());
+                newManga.setGenre(dto.getGenre());
+                newManga.setDescription(dto.getDescription());
+                newManga.setCoverUrl(dto.getCoverUrl());
+                newManga.setTotalChapters(dto.getTotalChapters());
+                newManga.setTotalVolumes(dto.getTotalVolumes());
+                newManga.setPublicationStatus(dto.getPublicationStatus());
 
-                manga = mangaRepository.save(nuevoManga);
+                manga = mangaRepository.save(newManga);
             }
         } else {
-            throw new RuntimeException("Debe proporcionar un idManga o un mangadexId");
+            throw new RuntimeException("Debe proporcionar un mangaId o un mangadexId");
         }
 
-        MangaJournal journal = mangaJournalRepository.findByUsuarioAndManga(usuario, manga)
+        MangaJournal journal = mangaJournalRepository.findByUserAndManga(user, manga)
                 .orElse(new MangaJournal());
 
-        if (journal.getIdMangaJournal() == null) {
-            journal.setUsuario(usuario);
+        if (journal.getId() == null) {
+            journal.setUser(user);
             journal.setManga(manga);
         }
 
-        journal.setEstado(dto.getEstado());
-        journal.setCapituloActual(dto.getCapituloActual());
-        journal.setVolumenActual(dto.getVolumenActual());
-        journal.setValoracion(dto.getValoracion());
-        journal.setFormatoLectura(dto.getFormatoLectura());
-        journal.setPersonajeFavorito(dto.getPersonajeFavorito());
-        journal.setArcoFavorito(dto.getArcoFavorito());
-        journal.setNotaPersonal(dto.getNotaPersonal());
-        journal.setFechaInicio(dto.getFechaInicio());
-        journal.setFechaFin(dto.getFechaFin());
-        journal.setRelectura(dto.getRelectura());
+        journal.setStatus(dto.getStatus());
+        journal.setCurrentChapter(dto.getCurrentChapter());
+        journal.setCurrentVolume(dto.getCurrentVolume());
+        journal.setRating(dto.getRating());
+        journal.setReadingFormat(dto.getReadingFormat());
+        journal.setFavoriteCharacter(dto.getFavoriteCharacter());
+        journal.setFavoriteArc(dto.getFavoriteArc());
+        journal.setPersonalNotes(dto.getPersonalNotes());
+        journal.setStartDate(dto.getStartDate());
+        journal.setEndDate(dto.getEndDate());
+        journal.setRereading(dto.getRereading());
 
-        MangaJournal guardado = mangaJournalRepository.save(journal);
-        return mapearADTO(guardado);
+        MangaJournal saved = mangaJournalRepository.save(journal);
+        return mapToDTO(saved);
     }
 
-    public List<MangaJournalRespuestaDTO> obtenerJournalDeUsuario(Long idUsuario) {
-        return mangaJournalRepository.findByUsuario_IdUsuario(idUsuario)
+    /**
+     * Obtiene el journal de un usuario.
+     * @param userId ID del usuario
+     * @return lista de entradas del journal
+     */
+    public List<MangaJournalResponseDTO> getUserJournal(Long userId) {
+        return mangaJournalRepository.findByUserId(userId)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<MangaJournalRespuestaDTO> obtenerPorEstado(Long idUsuario, String estado) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
+    /**
+     * Obtiene entradas del journal filtradas por estado.
+     * @param userId ID del usuario
+     * @param status estado de lectura
+     * @return lista de entradas filtradas
+     */
+    public List<MangaJournalResponseDTO> getByStatus(Long userId, String status) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return mangaJournalRepository.findByUsuarioAndEstado(usuario, estado)
+        return mangaJournalRepository.findByUserAndStatus(user, status)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<MangaJournalRespuestaDTO> obtenerRelecturas(Long idUsuario) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
+    /**
+     * Obtiene las relecturas de un usuario.
+     * @param userId ID del usuario
+     * @return lista de relecturas
+     */
+    public List<MangaJournalResponseDTO> getRereadings(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return mangaJournalRepository.findByUsuarioAndRelecturaTrue(usuario)
+        return mangaJournalRepository.findByUserAndRereadingTrue(user)
                 .stream()
-                .map(this::mapearADTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    public void eliminarJournal(Long idJournal) {
-        mangaJournalRepository.deleteById(idJournal);
+    /**
+     * Elimina una entrada del journal.
+     * @param journalId ID de la entrada
+     */
+    public void deleteJournal(Long journalId) {
+        mangaJournalRepository.deleteById(journalId);
     }
 
-    private MangaJournalRespuestaDTO mapearADTO(MangaJournal journal) {
-        MangaJournalRespuestaDTO dto = new MangaJournalRespuestaDTO();
-        dto.setIdMangaJournal(journal.getIdMangaJournal());
-        dto.setManga(mangaService.mapearADTO(journal.getManga()));
-        dto.setEstado(journal.getEstado());
-        dto.setCapituloActual(journal.getCapituloActual());
-        dto.setVolumenActual(journal.getVolumenActual());
-        dto.setValoracion(journal.getValoracion());
-        dto.setFormatoLectura(journal.getFormatoLectura());
-        dto.setPersonajeFavorito(journal.getPersonajeFavorito());
-        dto.setArcoFavorito(journal.getArcoFavorito());
-        dto.setNotaPersonal(journal.getNotaPersonal());
-        dto.setFechaInicio(journal.getFechaInicio());
-        dto.setFechaFin(journal.getFechaFin());
-        dto.setRelectura(journal.getRelectura());
+    /**
+     * Mapea una entrada del journal a su DTO de respuesta.
+     * @param journal entrada del journal
+     * @return DTO de respuesta
+     */
+    private MangaJournalResponseDTO mapToDTO(MangaJournal journal) {
+        MangaJournalResponseDTO dto = new MangaJournalResponseDTO();
+        dto.setId(journal.getId());
+        dto.setManga(mangaService.mapToDTO(journal.getManga()));
+        dto.setStatus(journal.getStatus());
+        dto.setCurrentChapter(journal.getCurrentChapter());
+        dto.setCurrentVolume(journal.getCurrentVolume());
+        dto.setRating(journal.getRating());
+        dto.setReadingFormat(journal.getReadingFormat());
+        dto.setFavoriteCharacter(journal.getFavoriteCharacter());
+        dto.setFavoriteArc(journal.getFavoriteArc());
+        dto.setPersonalNotes(journal.getPersonalNotes());
+        dto.setStartDate(journal.getStartDate());
+        dto.setEndDate(journal.getEndDate());
+        dto.setRereading(journal.getRereading());
         return dto;
     }
 }

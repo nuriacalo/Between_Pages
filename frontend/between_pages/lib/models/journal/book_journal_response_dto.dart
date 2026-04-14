@@ -29,7 +29,7 @@ class BookJournalResponseDto {
 
   factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) {
     return BookJournalResponseDto(
-      id: json['id'] as int,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       book: BookResponseDTO.fromJson(json['book'] as Map<String, dynamic>),
       status: json['status'] as String,
       currentPage: json['current_page'] as int?,

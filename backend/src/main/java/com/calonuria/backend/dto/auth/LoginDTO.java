@@ -4,6 +4,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/**
+ * DTO para el login de usuarios.
+ * Contiene las credenciales necesarias para autenticación.
+ */
 @Data
 public class LoginDTO {
     @NotBlank @Email

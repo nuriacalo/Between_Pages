@@ -51,7 +51,7 @@ class BookJournalRecordDTO {
 
   factory BookJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return BookJournalRecordDTO(
-      userId: json['user_id'] as int,
+      userId: int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       bookId: json['book_id'] as int?,
       googleBooksId: json['google_books_id'] as String?,
       title: json['title'] as String?,

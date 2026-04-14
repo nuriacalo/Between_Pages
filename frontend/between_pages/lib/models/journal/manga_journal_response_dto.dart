@@ -31,7 +31,7 @@ class MangaJournalResponseDTO {
 
   factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) {
     return MangaJournalResponseDTO(
-      id: json['id'] as int,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       manga: MangaResponseDTO.fromJson(json['manga'] as Map<String, dynamic>),
       status: json['status'] as String?,
       currentChapter: json['current_chapter'] as int?,

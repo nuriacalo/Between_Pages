@@ -1,6 +1,7 @@
 class MangaResponseDTO {
   final int? idManga;
   final String? mangadexId;
+  final String? source;
   final String? title;
   final String? mangaka;
   final String? demographic;
@@ -14,6 +15,7 @@ class MangaResponseDTO {
   MangaResponseDTO({
     this.idManga,
     this.mangadexId,
+    this.source,
     this.title,
     this.mangaka,
     this.demographic,
@@ -27,8 +29,9 @@ class MangaResponseDTO {
 
   factory MangaResponseDTO.fromJson(Map<String, dynamic> json) {
     return MangaResponseDTO(
-      idManga: json['id'] as int?,
+      idManga: int.tryParse(json['id']?.toString() ?? '0'),
       mangadexId: json['mangadex_id'] as String?,
+      source: json['source'] as String?,
       title: json['title'] as String?,
       mangaka: json['author'] as String?,
       demographic: json['demographic'] as String?,
@@ -45,6 +48,7 @@ class MangaResponseDTO {
     return {
       'id': idManga,
       'mangadex_id': mangadexId,
+      'source': source,
       'title': title,
       'author': mangaka,
       'demographic': demographic,

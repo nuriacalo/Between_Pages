@@ -6,9 +6,16 @@ import io.swagger.v3.oas.models.info.Contact;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuración de OpenAPI/Swagger para la documentación de la API.
+ */
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Configura la información personalizada de la API para Swagger.
+     * @return configuración personalizada de OpenAPI
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()

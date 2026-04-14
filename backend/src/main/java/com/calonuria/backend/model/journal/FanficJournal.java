@@ -1,16 +1,18 @@
 package com.calonuria.backend.model.journal;
 
-import com.calonuria.backend.model.user.Usuario;
+import com.calonuria.backend.model.user.User;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad que representa el diario de lectura de un fanfiction.
+ * Mapea la tabla "fanfic_journal" de la base de datos.
+ */
 @Entity
 @Table(name = "fanfic_journal")
 @Data
@@ -18,64 +20,118 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class FanficJournal {
 
+    /**
+     * Identificador único del diario.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_fanfic_journal")
-    private Long idFanficJournal;
+    private Long id;
 
+    /**
+     * Usuario propietario del diario.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
+    /**
+     * Fanfiction asociado al diario.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_fanfic", nullable = false)
+    @JoinColumn(name = "fanfic_id", nullable = false)
     private Fanfiction fanfic;
 
+    /**
+     * Estado de lectura: PENDING, READING, FINISHED, DROPPED.
+     */
     @Column(nullable = false, length = 50)
-    private String estado;
+    private String status;
 
-    @Column(name = "capitulo_actual")
-    private Integer capituloActual;
+    /**
+     * Capítulo actual de lectura.
+     */
+    @Column(name = "current_chapter")
+    private Integer currentChapter;
 
-    private Integer valoracion;
+    /**
+     * Valoración del fanfiction (1-5).
+     */
+    @Column
+    private Integer rating;
 
-    @Column(name = "ship_principal", length = 150)
-    private String shipPrincipal;
+    /**
+     * Ship principal del fanfiction.
+     */
+    @Column(name = "main_ship", length = 150)
+    private String mainShip;
 
-    @Column(name = "ships_secundarios", length = 255)
-    private String shipsSecundarios;
+    /**
+     * Ships secundarios del fanfiction.
+     */
+    @Column(name = "secondary_ships", length = 255)
+    private String secondaryShips;
 
+    /**
+     * Temática del fanfiction.
+     */
     @Column(length = 150)
-    private String tematica;
+    private String theme;
 
-    @Column(name = "nivel_angst")
-    private Integer nivelAngst;
+    /**
+     * Nivel de angst: NONE, LOW, MEDIUM, HIGH, EXTREME.
+     */
+    @Column(name = "angst_level", length = 50)
+    private String angstLevel;
 
-    @Column(name= "fidelidad_ship")
-    @Min(value = 1, message = "La fidelidad del ship mínima es 1")
-    @Max(value = 5, message = "La fidelidad del ship máxima es 5")
-    private Integer fidelidadShip;
+    /**
+     * Fidelidad al ship.
+     */
+    @Column(name = "ship_loyalty", length = 50)
+    private String shipLoyalty;
 
-    @Column(name = "canon_vs_au", length = 50)
-    private String canonVsAu;
+    /**
+     * Tipo de canon: CANON, AU, CANON_DIVERGENT.
+     */
+    @Column(name = "canon_type", length = 50)
+    private String canonType;
 
-    private Boolean relectura;
+    /**
+     * Indica si es una relectura.
+     */
+    @Column
+    private Boolean rereading;
 
-    @Column(name = "notas_personales", columnDefinition = "TEXT")
-    private String notasPersonales;
+    /**
+     * Notas personales del usuario sobre el fanfiction.
+     */
+    @Column(name = "personal_notes", columnDefinition = "TEXT")
+    private String personalNotes;
 
-    @Column(name = "fecha_inicio")
-    private LocalDate fechaInicio;
+    /**
+     * Fecha de inicio de lectura.
+     */
+    @Column(name = "start_date")
+    private LocalDate startDate;
 
-    @Column(name = "fecha_fin")
-    private LocalDate fechaFin;
+    /**
+     * Fecha de finalización de lectura.
+     */
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
-    @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion;
+    /**
+     * Fecha de última actualización del diario.
+     */
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
+    /**
+     * Método que se ejecuta antes de persistir o actualizar.
+     * Establece la fecha de actualización automáticamente.
+     */
     @PrePersist
     @PreUpdate
     protected void onUpdate() {
-        this.fechaActualizacion = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }

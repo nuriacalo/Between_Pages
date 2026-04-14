@@ -2,7 +2,7 @@ package com.calonuria.backend.repository.journal;
 
 import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.model.journal.MangaJournal;
-import com.calonuria.backend.model.user.Usuario;
+import com.calonuria.backend.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,29 +11,65 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio para la gestión de diarios de lectura de manga.
+ */
 @Repository
 public interface MangaJournalRepository extends JpaRepository<MangaJournal, Long> {
 
-    // Todos los journals de un usuario
-    @Query("SELECT m FROM MangaJournal m WHERE m.usuario.idUsuario = :idUsuario")
-    List<MangaJournal> findByUsuario_IdUsuario(@Param("idUsuario") Long idUsuario);
+    /**
+     * Busca todos los diarios de un usuario.
+     * @param userId ID del usuario
+     * @return lista de diarios
+     */
+    @Query("SELECT m FROM MangaJournal m WHERE m.user.id = :userId")
+    List<MangaJournal> findByUserId(@Param("userId") Long userId);
 
-    // Entrada específica de un usuario para un manga
-    Optional<MangaJournal> findByUsuarioAndManga(Usuario usuario, Manga manga);
+    /**
+     * Busca una entrada específica de un usuario para un manga.
+     * @param user usuario
+     * @param manga manga
+     * @return Optional con el diario
+     */
+    Optional<MangaJournal> findByUserAndManga(User user, Manga manga);
 
-    // Por estado
-    List<MangaJournal> findByUsuarioAndEstado(Usuario usuario, String estado);
+    /**
+     * Busca diarios por estado.
+     * @param user usuario
+     * @param status estado de lectura
+     * @return lista de diarios
+     */
+    List<MangaJournal> findByUserAndStatus(User user, String status);
 
-    // Por valoración exacta
-    List<MangaJournal> findByUsuarioAndValoracion(Usuario usuario, Integer valoracion);
+    /**
+     * Busca diarios por valoración exacta.
+     * @param user usuario
+     * @param rating valoración
+     * @return lista de diarios
+     */
+    List<MangaJournal> findByUserAndRating(User user, Integer rating);
 
-    // Por valoración mínima
-    List<MangaJournal> findByUsuarioAndValoracionGreaterThanEqual(Usuario usuario, Integer valoracion);
+    /**
+     * Busca diarios con valoración mínima.
+     * @param user usuario
+     * @param rating valoración mínima
+     * @return lista de diarios
+     */
+    List<MangaJournal> findByUserAndRatingGreaterThanEqual(User user, Integer rating);
 
-    // Leídos en un rango de fechas
-    List<MangaJournal> findByUsuarioAndFechaFinBetween(
-            Usuario usuario, LocalDate desde, LocalDate hasta);
+    /**
+     * Busca mangas finalizados en un rango de fechas.
+     * @param user usuario
+     * @param start fecha inicial
+     * @param end fecha final
+     * @return lista de diarios
+     */
+    List<MangaJournal> findByUserAndEndDateBetween(User user, LocalDate start, LocalDate end);
 
-    // Solo relecturas
-    List<MangaJournal> findByUsuarioAndRelecturaTrue(Usuario usuario);
+    /**
+     * Busca solo relecturas.
+     * @param user usuario
+     * @return lista de diarios
+     */
+    List<MangaJournal> findByUserAndRereadingTrue(User user);
 }

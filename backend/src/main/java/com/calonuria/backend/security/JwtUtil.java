@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+/**
+ * Utilidad para la generación y validación de tokens JWT.
+ */
 @Component
 public class JwtUtil {
 
@@ -22,7 +25,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generarAccessToken(String email) {
+    /**
+     * Genera un token de acceso JWT.
+     * @param email email del usuario
+     * @return token JWT generado
+     */
+    public String generateAccessToken(String email) {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
@@ -31,7 +39,12 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generarRefreshToken(String email) {
+    /**
+     * Genera un token de refresco JWT.
+     * @param email email del usuario
+     * @return token JWT de refresco generado
+     */
+    public String generateRefreshToken(String email) {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
@@ -40,26 +53,41 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extraerEmail(String token) {
-        return extraerClaims(token).getSubject();
+    /**
+     * Extrae el email del token.
+     * @param token token JWT
+     * @return email extraído
+     */
+    public String extractEmail(String token) {
+        return extractClaims(token).getSubject();
     }
 
-    public boolean esTokenValido(String token, UserDetails userDetails) {
+    /**
+     * Verifica si el token es válido para un usuario.
+     * @param token token JWT
+     * @param userDetails detalles del usuario
+     * @return true si el token es válido
+     */
+    public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
-            String email = extraerEmail(token);
-            return email.equals(userDetails.getUsername()) && !estaExpirado(token);
+            String email = extractEmail(token);
+            return email.equals(userDetails.getUsername()) && !isExpired(token);
         } catch (Exception e) {
             return false;
         }
     }
 
-    // Sobrecarga sin UserDetails — para el endpoint /refresh
-    public boolean esTokenValido(String token) {
-        try { extraerClaims(token); return true; }
+    /**
+     * Sobrecarga para validar token sin UserDetails — para el endpoint /refresh.
+     * @param token token JWT
+     * @return true si el token es válido
+     */
+    public boolean isTokenValid(String token) {
+        try { extractClaims(token); return true; }
         catch (Exception e) { return false; }
     }
 
-    private Claims extraerClaims(String token) {
+    private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
@@ -67,7 +95,7 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    private boolean estaExpirado(String token) {
-        return extraerClaims(token).getExpiration().before(new Date());
+    private boolean isExpired(String token) {
+        return extractClaims(token).getExpiration().before(new Date());
     }
 }
