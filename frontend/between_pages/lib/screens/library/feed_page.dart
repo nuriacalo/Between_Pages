@@ -92,8 +92,8 @@ class _InProgressGridSection extends ConsumerWidget {
                   color: Colors.blue,
                   asyncValue: booksAsync,
                   onTap: (item) => context.push(
-                    '/book/${item.book.idBook}',
-                    extra: item.book,
+                    '/journal/book/edit',
+                    extra: item as BookJournalResponseDto,
                   ),
                   getCoverUrl: (item) =>
                       (item as BookJournalResponseDto).book.coverUrl,
@@ -125,14 +125,10 @@ class _InProgressGridSection extends ConsumerWidget {
                   color: Colors.orange,
                   asyncValue: mangasAsync,
                   onTap: (item) {
-                    final manga = (item as MangaJournalResponseDTO).manga;
-                    if (manga != null) {
-                      final id =
-                          manga.idManga?.toString() ?? manga.mangadexId ?? '';
-                      if (id.isNotEmpty) {
-                        context.push('/manga/$id', extra: manga);
-                      }
-                    }
+                    context.push(
+                      '/journal/manga/edit',
+                      extra: item as MangaJournalResponseDTO,
+                    );
                   },
                   getCoverUrl: (item) =>
                       (item as MangaJournalResponseDTO).manga?.coverUrl,

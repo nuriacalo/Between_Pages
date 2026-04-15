@@ -1,11 +1,15 @@
 import 'package:between_pages/controllers/auth_controller.dart';
 import 'package:between_pages/models/catalog/book_response_dto.dart';
 import 'package:between_pages/models/catalog/manga_response_dto.dart';
+import 'package:between_pages/models/journal/book_journal_response_dto.dart';
+import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
 import 'package:between_pages/screens/auth/login_page.dart';
 import 'package:between_pages/screens/auth/register_page.dart';
 import 'package:between_pages/screens/detail/book_detail_page.dart';
 import 'package:between_pages/screens/detail/manga_detail_page.dart';
 import 'package:between_pages/screens/home/home_page.dart';
+import 'package:between_pages/screens/journal/book_journal_edit_page.dart';
+import 'package:between_pages/screens/journal/manga_journal_edit_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -67,6 +71,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final manga = state.extra as MangaResponseDTO;
           return MangaDetailPage(manga: manga);
+        },
+      ),
+      GoRoute(
+        path: '/journal/book/edit',
+        builder: (context, state) {
+          final journal = state.extra as BookJournalResponseDto;
+          return BookJournalEditPage(journal: journal);
+        },
+      ),
+      GoRoute(
+        path: '/journal/manga/edit',
+        builder: (context, state) {
+          final journal = state.extra as MangaJournalResponseDTO;
+          return MangaJournalEditPage(journal: journal);
         },
       ),
     ],

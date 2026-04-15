@@ -316,7 +316,7 @@ class _BookCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: InkWell(
-        onTap: () => context.push('/book/${book.idBook}', extra: book),
+        onTap: () => context.push('/journal/book/edit', extra: journal),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: 110,
@@ -397,16 +397,10 @@ class _MangaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Navegar usando idManga si existe, o mangadexId si no
-    final String navigationId =
-        manga.idManga?.toString() ?? manga.mangadexId ?? '';
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: InkWell(
-        onTap: navigationId.isNotEmpty
-            ? () => context.push('/manga/$navigationId', extra: manga)
-            : null,
+        onTap: () => context.push('/journal/manga/edit', extra: journal),
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: 110,
