@@ -1,31 +1,32 @@
-import 'package:between_pages/models/catalog/book_response_dto.dart';
-import 'package:between_pages/models/journal/book_journal_record_dto.dart';
+import 'package:between_pages/models/catalog/manga_response_dto.dart';
+import 'package:between_pages/models/journal/manga_journal_record_dto.dart';
 import 'package:between_pages/repositories/auth_repository.dart';
-import 'package:between_pages/repositories/book_journal_repository.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:between_pages/repositories/manga_journal_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BookDetailPage extends ConsumerStatefulWidget {
-  final BookResponseDTO book;
+class MangaDetailPage extends ConsumerStatefulWidget {
+  final MangaResponseDTO manga;
 
-  const BookDetailPage({super.key, required this.book});
+  const MangaDetailPage({super.key, required this.manga});
 
   @override
-  ConsumerState<BookDetailPage> createState() => _BookDetailPageState();
+  ConsumerState<MangaDetailPage> createState() => _MangaDetailPageState();
 }
 
-class _BookDetailPageState extends ConsumerState<BookDetailPage> {
+class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
   bool _isLoading = false;
+
+  String get _title => widget.manga.title ?? 'Título desconocido';
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final book = widget.book;
+    final manga = widget.manga;
 
     return Scaffold(
-      appBar: AppBar(title: Text(book.title)),
+      appBar: AppBar(title: Text(_title)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -35,17 +36,23 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: book.coverUrl != null && book.coverUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: book.coverUrl!,
+                child: manga.coverUrl != null && manga.coverUrl!.isNotEmpty
+                    ? Image.network(
+                        manga.coverUrl!,
                         height: 250,
                         fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 250,
+                          width: 170,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.auto_stories, size: 80),
+                        ),
                       )
                     : Container(
                         height: 250,
                         width: 170,
                         color: colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.book, size: 80),
+                        child: const Icon(Icons.auto_stories, size: 80),
                       ),
               ),
             ),
@@ -79,7 +86,7 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
             // Título y Autor
             Center(
               child: Text(
-                book.title,
+                _title,
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -89,69 +96,47 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                book.author,
+                manga.mangaka ?? 'Autor desconocido',
                 style: textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
+            const SizedBox(height: 24),
+
+            // Información adicional
+            if (manga.demographic != null) ...[
+              _InfoRow(label: 'Demografía', value: manga.demographic!),
+            ],
+            if (manga.genre != null) ...[
+              _InfoRow(label: 'Género', value: manga.genre!),
+            ],
+            if (manga.totalChapters != null) ...[
+              _InfoRow(label: 'Capítulos', value: '${manga.totalChapters}'),
+            ],
+            if (manga.totalVolumes != null) ...[
+              _InfoRow(label: 'Volúmenes', value: '${manga.totalVolumes}'),
+            ],
+            if (manga.publicationStatus != null) ...[
+              _InfoRow(label: 'Estado', value: manga.publicationStatus!),
+            ],
 
             const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
 
-            // Sinopsis
-            Text(
-              'Sinopsis',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+            // Descripción
+            if (manga.description != null && manga.description!.isNotEmpty) ...[
+              Text(
+                'Descripción',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              book.description ?? 'No hay sinopsis disponible para este libro.',
-              style: textTheme.bodyMedium?.copyWith(height: 1.5),
-            ),
-
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            // Detalles técnicos
-            if (book.genre != null)
-              _buildDetailRow('Género', book.genre!, context),
-            if (book.publishYear != null)
-              _buildDetailRow(
-                'Año de publicación',
-                book.publishYear.toString(),
-                context,
-              ),
-            if (book.publisher != null)
-              _buildDetailRow('Editorial', book.publisher!, context),
-            if (book.isbn != null) _buildDetailRow('ISBN', book.isbn!, context),
+              const SizedBox(height: 8),
+              Text(manga.description!, style: textTheme.bodyLarge),
+            ],
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -187,24 +172,27 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
 
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      final journalRepository = ref.read(bookJournalRepositoryProvider);
+      final journalRepository = ref.read(mangaJournalRepositoryProvider);
 
       final user = await authRepository.getUserProfile();
+      final manga = widget.manga;
 
-      final dto = BookJournalRecordDTO(
+      final dto = MangaJournalRecordDTO(
         userId: user.idUser,
-        bookId: widget.book.idBook > 0 ? widget.book.idBook : null,
-        googleBooksId: widget.book.googleBooksId.isNotEmpty
-            ? widget.book.googleBooksId
+        mangaId: (manga.idManga != null && manga.idManga! > 0)
+            ? manga.idManga
             : null,
-        title: widget.book.title.isNotEmpty ? widget.book.title : null,
-        author: widget.book.author.isNotEmpty ? widget.book.author : null,
-        isbn: widget.book.isbn,
-        publisher: widget.book.publisher,
-        description: widget.book.description,
-        coverUrl: widget.book.coverUrl,
-        genre: widget.book.genre,
-        publicationYear: widget.book.publishYear,
+        mangadexId: manga.mangadexId,
+        source: manga.source,
+        title: manga.title,
+        mangaka: manga.mangaka,
+        demographic: manga.demographic,
+        genre: manga.genre,
+        description: manga.description,
+        coverUrl: manga.coverUrl,
+        totalChapters: manga.totalChapters,
+        totalVolumes: manga.totalVolumes,
+        publicationStatus: manga.publicationStatus,
         status: status,
         startDate: status == 'Leyendo' ? _formatDate(DateTime.now()) : null,
       );
@@ -253,5 +241,38 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
   String _formatDate(DateTime date) {
     // Formato yyyy-MM-dd para LocalDate de Java
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -24,3 +24,8 @@ google:
 jwt:
   secret: betweenpages_clave_secreta_muy_larga_para_que_sea_segura_2024
   expiration: 86400000
+
+logging:
+  level:
+    com.calonuria.backend.service.catalog: INFO
+    com.calonuria.backend.controller: INFO

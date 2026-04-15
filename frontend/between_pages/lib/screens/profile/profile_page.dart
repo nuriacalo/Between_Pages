@@ -19,6 +19,23 @@ class ProfilePage extends ConsumerWidget {
     // Escuchamos el estado del perfil del usuario
     final userProfileAsync = ref.watch(userProfileProvider);
 
+    // Estado del logout para loading
+    final authState = ref.watch(authControllerProvider);
+
+    // Escuchamos errores del logout
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cerrar sesión: $error'),
+              backgroundColor: colorScheme.error,
+            ),
+          );
+        },
+      );
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -175,9 +192,11 @@ class ProfilePage extends ConsumerWidget {
               ),
               icon: const Icon(Icons.logout),
               label: Text(l10n.profileLogout),
-              onPressed: () {
-                ref.read(authControllerProvider.notifier).logout();
-              },
+              onPressed: authState.isLoading
+                  ? null
+                  : () {
+                      ref.read(authControllerProvider.notifier).logout();
+                    },
             ),
           ),
           const SizedBox(height: 32),

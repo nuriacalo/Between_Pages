@@ -67,9 +67,19 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
   /// Cambia el tipo de contenido activo
   void setContentType(SearchContentType type) {
     state = state.copyWith(contentType: type);
-    // Si hay query, buscar automáticamente
+    // Si hay query y no hay resultados para este tipo, buscar automáticamente
     if (state.query.isNotEmpty) {
-      search();
+      switch (type) {
+        case SearchContentType.books:
+          if (state.bookResults.isEmpty) search();
+          break;
+        case SearchContentType.fanfics:
+          if (state.fanficResults.isEmpty) search();
+          break;
+        case SearchContentType.manga:
+          if (state.mangaResults.isEmpty) search();
+          break;
+      }
     }
   }
 

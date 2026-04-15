@@ -67,8 +67,8 @@ public class BookJournalService {
                 newBook.setDescription(dto.getDescription());
                 newBook.setCoverUrl(dto.getCoverUrl());
                 newBook.setGenre(dto.getGenre());
-                // El constraint en la DB exige valores específicos para book_type (Standalone, Saga, Series) o null
-                newBook.setBookType(dto.getBookType() != null ? dto.getBookType() : "Standalone");
+                // El constraint en la DB exige valores específicos en mayúsculas: STANDALONE, DUOLOGY, TRILOGY, SAGA, SERIES
+                newBook.setBookType(dto.getBookType() != null ? dto.getBookType().toUpperCase() : "STANDALONE");
                 newBook.setPublicationYear(dto.getPublicationYear());
 
                 book = bookRepository.save(newBook);
@@ -86,7 +86,7 @@ public class BookJournalService {
             journal.setBook(book);
         }
 
-        journal.setStatus(dto.getStatus());
+        journal.setStatus(convertStatusToDb(dto.getStatus()));
         journal.setCurrentPage(dto.getCurrentPage());
         journal.setRating(dto.getRating());
         journal.setReadingFormat(dto.getReadingFormat());
@@ -120,6 +120,7 @@ public class BookJournalService {
      * @param status estado de lectura
      * @return lista de entradas filtradas
      */
+    @Transactional(readOnly = true)
     public List<BookJournalResponseDTO> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -134,6 +135,7 @@ public class BookJournalService {
      * @param userId ID del usuario
      * @return lista de relecturas
      */
+    @Transactional(readOnly = true)
     public List<BookJournalResponseDTO> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -156,6 +158,22 @@ public class BookJournalService {
      * @param journal entrada del journal
      * @return DTO de respuesta
      */
+    /**
+     * Convierte estados en español a inglés mayúsculas para la base de datos.
+     */
+    private String convertStatusToDb(String status) {
+        if (status == null) {
+            return "PENDING";
+        }
+        return switch (status) {
+            case "Pendiente" -> "PENDING";
+            case "Leyendo" -> "READING";
+            case "Terminado" -> "FINISHED";
+            case "Abandonado" -> "DROPPED";
+            default -> status.toUpperCase();
+        };
+    }
+
     private BookJournalResponseDTO mapToDTO(BookJournal journal) {
         BookJournalResponseDTO dto = new BookJournalResponseDTO();
         dto.setId(journal.getId());

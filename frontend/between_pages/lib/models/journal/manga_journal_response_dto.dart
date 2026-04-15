@@ -2,7 +2,7 @@ import '../catalog/manga_response_dto.dart';
 
 class MangaJournalResponseDTO {
   final int id;
-  final MangaResponseDTO manga;
+  final MangaResponseDTO? manga;
   final String? status;
   final int? currentChapter;
   final int? currentVolume;
@@ -16,7 +16,7 @@ class MangaJournalResponseDTO {
 
   MangaJournalResponseDTO({
     required this.id,
-    required this.manga,
+    this.manga,
     this.status,
     this.currentChapter,
     this.currentVolume,
@@ -30,9 +30,19 @@ class MangaJournalResponseDTO {
   });
 
   factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) {
+    MangaResponseDTO? manga;
+    final mangaJson = json['manga'];
+    if (mangaJson != null && mangaJson is Map<String, dynamic>) {
+      try {
+        manga = MangaResponseDTO.fromJson(mangaJson);
+      } catch (e) {
+        manga = null;
+      }
+    }
+
     return MangaJournalResponseDTO(
       id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      manga: MangaResponseDTO.fromJson(json['manga'] as Map<String, dynamic>),
+      manga: manga,
       status: json['status'] as String?,
       currentChapter: json['current_chapter'] as int?,
       currentVolume: json['current_volume'] as int?,
@@ -49,7 +59,7 @@ class MangaJournalResponseDTO {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'manga': manga.toJson(),
+      'manga': manga?.toJson(),
       'status': status,
       'current_chapter': currentChapter,
       'current_volume': currentVolume,

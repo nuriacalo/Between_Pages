@@ -67,11 +67,30 @@ class AuthRepository {
     }
   }
 
-  // Verificar si hay un token guardado (sesión activa)
+  // Verificar si hay un token válido (sesión activa)
   Future<bool> isLoggedIn() async {
     final token = await _authTokenStorage.readToken();
-    return token != null && token.isNotEmpty;
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    // Verificar que el token sea válido haciendo una petición al backend
+    try {
+      await _apiClient.get(ApiConstants.me);
+      return true;
+    } on DioException catch (e) {
+      // Si el token es inválido o expiró, eliminarlo
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        await _authTokenStorage.removeToken();
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
+
+  // Stream que notifica cuando el token cambia (para redirección automática)
+  Stream<void> get onTokenChanged => _authTokenStorage.onTokenChanged;
 }
 
 //Proveedor del repositorio

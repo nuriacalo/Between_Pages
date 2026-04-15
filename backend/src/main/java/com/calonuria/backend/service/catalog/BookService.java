@@ -132,6 +132,11 @@ public class BookService {
                         if (thumbnailUrl != null && thumbnailUrl.startsWith("http:")) {
                             thumbnailUrl = thumbnailUrl.replace("http:", "https:");
                         }
+                        if (thumbnailUrl != null) {
+                            log.info("Cover URL para '{}': {}", dto.getTitle(), thumbnailUrl);
+                        } else {
+                            log.warn("No hay thumbnail para: {}", dto.getTitle());
+                        }
                         dto.setCoverUrl(thumbnailUrl);
                     }
 
@@ -153,7 +158,13 @@ public class BookService {
         }
 
         if (results.isEmpty()) {
+            log.info("No se encontraron resultados en Google Books para '{}', buscando en BD local", title);
             return searchInDatabase(title);
+        }
+
+        log.info("Enviando {} libros para '{}':", results.size(), title);
+        for (BookResponseDTO r : results) {
+            log.info("  - {} | coverUrl: {}", r.getTitle(), r.getCoverUrl());
         }
 
         return results;

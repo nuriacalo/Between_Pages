@@ -124,14 +124,20 @@ class _InProgressGridSection extends ConsumerWidget {
                   icon: Icons.menu_book,
                   color: Colors.orange,
                   asyncValue: mangasAsync,
-                  onTap: (item) => context.push(
-                    '/manga/${item.manga.idManga}',
-                    extra: item.manga,
-                  ),
+                  onTap: (item) {
+                    final manga = (item as MangaJournalResponseDTO).manga;
+                    if (manga != null) {
+                      final id =
+                          manga.idManga?.toString() ?? manga.mangadexId ?? '';
+                      if (id.isNotEmpty) {
+                        context.push('/manga/$id', extra: manga);
+                      }
+                    }
+                  },
                   getCoverUrl: (item) =>
-                      (item as MangaJournalResponseDTO).manga.coverUrl,
+                      (item as MangaJournalResponseDTO).manga?.coverUrl,
                   getTitle: (item) =>
-                      (item as MangaJournalResponseDTO).manga.title ??
+                      (item as MangaJournalResponseDTO).manga?.title ??
                       'Sin título',
                 ),
               ],

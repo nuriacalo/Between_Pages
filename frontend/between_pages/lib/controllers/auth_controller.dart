@@ -1,3 +1,4 @@
+import 'package:between_pages/providers/user/user_provider.dart';
 import 'package:between_pages/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +7,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   final Ref _ref;
 
   // Empezamos con "data(null)" porque al abrir la app no estamos cargando nada ni hay error.
-  AuthController(this._authRepository, this._ref) : super(const AsyncValue.data(null));
+  AuthController(this._authRepository, this._ref)
+    : super(const AsyncValue.data(null));
 
   // Método para iniciar sesión.
   Future<void> login(String email, String password) async {
@@ -16,6 +18,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       await _authRepository.login(email, password);
       // Avisamos a la app de que el estado de sesión ha cambiado
       _ref.invalidate(isLoggedInProvider);
+      // Invalidamos el perfil para que se recargue con el nuevo token
+      _ref.invalidate(userProfileProvider);
       // Volvemos a poner el estado en "data" (Éxito).
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
@@ -44,6 +48,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       await _authRepository.logout();
       // Avisamos a la app de que el estado de sesión ha cambiado
       _ref.invalidate(isLoggedInProvider);
+      // Limpiamos el perfil del usuario
+      _ref.invalidate(userProfileProvider);
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -58,7 +64,15 @@ final authControllerProvider =
     });
 
 // Proveedor para verificar si el usuario está logueado o no (sesión activa).
-final isLoggedInProvider = FutureProvider<bool>((ref) async {
+// Se auto-refresca cuando el token cambia (guardado o eliminado)
+final isLoggedInProvider = StreamProvider<bool>((ref) async* {
   final authRepository = ref.watch(authRepositoryProvider);
-  return await authRepository.isLoggedIn();
+
+  // Emite el estado inicial
+  yield await authRepository.isLoggedIn();
+
+  // Escucha cambios en el token y re-emite el estado
+  await for (final _ in authRepository.onTokenChanged) {
+    yield await authRepository.isLoggedIn();
+  }
 });

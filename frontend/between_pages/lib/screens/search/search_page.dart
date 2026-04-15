@@ -1,6 +1,5 @@
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/providers/search/unified_search_provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -315,25 +314,43 @@ class _BookCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: book.coverUrl != null && book.coverUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: book.coverUrl!,
+              child: Builder(
+                builder: (context) {
+                  debugPrint(
+                    'Book: ${book.title}, coverUrl: "${book.coverUrl}"',
+                  );
+                  if (book.coverUrl != null && book.coverUrl!.isNotEmpty) {
+                    return Image.network(
+                      book.coverUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.book, size: 40),
-                      ),
-                    )
-                  : Container(
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint(
+                          'Error cargando imagen: ${book.coverUrl} - $error',
+                        );
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.book, size: 40),
+                        );
+                      },
+                    );
+                  } else {
+                    debugPrint('URL vacía o null para: ${book.title}');
+                    return Container(
                       color: colorScheme.surfaceContainerHighest,
                       child: const Icon(Icons.book, size: 40),
-                    ),
+                    );
+                  }
+                },
+              ),
             ),
           ),
           const SizedBox(height: 6),
@@ -411,10 +428,13 @@ class _MangaCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // Usar mangadexId para mangas de búsqueda externa (sin ID local)
+    final mangaId = (manga.idManga != null && manga.idManga! > 0)
+        ? manga.idManga.toString()
+        : manga.mangadexId ?? 'unknown';
+
     return InkWell(
-      onTap: () {
-        // TODO: Navegar a detalle de manga
-      },
+      onTap: () => context.push('/manga/$mangaId', extra: manga),
       borderRadius: BorderRadius.circular(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,19 +453,27 @@ class _MangaCard extends StatelessWidget {
                 ],
               ),
               child: manga.coverUrl != null && manga.coverUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: manga.coverUrl!,
+                  ? Image.network(
+                      manga.coverUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.auto_stories, size: 40),
-                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint(
+                          'Error cargando imagen manga: ${manga.coverUrl} - $error',
+                        );
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.auto_stories, size: 40),
+                        );
+                      },
                     )
                   : Container(
                       color: colorScheme.surfaceContainerHighest,

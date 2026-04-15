@@ -11,6 +11,7 @@ import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,7 +68,9 @@ public class MangaJournalService {
                 newManga.setCoverUrl(dto.getCoverUrl());
                 newManga.setTotalChapters(dto.getTotalChapters());
                 newManga.setTotalVolumes(dto.getTotalVolumes());
-                newManga.setPublicationStatus(dto.getPublicationStatus());
+                // La DB espera valores en mayúsculas: ONGOING, COMPLETED, PAUSED, CANCELLED
+                newManga.setPublicationStatus(dto.getPublicationStatus() != null 
+                    ? dto.getPublicationStatus().toUpperCase() : null);
 
                 manga = mangaRepository.save(newManga);
             }
@@ -83,7 +86,7 @@ public class MangaJournalService {
             journal.setManga(manga);
         }
 
-        journal.setStatus(dto.getStatus());
+        journal.setStatus(convertStatusToDb(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setCurrentVolume(dto.getCurrentVolume());
         journal.setRating(dto.getRating());
@@ -104,6 +107,7 @@ public class MangaJournalService {
      * @param userId ID del usuario
      * @return lista de entradas del journal
      */
+    @Transactional(readOnly = true)
     public List<MangaJournalResponseDTO> getUserJournal(Long userId) {
         return mangaJournalRepository.findByUserId(userId)
                 .stream()
@@ -117,6 +121,7 @@ public class MangaJournalService {
      * @param status estado de lectura
      * @return lista de entradas filtradas
      */
+    @Transactional(readOnly = true)
     public List<MangaJournalResponseDTO> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -131,6 +136,7 @@ public class MangaJournalService {
      * @param userId ID del usuario
      * @return lista de relecturas
      */
+    @Transactional(readOnly = true)
     public List<MangaJournalResponseDTO> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -146,6 +152,22 @@ public class MangaJournalService {
      */
     public void deleteJournal(Long journalId) {
         mangaJournalRepository.deleteById(journalId);
+    }
+
+    /**
+     * Convierte estados en español a inglés mayúsculas para la base de datos.
+     */
+    private String convertStatusToDb(String status) {
+        if (status == null) {
+            return "PENDING";
+        }
+        return switch (status) {
+            case "Pendiente" -> "PENDING";
+            case "Leyendo" -> "READING";
+            case "Terminado" -> "FINISHED";
+            case "Abandonado" -> "DROPPED";
+            default -> status.toUpperCase();
+        };
     }
 
     /**
