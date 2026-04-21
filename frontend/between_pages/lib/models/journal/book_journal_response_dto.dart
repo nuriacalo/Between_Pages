@@ -12,6 +12,7 @@ class BookJournalResponseDto {
   final String? personalNotes;
   final String? startDate;
   final String? endDate;
+  final String? ownership;
 
   BookJournalResponseDto({
     required this.id,
@@ -25,6 +26,7 @@ class BookJournalResponseDto {
     this.personalNotes,
     this.startDate,
     this.endDate,
+    this.ownership,
   });
 
   factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class BookJournalResponseDto {
       personalNotes: json['personal_notes'] as String?,
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
+      ownership: json['ownership'] as String?,
     );
   }
 
@@ -56,6 +59,7 @@ class BookJournalResponseDto {
       'personal_notes': personalNotes,
       'start_date': startDate,
       'end_date': endDate,
+      'ownership': ownership,
     };
   }
 }

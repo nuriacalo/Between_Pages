@@ -41,7 +41,7 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
                         manga.coverUrl!,
                         height: 250,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                           height: 250,
                           width: 170,
                           color: colorScheme.surfaceContainerHighest,
@@ -142,7 +142,13 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
   }
 
   void _showAddToJournalDialog() {
-    final statuses = ['Pendiente', 'Leyendo', 'Terminado', 'Abandonado'];
+    final statuses = [
+      'Pendiente',
+      'Leyendo',
+      'Pausado',
+      'Terminado',
+      'Abandonado'
+    ];
 
     showDialog(
       context: context,
@@ -231,6 +237,8 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
         return Icons.menu_book;
       case 'Terminado':
         return Icons.check_circle;
+      case 'Pausado':
+        return Icons.pause_circle_outline;
       case 'Abandonado':
         return Icons.cancel;
       default:

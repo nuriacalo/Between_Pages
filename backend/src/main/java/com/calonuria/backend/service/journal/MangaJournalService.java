@@ -2,6 +2,7 @@ package com.calonuria.backend.service.journal;
 
 import com.calonuria.backend.dto.journal.MangaJournalRegistrationDTO;
 import com.calonuria.backend.dto.journal.MangaJournalResponseDTO;
+import com.calonuria.backend.exception.ResourceNotFoundException;
 import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.model.journal.MangaJournal;
 import com.calonuria.backend.model.user.User;
@@ -41,14 +42,14 @@ public class MangaJournalService {
      */
     public MangaJournalResponseDTO saveProgress(MangaJournalRegistrationDTO dto) {
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
         
         Manga manga;
 
         // Si el DTO trae un mangaId, buscamos por ese ID en la base de datos
         if (dto.getMangaId() != null) {
             manga = mangaRepository.findById(dto.getMangaId())
-                    .orElseThrow(() -> new RuntimeException("Manga no encontrado con id: " + dto.getMangaId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Manga no encontrado con id: " + dto.getMangaId()));
         } else if (dto.getMangadexId() != null) {
             // Si trae mangadexId (pero no mangaId), lo buscamos o lo creamos
             Optional<Manga> existing = mangaRepository.findByMangadexId(dto.getMangadexId());
@@ -75,7 +76,7 @@ public class MangaJournalService {
                 manga = mangaRepository.save(newManga);
             }
         } else {
-            throw new RuntimeException("Debe proporcionar un mangaId o un mangadexId");
+            throw new IllegalArgumentException("Debe proporcionar un mangaId o un mangadexId");
         }
 
         MangaJournal journal = mangaJournalRepository.findByUserAndManga(user, manga)
@@ -97,6 +98,8 @@ public class MangaJournalService {
         journal.setStartDate(dto.getStartDate());
         journal.setEndDate(dto.getEndDate());
         journal.setRereading(dto.getRereading());
+        
+        journal.setOwnership(dto.getOwnership());
 
         MangaJournal saved = mangaJournalRepository.save(journal);
         return mapToDTO(saved);
@@ -124,7 +127,7 @@ public class MangaJournalService {
     @Transactional(readOnly = true)
     public List<MangaJournalResponseDTO> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return mangaJournalRepository.findByUserAndStatus(user, status)
                 .stream()
                 .map(this::mapToDTO)
@@ -139,7 +142,7 @@ public class MangaJournalService {
     @Transactional(readOnly = true)
     public List<MangaJournalResponseDTO> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return mangaJournalRepository.findByUserAndRereadingTrue(user)
                 .stream()
                 .map(this::mapToDTO)
@@ -166,6 +169,7 @@ public class MangaJournalService {
             case "Leyendo" -> "READING";
             case "Terminado" -> "FINISHED";
             case "Abandonado" -> "DROPPED";
+            case "Pausado" -> "PAUSED";
             default -> status.toUpperCase();
         };
     }
@@ -190,6 +194,7 @@ public class MangaJournalService {
         dto.setStartDate(journal.getStartDate());
         dto.setEndDate(journal.getEndDate());
         dto.setRereading(journal.getRereading());
+        dto.setOwnership(journal.getOwnership());
         return dto;
     }
 }

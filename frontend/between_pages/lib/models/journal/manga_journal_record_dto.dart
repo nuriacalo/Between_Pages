@@ -27,6 +27,7 @@ class MangaJournalRecordDTO {
 
   final String? startDate;
   final String? endDate;
+  final String? ownership;
 
   MangaJournalRecordDTO({
     required this.userId,
@@ -52,6 +53,7 @@ class MangaJournalRecordDTO {
     this.personalNotes,
     this.startDate,
     this.endDate,
+    this.ownership,
   });
 
   factory MangaJournalRecordDTO.fromJson(Map<String, dynamic> json) {
@@ -79,6 +81,7 @@ class MangaJournalRecordDTO {
       personalNotes: json['personal_notes'] as String?,
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
+      ownership: json['ownership'] as String?,
     );
   }
 
@@ -107,6 +110,7 @@ class MangaJournalRecordDTO {
       'personalNotes': personalNotes,
       'startDate': startDate,
       'endDate': endDate,
+      'ownership': ownership,
     };
   }
 }

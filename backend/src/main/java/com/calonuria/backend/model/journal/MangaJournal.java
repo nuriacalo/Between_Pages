@@ -114,6 +114,12 @@ public class MangaJournal {
     private Boolean rereading;
 
     /**
+     * Tipo de propiedad: DIGITAL, PHYSICAL, NONE, BORROWED.
+     */
+    @Column(length = 50)
+    private String ownership;
+
+    /**
      * Método que se ejecuta antes de persistir o actualizar.
      * Establece la fecha de actualización automáticamente.
      */

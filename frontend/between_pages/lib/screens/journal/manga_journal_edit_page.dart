@@ -25,10 +25,12 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
   late String? _personalNotes;
   late String? _favoriteCharacter;
   late String? _favoriteArc;
+  late String? _ownership;
   bool _isLoading = false;
 
-  final List<String> _statusOptions = ['Pendiente', 'Leyendo', 'Terminado', 'Abandonado'];
+  final List<String> _statusOptions = ['Pendiente', 'Leyendo', 'Pausado', 'Terminado', 'Abandonado'];
   final List<String> _formatOptions = ['Físico', 'Digital', 'Online'];
+  final List<String> _ownershipOptions = ['Digital', 'Físico', 'Ninguno', 'Prestado'];
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
     _personalNotes = j.personalNotes;
     _favoriteCharacter = j.favoriteCharacter;
     _favoriteArc = j.favoriteArc;
+    _ownership = _mapOwnershipToUi(j.ownership);
   }
 
   String _mapStatusToUi(String status) {
@@ -50,6 +53,7 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       'READING' => 'Leyendo',
       'FINISHED' => 'Terminado',
       'DROPPED' => 'Abandonado',
+      'PAUSED' => 'Pausado',
       _ => status,
     };
   }
@@ -60,7 +64,28 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       'Leyendo' => 'READING',
       'Terminado' => 'FINISHED',
       'Abandonado' => 'DROPPED',
+      'Pausado' => 'PAUSED',
       _ => status,
+    };
+  }
+
+  String? _mapOwnershipToUi(String? ownership) {
+    return switch (ownership) {
+      'DIGITAL' => 'Digital',
+      'PHYSICAL' => 'Físico',
+      'NONE' => 'Ninguno',
+      'BORROWED' => 'Prestado',
+      _ => ownership,
+    };
+  }
+
+  String? _mapOwnershipToDb(String? ownership) {
+    return switch (ownership) {
+      'Digital' => 'DIGITAL',
+      'Físico' => 'PHYSICAL',
+      'Ninguno' => 'NONE',
+      'Prestado' => 'BORROWED',
+      _ => ownership,
     };
   }
 
@@ -96,6 +121,7 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
         personalNotes: _personalNotes,
         startDate: widget.journal.startDate,
         endDate: _status == 'Terminado' ? _formatDate(DateTime.now()) : widget.journal.endDate,
+        ownership: _mapOwnershipToDb(_ownership),
       );
 
       await journalRepository.saveOrUpdate(dto);
@@ -258,6 +284,25 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
                   selected: isSelected,
                   onSelected: (_) => setState(() => _readingFormat = format),
                   selectedColor: colorScheme.secondaryContainer,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+
+            // Propiedad (Ownership)
+            _buildSectionTitle('Propiedad'),
+            Wrap(
+              spacing: 8,
+              children: _ownershipOptions.map((ownership) {
+                final isSelected = _ownership == ownership;
+                return ChoiceChip(
+                  label: Text(ownership),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _ownership = ownership),
+                  selectedColor: colorScheme.tertiaryContainer,
+                  labelStyle: TextStyle(
+                    color: isSelected ? colorScheme.onTertiaryContainer : null,
+                  ),
                 );
               }).toList(),
             ),

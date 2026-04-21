@@ -112,6 +112,12 @@ public class BookJournal {
     private Boolean rereading;
 
     /**
+     * Tipo de propiedad del libro: DIGITAL, PHYSICAL, NONE, BORROWED.
+     */
+    @Column(length = 20)
+    private String ownership;
+
+    /**
      * Método que se ejecuta antes de persistir o actualizar.
      * Establece la fecha de actualización automáticamente.
      */

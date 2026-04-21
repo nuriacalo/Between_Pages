@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/screens/detail/ownership_badge.dart';
 
 class JournalPage extends ConsumerWidget {
   const JournalPage({super.key});
@@ -79,6 +80,12 @@ class _BooksTabWithStatus extends ConsumerWidget {
               'Pendientes',
               grouped['PENDING'] ?? [],
               Colors.orange,
+            ),
+            _buildStatusSection(
+              context,
+              'Pausados',
+              grouped['PAUSED'] ?? [],
+              Colors.purple,
             ),
             _buildStatusSection(
               context,
@@ -209,6 +216,12 @@ class _MangaTabWithStatus extends ConsumerWidget {
             ),
             _buildStatusSection(
               context,
+              'Pausados',
+              grouped['PAUSED'] ?? [],
+              Colors.purple,
+            ),
+            _buildStatusSection(
+              context,
               'Terminados',
               grouped['FINISHED'] ?? [],
               Colors.blue,
@@ -336,32 +349,36 @@ class _BookCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: book.coverUrl != null && book.coverUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: book.coverUrl!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder: (context, url) => Container(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      book.coverUrl != null && book.coverUrl!.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: book.coverUrl!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder: (context, url) => Container(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                child: const Icon(Icons.book, size: 32),
+                              ),
+                            )
+                          : Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: const Icon(Icons.book, size: 32),
                             ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.book, size: 32),
-                          ),
-                        )
-                      : Container(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.book, size: 32),
-                        ),
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: OwnershipBadge(ownership: journal.ownership),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
@@ -420,32 +437,36 @@ class _MangaCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: manga.coverUrl != null && manga.coverUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: manga.coverUrl!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder: (context, url) => Container(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      manga.coverUrl != null && manga.coverUrl!.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: manga.coverUrl!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder: (context, url) => Container(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                child: const Icon(Icons.auto_stories, size: 32),
+                              ),
+                            )
+                          : Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: const Icon(Icons.auto_stories, size: 32),
                             ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.auto_stories, size: 32),
-                          ),
-                        )
-                      : Container(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.auto_stories, size: 32),
-                        ),
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: OwnershipBadge(ownership: journal.ownership),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 6),

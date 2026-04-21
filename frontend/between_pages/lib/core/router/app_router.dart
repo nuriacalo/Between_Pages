@@ -33,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.when(
         data: (loggedIn) => loggedIn,
         loading: () => null, // Esperando, no redirigimos aún
-        error: (_, __) => false, // En error, asumimos no logueado
+        error: (_, _) => false, // En error, asumimos no logueado
       );
 
       // Si aún estamos cargando, no redirigimos

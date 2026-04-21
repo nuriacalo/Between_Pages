@@ -2,6 +2,7 @@ package com.calonuria.backend.service.journal;
 
 import com.calonuria.backend.dto.journal.FanficJournalRegistrationDTO;
 import com.calonuria.backend.dto.journal.FanficJournalResponseDTO;
+import com.calonuria.backend.exception.ResourceNotFoundException;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.journal.FanficJournal;
 import com.calonuria.backend.model.user.User;
@@ -11,6 +12,7 @@ import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,16 +40,17 @@ public class FanficJournalService {
      * @param dto datos del progreso
      * @return DTO con la información guardada
      */
+    @Transactional
     public FanficJournalResponseDTO saveProgress(FanficJournalRegistrationDTO dto) {
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
         
         Fanfiction fanfic;
 
         // Si el DTO trae un fanfictionId, buscamos por ese ID en la base de datos
         if (dto.getFanfictionId() != null) {
             fanfic = fanfictionRepository.findById(dto.getFanfictionId())
-                    .orElseThrow(() -> new RuntimeException("Fanfiction no encontrado con id: " + dto.getFanfictionId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Fanfiction no encontrado con id: " + dto.getFanfictionId()));
         } else if (dto.getAo3Id() != null) {
             // Si trae ao3Id (pero no fanfictionId), lo buscamos o lo creamos
             Optional<Fanfiction> existing = fanfictionRepository.findByAo3Id(dto.getAo3Id());
@@ -72,7 +75,7 @@ public class FanficJournalService {
                 fanfic = fanfictionRepository.save(newFanfic);
             }
         } else {
-            throw new RuntimeException("Debe proporcionar un fanfictionId o un ao3Id");
+            throw new IllegalArgumentException("Debe proporcionar un fanfictionId o un ao3Id");
         }
 
         FanficJournal journal = fanficJournalRepository.findByUserAndFanfic(user, fanfic)
@@ -83,7 +86,7 @@ public class FanficJournalService {
             journal.setFanfic(fanfic);
         }
 
-        journal.setStatus(dto.getStatus());
+        journal.setStatus(convertStatusToDb(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setRating(dto.getRating());
         journal.setMainShip(dto.getMainShip());
@@ -106,6 +109,7 @@ public class FanficJournalService {
      * @param userId ID del usuario
      * @return lista de entradas del journal
      */
+    @Transactional(readOnly = true)
     public List<FanficJournalResponseDTO> getUserJournal(Long userId) {
         return fanficJournalRepository.findByUserId(userId)
                 .stream()
@@ -119,9 +123,10 @@ public class FanficJournalService {
      * @param status estado de lectura
      * @return lista de entradas filtradas
      */
+    @Transactional(readOnly = true)
     public List<FanficJournalResponseDTO> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return fanficJournalRepository.findByUserAndStatus(user, status)
                 .stream()
                 .map(this::mapToDTO)
@@ -133,9 +138,10 @@ public class FanficJournalService {
      * @param userId ID del usuario
      * @return lista de relecturas
      */
+    @Transactional(readOnly = true)
     public List<FanficJournalResponseDTO> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return fanficJournalRepository.findByUserAndRereadingTrue(user)
                 .stream()
                 .map(this::mapToDTO)
@@ -146,8 +152,26 @@ public class FanficJournalService {
      * Elimina una entrada del journal.
      * @param journalId ID de la entrada
      */
+    @Transactional
     public void deleteJournal(Long journalId) {
         fanficJournalRepository.deleteById(journalId);
+    }
+
+    /**
+     * Convierte estados en español a inglés mayúsculas para la base de datos.
+     */
+    private String convertStatusToDb(String status) {
+        if (status == null) {
+            return "PENDING";
+        }
+        return switch (status) {
+            case "Pendiente" -> "PENDING";
+            case "Leyendo" -> "READING";
+            case "Terminado" -> "FINISHED";
+            case "Abandonado" -> "DROPPED";
+            case "Pausado" -> "PAUSED";
+            default -> status.toUpperCase();
+        };
     }
 
     /**

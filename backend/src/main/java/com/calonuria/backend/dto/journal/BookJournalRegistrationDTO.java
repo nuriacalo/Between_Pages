@@ -31,7 +31,7 @@ public class BookJournalRegistrationDTO {
     // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado",
+    @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado|Pausado",
             message = "Estado no válido")
     private String status;
 
@@ -52,4 +52,7 @@ public class BookJournalRegistrationDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean rereading;
+
+    @Pattern(regexp = "DIGITAL|PHYSICAL|NONE|BORROWED", message = "Propiedad no válida")
+    private String ownership;
 }

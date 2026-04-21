@@ -157,7 +157,13 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
   }
 
   void _showAddToJournalDialog() {
-    final statuses = ['Pendiente', 'Leyendo', 'Terminado', 'Abandonado'];
+    final statuses = [
+      'Pendiente',
+      'Leyendo',
+      'Pausado',
+      'Terminado',
+      'Abandonado'
+    ];
 
     showDialog(
       context: context,
@@ -243,6 +249,8 @@ class _BookDetailPageState extends ConsumerState<BookDetailPage> {
         return Icons.menu_book;
       case 'Terminado':
         return Icons.check_circle;
+      case 'Pausado':
+        return Icons.pause_circle_outline;
       case 'Abandonado':
         return Icons.cancel;
       default:

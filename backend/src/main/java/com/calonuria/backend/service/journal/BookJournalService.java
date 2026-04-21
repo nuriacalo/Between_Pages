@@ -2,6 +2,7 @@ package com.calonuria.backend.service.journal;
 
 import com.calonuria.backend.dto.journal.BookJournalRegistrationDTO;
 import com.calonuria.backend.dto.journal.BookJournalResponseDTO;
+import com.calonuria.backend.exception.ResourceNotFoundException;
 import com.calonuria.backend.model.catalog.Book;
 import com.calonuria.backend.model.journal.BookJournal;
 import com.calonuria.backend.model.user.User;
@@ -42,14 +43,14 @@ public class BookJournalService {
      */
     public BookJournalResponseDTO saveProgress(BookJournalRegistrationDTO dto) {
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
 
         Book book;
 
         // Si el DTO trae un bookId, buscamos por ese ID en la base de datos
         if (dto.getBookId() != null) {
             book = bookRepository.findById(dto.getBookId())
-                    .orElseThrow(() -> new RuntimeException("Libro no encontrado con id: " + dto.getBookId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Libro no encontrado con id: " + dto.getBookId()));
         } else if (dto.getGoogleBooksId() != null) {
             // Si trae googleBooksId (pero no bookId), lo buscamos o lo creamos
             Optional<Book> existing = bookRepository.findByGoogleBooksId(dto.getGoogleBooksId());
@@ -74,7 +75,7 @@ public class BookJournalService {
                 book = bookRepository.save(newBook);
             }
         } else {
-            throw new RuntimeException("Debe proporcionar un bookId o un googleBooksId");
+            throw new IllegalArgumentException("Debe proporcionar un bookId o un googleBooksId");
         }
 
         // Ahora buscamos si el usuario ya tiene este libro en su journal
@@ -96,6 +97,8 @@ public class BookJournalService {
         journal.setStartDate(dto.getStartDate());
         journal.setEndDate(dto.getEndDate());
         journal.setRereading(dto.getRereading());
+        
+        journal.setOwnership(dto.getOwnership());
 
         BookJournal saved = bookJournalRepository.save(journal);
         return mapToDTO(saved);
@@ -123,7 +126,7 @@ public class BookJournalService {
     @Transactional(readOnly = true)
     public List<BookJournalResponseDTO> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return bookJournalRepository.findByUserAndStatus(user, status)
                 .stream()
                 .map(this::mapToDTO)
@@ -138,7 +141,7 @@ public class BookJournalService {
     @Transactional(readOnly = true)
     public List<BookJournalResponseDTO> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return bookJournalRepository.findByUserAndRereadingTrue(user)
                 .stream()
                 .map(this::mapToDTO)
@@ -170,6 +173,7 @@ public class BookJournalService {
             case "Leyendo" -> "READING";
             case "Terminado" -> "FINISHED";
             case "Abandonado" -> "DROPPED";
+            case "Pausado" -> "PAUSED";
             default -> status.toUpperCase();
         };
     }
@@ -188,6 +192,7 @@ public class BookJournalService {
         dto.setStartDate(journal.getStartDate());
         dto.setEndDate(journal.getEndDate());
         dto.setRereading(journal.getRereading());
+        dto.setOwnership(journal.getOwnership());
         return dto;
     }
 }

@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/screens/detail/ownership_badge.dart';
 
 class FeedPage extends ConsumerWidget {
   const FeedPage({super.key});
@@ -99,6 +100,8 @@ class _InProgressGridSection extends ConsumerWidget {
                       (item as BookJournalResponseDto).book.coverUrl,
                   getTitle: (item) =>
                       (item as BookJournalResponseDto).book.title,
+                  getOwnership: (item) =>
+                      (item as BookJournalResponseDto).ownership,
                 ),
                 const SizedBox(height: 12),
                 // Recuadro Fanfics
@@ -116,6 +119,7 @@ class _InProgressGridSection extends ConsumerWidget {
                   getTitle: (item) =>
                       (item as FanficJournalResponseDTO).fanfic.title ??
                       'Sin título',
+                  getOwnership: (item) => null, // Fanfics no tienen ownership
                 ),
                 const SizedBox(height: 12),
                 // Recuadro Manga
@@ -135,6 +139,8 @@ class _InProgressGridSection extends ConsumerWidget {
                   getTitle: (item) =>
                       (item as MangaJournalResponseDTO).manga?.title ??
                       'Sin título',
+                  getOwnership: (item) =>
+                      (item as MangaJournalResponseDTO).ownership,
                 ),
               ],
             ),
@@ -154,6 +160,7 @@ class _ProgressCard<T> extends StatelessWidget {
   final void Function(T) onTap;
   final String? Function(T) getCoverUrl;
   final String Function(T) getTitle;
+  final String? Function(T)? getOwnership;
 
   const _ProgressCard({
     required this.title,
@@ -163,6 +170,7 @@ class _ProgressCard<T> extends StatelessWidget {
     required this.onTap,
     required this.getCoverUrl,
     required this.getTitle,
+    this.getOwnership,
   });
 
   @override
@@ -251,37 +259,46 @@ class _ProgressCard<T> extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: coverUrl != null && coverUrl.isNotEmpty
-                                ? CachedNetworkImage(
-                                    imageUrl: coverUrl,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                coverUrl != null && coverUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: coverUrl,
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => Container(
+                                          color: colorScheme.surfaceContainerHighest,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (_, __, ___) => Container(
+                                          color: colorScheme.surfaceContainerHighest,
+                                          child: Icon(
+                                            icon,
+                                            size: 32,
+                                            color: colorScheme.outline,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: colorScheme.surfaceContainerHighest,
+                                        child: Icon(
+                                          icon,
+                                          size: 32,
+                                          color: colorScheme.outline,
                                         ),
                                       ),
-                                    ),
-                                    errorWidget: (_, __, ___) => Container(
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
-                                      child: Icon(
-                                        icon,
-                                        size: 32,
-                                        color: colorScheme.outline,
-                                      ),
-                                    ),
-                                  )
-                                : Container(
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: Icon(
-                                      icon,
-                                      size: 32,
-                                      color: colorScheme.outline,
-                                    ),
+                                if (getOwnership != null && getOwnership!(firstItem) != null)
+                                  Positioned(
+                                    top: 6,
+                                    left: 6,
+                                    child: OwnershipBadge(ownership: getOwnership!(firstItem)),
                                   ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),

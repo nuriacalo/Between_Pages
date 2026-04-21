@@ -192,7 +192,7 @@ class _MangaResultCard extends StatelessWidget {
                         width: 80,
                         height: 120,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                        errorBuilder: (_, _, _) => _buildPlaceholder(),
                       )
                     : _buildPlaceholder(),
               ),

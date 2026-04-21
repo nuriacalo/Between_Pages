@@ -23,4 +23,5 @@ public class MangaJournalResponseDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean rereading;
+    private String ownership;
 }
