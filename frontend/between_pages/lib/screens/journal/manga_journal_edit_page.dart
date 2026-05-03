@@ -13,7 +13,8 @@ class MangaJournalEditPage extends ConsumerStatefulWidget {
   const MangaJournalEditPage({super.key, required this.journal});
 
   @override
-  ConsumerState<MangaJournalEditPage> createState() => _MangaJournalEditPageState();
+  ConsumerState<MangaJournalEditPage> createState() =>
+      _MangaJournalEditPageState();
 }
 
 class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
@@ -28,9 +29,20 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
   late String? _ownership;
   bool _isLoading = false;
 
-  final List<String> _statusOptions = ['Pendiente', 'Leyendo', 'Pausado', 'Terminado', 'Abandonado'];
+  final List<String> _statusOptions = [
+    'Pendiente',
+    'Leyendo',
+    'Pausado',
+    'Terminado',
+    'Abandonado',
+  ];
   final List<String> _formatOptions = ['Físico', 'Digital', 'Online'];
-  final List<String> _ownershipOptions = ['Digital', 'Físico', 'Ninguno', 'Prestado'];
+  final List<String> _ownershipOptions = [
+    'Digital',
+    'Físico',
+    'Ninguno',
+    'Prestado',
+  ];
 
   @override
   void initState() {
@@ -100,10 +112,10 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       final dto = MangaJournalRecordDTO(
         userId: user.idUser,
         mangaId: manga?.idManga,
-        mangadexId: manga?.mangadexId,
+        malId: manga?.malId,
         source: manga?.source,
         title: manga?.title,
-        mangaka: manga?.mangaka,
+        mangaka: manga?.author,
         demographic: manga?.demographic,
         genre: manga?.genre,
         description: manga?.description,
@@ -120,7 +132,9 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
         favoriteArc: _favoriteArc,
         personalNotes: _personalNotes,
         startDate: widget.journal.startDate,
-        endDate: _status == 'Terminado' ? _formatDate(DateTime.now()) : widget.journal.endDate,
+        endDate: _status == 'Terminado'
+            ? _formatDate(DateTime.now())
+            : widget.journal.endDate,
         ownership: _mapOwnershipToDb(_ownership),
       );
 
@@ -134,9 +148,9 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -159,10 +173,7 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else
-            TextButton(
-              onPressed: _save,
-              child: const Text('Guardar'),
-            ),
+            TextButton(onPressed: _save, child: const Text('Guardar')),
         ],
       ),
       body: SingleChildScrollView(
@@ -197,13 +208,12 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
                     children: [
                       Text(
                         manga?.title ?? 'Sin título',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        manga?.mangaka ?? 'Autor desconocido',
+                        manga?.author ?? 'Autor desconocido',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -212,9 +222,8 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
                         const SizedBox(height: 4),
                         Text(
                           manga!.genre!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ],
@@ -223,6 +232,26 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
               ],
             ),
             const SizedBox(height: 24),
+
+            // Botón Iniciar cronómetro de lectura
+            if (_status == 'Leyendo') ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    context.push('/journal/manga/session', extra: widget.journal);
+                  },
+                  icon: const Icon(Icons.timer_outlined),
+                  label: const Text('Iniciar sesión de lectura'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
 
             // Estado
             _buildSectionTitle('Estado de lectura'),

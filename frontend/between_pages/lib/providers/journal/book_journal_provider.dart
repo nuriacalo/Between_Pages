@@ -9,5 +9,16 @@ final bookJournalProvider = FutureProvider<List<BookJournalResponseDto>>((
 ) async {
   final user = await ref.watch(userProfileProvider.future);
   final repository = ref.watch(bookJournalRepositoryProvider);
-  return await repository.getBooksForUser(user.idUser);
+  return await repository.getForUser(user.idUser);
 });
+
+/// Provider para buscar un journal entry específico por bookId
+final bookJournalEntryProvider =
+    FutureProvider.family<BookJournalResponseDto?, int>((ref, bookId) async {
+      final journals = await ref.watch(bookJournalProvider.future);
+      try {
+        return journals.firstWhere((j) => j.book.idBook == bookId);
+      } catch (e) {
+        return null;
+      }
+    });

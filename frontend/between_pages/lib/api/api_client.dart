@@ -60,22 +60,18 @@ class ApiClient {
   Future<Response<T>> put<T>(
     String path, {
     Object? data,
+    Map<String, dynamic>? queryParameters,
     Options? options,
   }) {
     return _dio.put<T>(
       path,
       data: data,
+      queryParameters: queryParameters,
       options: options,
     );
   }
 
-  Future<Response<T>> delete_<T>(
-    String path, {
-    Options? options,
-  }) {
-    return _dio.delete<T>(
-      path,
-      options: options,
-    );
+  Future<Response<T>> delete_<T>(String path, {Options? options}) {
+    return _dio.delete<T>(path, options: options);
   }
 }

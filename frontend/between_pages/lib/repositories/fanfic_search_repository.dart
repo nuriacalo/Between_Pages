@@ -4,11 +4,13 @@ import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
 import 'package:between_pages/providers/auth/api_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Repositorio para buscar fanfics en el catálogo.
 class FanficSearchRepository {
   final ApiClient _apiClient;
 
   FanficSearchRepository(this._apiClient);
 
+  /// Busca fanfics por título o término de búsqueda.
   Future<List<FanfictionResponseDTO>> searchFanfics(
     String query, {
     int page = 0,
@@ -19,6 +21,8 @@ class FanficSearchRepository {
         ApiConstants.fanficSearch,
         queryParameters: {
           'q': query, // El backend espera 'q'
+          'page': page,
+          'size': size,
         },
       );
 

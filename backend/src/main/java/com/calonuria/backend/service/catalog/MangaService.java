@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
@@ -17,27 +16,29 @@ import java.util.stream.Collectors;
 
 /**
  * Servicio para la gestión de mangas en el catálogo.
- * Integra con MangaDex API para búsquedas externas.
+ * Integra con Jikan API (MyAnimeList) para búsquedas externas.
  */
 @Service
 public class MangaService {
 
     private static final Logger log = LoggerFactory.getLogger(MangaService.class);
 
-    @Autowired
-    private MangaRepository mangaRepository;
+    private final MangaRepository mangaRepository;
+    private final RestTemplate restTemplate;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    public MangaService(MangaRepository mangaRepository, RestTemplate restTemplate) {
+        this.mangaRepository = mangaRepository;
+        this.restTemplate = restTemplate;
+    }
 
     /**
-     * Guarda un manga solo si no existe ya por mangadexId.
+     * Guarda un manga solo si no existe ya por malId.
      * @param manga manga a guardar
      * @return DTO con la información del manga guardado
      */
     public MangaResponseDTO saveIfNotExists(Manga manga) {
-        if (manga.getMangadexId() != null) {
-            Optional<Manga> existing = mangaRepository.findByMangadexId(manga.getMangadexId());
+        if (manga.getMalId() != null) {
+            Optional<Manga> existing = mangaRepository.findByMalId(manga.getMalId());
             if (existing.isPresent()) {
                 return mapToDTO(existing.get());
             }
@@ -55,12 +56,12 @@ public class MangaService {
     }
 
     /**
-     * Busca mangas en MangaDex API.
+     * Busca mangas en Jikan API (MyAnimeList).
      * @param title título a buscar
      * @return lista de mangas encontrados
      */
-    public List<MangaResponseDTO> searchInMangaDex(String title) {
-        String url = "https://api.mangadex.org/manga?title=" + title + "&limit=10&includes[]=author&includes[]=cover_art";
+    public List<MangaResponseDTO> searchInJikan(String title) {
+        String url = "https://api.jikan.moe/v4/manga?q=" + title + "&limit=10";
         List<MangaResponseDTO> results = new ArrayList<>();
 
         try {
@@ -70,65 +71,67 @@ public class MangaService {
             if (data.isArray()) {
                 for (JsonNode item : data) {
                     MangaResponseDTO dto = new MangaResponseDTO();
-                    String mangadexId = item.path("id").asText(null);
-                    dto.setMangadexId(mangadexId);
-
-                    JsonNode attrs = item.path("attributes");
-
-                    // Título en español o inglés
-                    JsonNode titles = attrs.path("title");
-                    if (!titles.path("es").isMissingNode()) {
-                        dto.setTitle(titles.path("es").asText());
-                    } else {
-                        dto.setTitle(titles.path("en").asText("Título desconocido"));
+                    
+                    // mal_id desde Jikan API
+                    JsonNode malIdNode = item.path("mal_id");
+                    if (!malIdNode.isMissingNode() && !malIdNode.isNull()) {
+                        dto.setMalId(malIdNode.asInt());
                     }
+
+                    // Título
+                    dto.setTitle(item.path("title").asText("Título desconocido"));
 
                     // Descripción
-                    JsonNode descriptions = attrs.path("description");
-                    if (!descriptions.path("es").isMissingNode()) {
-                        dto.setDescription(descriptions.path("es").asText(null));
+                    dto.setDescription(item.path("synopsis").asText(null));
+
+                    // Autor
+                    JsonNode authors = item.path("authors");
+                    if (authors.isArray() && authors.size() > 0) {
+                        dto.setAuthor(authors.get(0).path("name").asText("Desconocido"));
                     } else {
-                        dto.setDescription(descriptions.path("en").asText(null));
+                        dto.setAuthor("Desconocido");
                     }
 
-                    // Estado
-                    dto.setPublicationStatus(attrs.path("status").asText(null));
+                    // Estado - mapear valores de Jikan a valores de BD
+                    dto.setPublicationStatus(mapJikanStatus(item.path("status").asText(null)));
 
                     // Demografía
-                    JsonNode demographic = attrs.path("publicationDemographic");
-                    if (!demographic.isNull()) {
-                        dto.setDemographic(demographic.asText(null));
+                    JsonNode demographics = item.path("demographics");
+                    if (demographics.isArray() && demographics.size() > 0) {
+                        dto.setDemographic(demographics.get(0).path("name").asText(null));
                     }
 
-                    // Géneros desde tags
-                    JsonNode tags = attrs.path("tags");
-                    if (tags.isArray() && tags.size() > 0) {
-                        dto.setGenre(tags.get(0).path("attributes").path("name").path("en").asText(null));
+                    // Géneros
+                    JsonNode genres = item.path("genres");
+                    if (genres.isArray() && genres.size() > 0) {
+                        dto.setGenre(genres.get(0).path("name").asText(null));
                     }
 
-                    // Autor y portada desde relationships
-                    JsonNode rels = item.path("relationships");
-                    if (rels.isArray()) {
-                        for (JsonNode rel : rels) {
-                            String type = rel.path("type").asText();
-                            if ("author".equals(type)) {
-                                dto.setAuthor(rel.path("attributes").path("name").asText("Desconocido"));
-                            }
-                            if ("cover_art".equals(type)) {
-                                String fileName = rel.path("attributes").path("fileName").asText(null);
-                                if (fileName != null) {
-                                    dto.setCoverUrl("https://uploads.mangadex.org/covers/" + mangadexId + "/" + fileName);
-                                }
-                            }
+                    // Portada
+                    JsonNode images = item.path("images");
+                    if (!images.isMissingNode()) {
+                        String coverUrl = images.path("jpg").path("image_url").asText(null);
+                        if (coverUrl == null) {
+                            coverUrl = images.path("webp").path("image_url").asText(null);
                         }
+                        dto.setCoverUrl(coverUrl);
                     }
 
-                    if (dto.getAuthor() == null) dto.setAuthor("Desconocido");
+                    // Capítulos y volúmenes
+                    dto.setTotalChapters(item.path("chapters").asInt());
+                    dto.setTotalVolumes(item.path("volumes").asInt());
+
+                    // Score de MAL
+                    JsonNode score = item.path("score");
+                    if (!score.isMissingNode() && !score.isNull()) {
+                        dto.setMalScore(new java.math.BigDecimal(score.asDouble()));
+                    }
+
                     results.add(dto);
                 }
             }
         } catch (Exception e) {
-            log.error("Error al conectar con MangaDex: {}", e.getMessage());
+            log.error("Error al conectar con Jikan API: {}", e.getMessage());
         }
 
         return results;
@@ -145,6 +148,16 @@ public class MangaService {
     }
 
     /**
+     * Obtiene todos los mangas del catálogo.
+     * @return lista de todos los mangas
+     */
+    public List<MangaResponseDTO> getAllMangas() {
+        return mangaRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Mapea un manga a su DTO de respuesta.
      * @param manga manga
      * @return DTO de respuesta
@@ -152,7 +165,8 @@ public class MangaService {
     public MangaResponseDTO mapToDTO(Manga manga) {
         MangaResponseDTO dto = new MangaResponseDTO();
         dto.setId(manga.getId());
-        dto.setMangadexId(manga.getMangadexId());
+        dto.setMalId(manga.getMalId());
+        dto.setMalScore(manga.getMalScore());
         dto.setSource(manga.getSource());
         dto.setTitle(manga.getTitle());
         dto.setAuthor(manga.getAuthor());
@@ -164,5 +178,25 @@ public class MangaService {
         dto.setTotalVolumes(manga.getTotalVolumes());
         dto.setPublicationStatus(manga.getPublicationStatus());
         return dto;
+    }
+
+    /**
+     * Mapea el estado de publicación de Jikan API a valores de BD.
+     * BD espera: 'Publishing', 'Finished', 'On Hiatus', 'Discontinued', 'Not yet published'
+     */
+    private String mapJikanStatus(String jikanStatus) {
+        if (jikanStatus == null) return null;
+
+        return switch (jikanStatus.toLowerCase()) {
+            case "publishing" -> "Publishing";
+            case "finished", "completed" -> "Finished";
+            case "on_hiatus", "hiatus" -> "On Hiatus";
+            case "discontinued", "cancelled", "canceled" -> "Discontinued";
+            case "not_yet_published" -> "Not yet published";
+            default -> {
+                log.warn("Estado de manga desconocido de Jikan: {}", jikanStatus);
+                yield jikanStatus;
+            }
+        };
     }
 }

@@ -33,4 +33,17 @@ class AppColors {
   static const colorLibro  = Color(0xFF7F8C95);
   static const colorFanfic = Color(0xFFD4A0A4);
   static const colorManga  = Color(0xFFE8A87C);
+
+  // ── HELPERS DINÁMICOS ─────────────────────────
+  static bool isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
+  static Color background(BuildContext context) => isDark(context) ? darkBackground : lightBackground;
+  static Color surface(BuildContext context) => isDark(context) ? darkSurface : lightSurface;
+  static Color card(BuildContext context) => isDark(context) ? darkCard : lightCard;
+  static Color border(BuildContext context) => isDark(context) ? darkBorder : lightBorder;
+  static Color textPrimary(BuildContext context) => isDark(context) ? darkTextPrimary : lightTextPrimary;
+  static Color textSecondary(BuildContext context) => isDark(context) ? darkTextSecondary : lightTextSecondary;
+  static Color accent(BuildContext context) => isDark(context) ? darkAccent : lightAccent;
+  static Color icons(BuildContext context) => isDark(context) ? darkIcons : lightIcons;
+  static Color emphasis(BuildContext context) => isDark(context) ? darkEmphasis : lightEmphasis;
 }

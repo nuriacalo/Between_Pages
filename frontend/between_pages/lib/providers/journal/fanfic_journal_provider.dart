@@ -9,5 +9,19 @@ final fanficJournalProvider = FutureProvider<List<FanficJournalResponseDTO>>((
 ) async {
   final user = await ref.watch(userProfileProvider.future);
   final repository = ref.watch(fanficJournalRepositoryProvider);
-  return await repository.getFanficsForUser(user.idUser);
+  return await repository.getForUser(user.idUser);
 });
+
+/// Provider para buscar un journal entry específico por fanficId
+final fanficJournalEntryProvider =
+    FutureProvider.family<FanficJournalResponseDTO?, String>((
+      ref,
+      fanficId,
+    ) async {
+      final journals = await ref.watch(fanficJournalProvider.future);
+      try {
+        return journals.firstWhere((j) => j.fanfic.idFanfic?.toString() == fanficId);
+      } catch (e) {
+        return null;
+      }
+    });

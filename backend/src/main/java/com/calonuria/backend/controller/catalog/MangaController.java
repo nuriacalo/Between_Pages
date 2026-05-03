@@ -5,7 +5,6 @@ import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.service.catalog.MangaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,16 +14,19 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/manga")
-@Tag(name = "Catálogo de Manga", description = "Endpoints para búsqueda en MangaDex y base de datos local")
+@Tag(name = "Catálogo de Manga", description = "Endpoints para búsqueda en MyAnimeList (Jikan) y base de datos local")
 public class MangaController {
 
-    @Autowired
-    private MangaService mangaService;
+    private final MangaService mangaService;
 
-    @Operation(summary = "Buscar mangas en MangaDex")
+    public MangaController(MangaService mangaService) {
+        this.mangaService = mangaService;
+    }
+
+    @Operation(summary = "Buscar mangas en MyAnimeList (Jikan)")
     @GetMapping("/search")
-    public ResponseEntity<List<MangaResponseDTO>> searchInMangaDex(@RequestParam("q") String title) {
-        return ResponseEntity.ok(mangaService.searchInMangaDex(title));
+    public ResponseEntity<List<MangaResponseDTO>> searchInJikan(@RequestParam("q") String title) {
+        return ResponseEntity.ok(mangaService.searchInJikan(title));
     }
 
     @Operation(summary = "Buscar mangas en base de datos local")
@@ -41,12 +43,18 @@ public class MangaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Obtener todos los mangas de la base de datos")
+    @GetMapping
+    public ResponseEntity<List<MangaResponseDTO>> getAll() {
+        return ResponseEntity.ok(mangaService.getAllMangas());
+    }
+
     @Operation(summary = "Guardar manga en base de datos local")
     @PostMapping
     public ResponseEntity<MangaResponseDTO> saveManga(@RequestBody MangaResponseDTO dto) {
         Manga manga = new Manga();
-        manga.setMangadexId(dto.getMangadexId());
-        manga.setSource("MangaDex");
+        manga.setMalId(dto.getMalId());
+        manga.setSource("MyAnimeList");
         manga.setTitle(dto.getTitle());
         manga.setAuthor(dto.getAuthor());
         manga.setDemographic(dto.getDemographic());

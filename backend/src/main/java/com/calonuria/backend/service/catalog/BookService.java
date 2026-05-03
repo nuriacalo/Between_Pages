@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -27,14 +26,17 @@ public class BookService {
 
     private static final Logger log = LoggerFactory.getLogger(BookService.class);
 
-    @Autowired
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
+    private final RestTemplate restTemplate;
+    private final GoogleBooksConfig googleBooksConfig;
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private GoogleBooksConfig googleBooksConfig;
+    public BookService(BookRepository bookRepository,
+                       RestTemplate restTemplate,
+                       GoogleBooksConfig googleBooksConfig) {
+        this.bookRepository = bookRepository;
+        this.restTemplate = restTemplate;
+        this.googleBooksConfig = googleBooksConfig;
+    }
 
     /**
      * Guarda un libro solo si no existe ya por googleBooksId.

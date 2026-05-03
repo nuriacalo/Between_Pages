@@ -70,7 +70,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       ),
                     ),
                     onChanged: (_) => setState(() {}),
-                    onSubmitted: (value) => searchNotifier.search(value),
+                    onSubmitted: searchNotifier.search,
                   ),
                 ),
                 // Tabs
@@ -83,9 +83,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     Tab(icon: Icon(Icons.menu_book), text: 'Fanfics'),
                     Tab(icon: Icon(Icons.auto_stories), text: 'Manga'),
                   ],
+                  // ignore: unnecessary_lambdas — readability
                   onTap: (index) {
-                    final type = SearchContentType.values[index];
-                    searchNotifier.setContentType(type);
+                    searchNotifier.setContentType(
+                      SearchContentType.values[index],
+                    );
                   },
                 ),
               ],
@@ -145,6 +147,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       state.bookResults,
       colorScheme,
       textTheme,
+      // ignore: unnecessary_lambdas — named required param prevents tearoff
       (book) => _BookCard(book: book),
     );
   }
@@ -428,10 +431,10 @@ class _MangaCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // Usar mangadexId para mangas de búsqueda externa (sin ID local)
+    // Usar malId para mangas de búsqueda externa (sin ID local)
     final mangaId = (manga.idManga != null && manga.idManga! > 0)
         ? manga.idManga.toString()
-        : manga.mangadexId ?? 'unknown';
+        : manga.malId?.toString() ?? 'unknown';
 
     return InkWell(
       onTap: () => context.push('/manga/$mangaId', extra: manga),

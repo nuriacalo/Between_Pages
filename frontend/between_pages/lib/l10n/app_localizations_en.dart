@@ -23,6 +23,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchTitle => 'Search';
 
   @override
+  String get catalogTitle => 'Catalog';
+
+  @override
+  String get journalTitle => 'Journal';
+
+  @override
   String get searchPlaceholder => 'Search by title, author, or genre...';
 
   @override

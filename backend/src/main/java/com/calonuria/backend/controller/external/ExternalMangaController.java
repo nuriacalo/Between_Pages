@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +20,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/external/manga")
 @Tag(name = "External Manga", description = "Búsqueda de manga en fuentes externas (MyAnimeList)")
+@RequiredArgsConstructor
 public class ExternalMangaController {
 
-    @Autowired
-    private JikanService jikanService;
+    private final JikanService jikanService;
 
     /**
      * Busca manga en MyAnimeList vía Jikan API.

@@ -10,7 +10,6 @@ import com.calonuria.backend.repository.catalog.MangaRepository;
 import com.calonuria.backend.repository.journal.MangaJournalRepository;
 import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.MangaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -23,17 +22,20 @@ import java.util.stream.Collectors;
 @Service
 public class MangaJournalService {
 
-    @Autowired
-    private MangaJournalRepository mangaJournalRepository;
+    private final MangaJournalRepository mangaJournalRepository;
+    private final UserRepository userRepository;
+    private final MangaRepository mangaRepository;
+    private final MangaService mangaService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MangaRepository mangaRepository;
-
-    @Autowired
-    private MangaService mangaService;
+    public MangaJournalService(MangaJournalRepository mangaJournalRepository,
+                               UserRepository userRepository,
+                               MangaRepository mangaRepository,
+                               MangaService mangaService) {
+        this.mangaJournalRepository = mangaJournalRepository;
+        this.userRepository = userRepository;
+        this.mangaRepository = mangaRepository;
+        this.mangaService = mangaService;
+    }
 
     /**
      * Guarda el progreso de lectura de un manga.
@@ -50,15 +52,15 @@ public class MangaJournalService {
         if (dto.getMangaId() != null) {
             manga = mangaRepository.findById(dto.getMangaId())
                     .orElseThrow(() -> new ResourceNotFoundException("Manga no encontrado con id: " + dto.getMangaId()));
-        } else if (dto.getMangadexId() != null) {
-            // Si trae mangadexId (pero no mangaId), lo buscamos o lo creamos
-            Optional<Manga> existing = mangaRepository.findByMangadexId(dto.getMangadexId());
+        } else if (dto.getMalId() != null) {
+            // Si trae malId (pero no mangaId), lo buscamos o lo creamos
+            Optional<Manga> existing = mangaRepository.findByMalId(dto.getMalId());
             if (existing.isPresent()) {
                 manga = existing.get();
             } else {
                 // El manga es nuevo, lo registramos en el catálogo antes de agregarlo al Journal
                 Manga newManga = new Manga();
-                newManga.setMangadexId(dto.getMangadexId());
+                newManga.setMalId(dto.getMalId());
                 newManga.setSource(dto.getSource() != null ? dto.getSource() : "MangaDex");
                 // Validar campos obligatorios que vienen de MangaDex (o valores por defecto si vienen nulos)
                 newManga.setTitle(dto.getTitle() != null ? dto.getTitle() : "Título Desconocido");
@@ -69,9 +71,8 @@ public class MangaJournalService {
                 newManga.setCoverUrl(dto.getCoverUrl());
                 newManga.setTotalChapters(dto.getTotalChapters());
                 newManga.setTotalVolumes(dto.getTotalVolumes());
-                // La DB espera valores en mayúsculas: ONGOING, COMPLETED, PAUSED, CANCELLED
-                newManga.setPublicationStatus(dto.getPublicationStatus() != null 
-                    ? dto.getPublicationStatus().toUpperCase() : null);
+                // Mapear estado a valores de BD: Publishing, Finished, On Hiatus, Discontinued, Not yet published
+                newManga.setPublicationStatus(mapMangaDexStatus(dto.getPublicationStatus()));
 
                 manga = mangaRepository.save(newManga);
             }
@@ -87,10 +88,12 @@ public class MangaJournalService {
             journal.setManga(manga);
         }
 
-        journal.setStatus(convertStatusToDb(dto.getStatus()));
+        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setCurrentVolume(dto.getCurrentVolume());
         journal.setRating(dto.getRating());
+        journal.setTearDrops(dto.getTearDrops());
+        journal.setSpiceFlames(dto.getSpiceFlames());
         journal.setReadingFormat(dto.getReadingFormat());
         journal.setFavoriteCharacter(dto.getFavoriteCharacter());
         journal.setFavoriteArc(dto.getFavoriteArc());
@@ -100,6 +103,7 @@ public class MangaJournalService {
         journal.setRereading(dto.getRereading());
         
         journal.setOwnership(dto.getOwnership());
+        journal.setLoanedTo(dto.getLoanedTo());
 
         MangaJournal saved = mangaJournalRepository.save(journal);
         return mapToDTO(saved);
@@ -157,20 +161,22 @@ public class MangaJournalService {
         mangaJournalRepository.deleteById(journalId);
     }
 
+    // Conversión de estados centralizada en JournalStatusConverter
+
     /**
-     * Convierte estados en español a inglés mayúsculas para la base de datos.
+     * Mapea el estado de publicación a valores de BD.
+     * BD espera: 'Publishing', 'Finished', 'On Hiatus', 'Discontinued', 'Not yet published'
      */
-    private String convertStatusToDb(String status) {
-        if (status == null) {
-            return "PENDING";
-        }
-        return switch (status) {
-            case "Pendiente" -> "PENDING";
-            case "Leyendo" -> "READING";
-            case "Terminado" -> "FINISHED";
-            case "Abandonado" -> "DROPPED";
-            case "Pausado" -> "PAUSED";
-            default -> status.toUpperCase();
+    private String mapMangaDexStatus(String status) {
+        if (status == null) return null;
+
+        return switch (status.toLowerCase()) {
+            case "publishing", "ongoing" -> "Publishing";
+            case "finished", "completed" -> "Finished";
+            case "on_hiatus", "hiatus" -> "On Hiatus";
+            case "discontinued", "cancelled", "canceled" -> "Discontinued";
+            case "not_yet_published" -> "Not yet published";
+            default -> status;
         };
     }
 
@@ -182,19 +188,24 @@ public class MangaJournalService {
     private MangaJournalResponseDTO mapToDTO(MangaJournal journal) {
         MangaJournalResponseDTO dto = new MangaJournalResponseDTO();
         dto.setId(journal.getId());
+        dto.setUserId(journal.getUser().getId());
         dto.setManga(mangaService.mapToDTO(journal.getManga()));
         dto.setStatus(journal.getStatus());
         dto.setCurrentChapter(journal.getCurrentChapter());
         dto.setCurrentVolume(journal.getCurrentVolume());
         dto.setRating(journal.getRating());
+        dto.setTearDrops(journal.getTearDrops());
+        dto.setSpiceFlames(journal.getSpiceFlames());
         dto.setReadingFormat(journal.getReadingFormat());
         dto.setFavoriteCharacter(journal.getFavoriteCharacter());
         dto.setFavoriteArc(journal.getFavoriteArc());
         dto.setPersonalNotes(journal.getPersonalNotes());
         dto.setStartDate(journal.getStartDate());
         dto.setEndDate(journal.getEndDate());
+        dto.setUpdatedAt(journal.getUpdatedAt());
         dto.setRereading(journal.getRereading());
         dto.setOwnership(journal.getOwnership());
+        dto.setLoanedTo(journal.getLoanedTo());
         return dto;
     }
 }

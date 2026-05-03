@@ -42,7 +42,7 @@ public class FanficJournal {
     private Fanfiction fanfic;
 
     /**
-     * Estado de lectura: PENDING, READING, FINISHED, DROPPED.
+     * Estado de lectura: PENDING, READING, FINISHED, DROPPED, PAUSED, TBR, WISHLIST, BOUGHT.
      */
     @Column(nullable = false, length = 50)
     private String status;
@@ -54,10 +54,22 @@ public class FanficJournal {
     private Integer currentChapter;
 
     /**
-     * Valoración del fanfiction (1-5).
+     * Valoración del fanfiction (1-10).
      */
     @Column
     private Integer rating;
+
+    /**
+     * Nivel de lágrimas (0-5).
+     */
+    @Column(name = "tear_drops")
+    private Integer tearDrops;
+
+    /**
+     * Nivel de picante/flames (0-5).
+     */
+    @Column(name = "spice_flames")
+    private Integer spiceFlames;
 
     /**
      * Ship principal del fanfiction.

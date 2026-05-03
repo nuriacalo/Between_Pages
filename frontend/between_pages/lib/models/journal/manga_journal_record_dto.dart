@@ -2,7 +2,7 @@ class MangaJournalRecordDTO {
   final int userId;
   final int? mangaId;
 
-  final String? mangadexId;
+  final int? malId;
   final String? source;
   final String? title;
   final String? mangaka;
@@ -28,11 +28,12 @@ class MangaJournalRecordDTO {
   final String? startDate;
   final String? endDate;
   final String? ownership;
+  final String? loanedTo;
 
   MangaJournalRecordDTO({
     required this.userId,
     this.mangaId,
-    this.mangadexId,
+    this.malId,
     this.source,
     this.title,
     this.mangaka,
@@ -54,13 +55,14 @@ class MangaJournalRecordDTO {
     this.startDate,
     this.endDate,
     this.ownership,
+    this.loanedTo,
   });
 
   factory MangaJournalRecordDTO.fromJson(Map<String, dynamic> json) {
     return MangaJournalRecordDTO(
       userId: int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       mangaId: json['manga_id'] as int?,
-      mangadexId: json['mangadex_id'] as String?,
+      malId: json['mal_id'] as int?,
       source: json['source'] as String?,
       title: json['title'] as String?,
       mangaka: json['mangaka'] as String?,
@@ -82,35 +84,48 @@ class MangaJournalRecordDTO {
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
       ownership: json['ownership'] as String?,
+      loanedTo: json['loaned_to'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
-      'mangaId': mangaId,
-      'mangadexId': mangadexId,
+      'user_id': userId,
+      'manga_id': mangaId,
+      'mal_id': malId,
       'source': source,
       'title': title,
-      'author': mangaka,
+      'mangaka': mangaka,
       'demographic': demographic,
       'genre': genre,
       'description': description,
-      'coverUrl': coverUrl,
-      'totalChapters': totalChapters,
-      'totalVolumes': totalVolumes,
-      'publicationStatus': publicationStatus,
+      'cover_url': coverUrl,
+      'total_chapters': totalChapters,
+      'total_volumes': totalVolumes,
+      'publication_status': _normalizePublicationStatus(publicationStatus),
       'status': status,
-      'currentChapter': currentChapter,
-      'currentVolume': currentVolume,
+      'current_chapter': currentChapter,
+      'current_volume': currentVolume,
       'rating': rating,
-      'readingFormat': readingFormat,
-      'favoriteCharacter': favoriteCharacter,
-      'favoriteArc': favoriteArc,
-      'personalNotes': personalNotes,
-      'startDate': startDate,
-      'endDate': endDate,
+      'reading_format': readingFormat,
+      'favorite_character': favoriteCharacter,
+      'favorite_arc': favoriteArc,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
       'ownership': ownership,
+      'loaned_to': loanedTo,
     };
+  }
+
+  String? _normalizePublicationStatus(String? status) {
+    if (status == null || status.isEmpty) return null;
+    final s = status.toUpperCase();
+    if (s == 'FINISHED' || s == 'COMPLETED') return 'Finished';
+    if (s == 'PUBLISHING' || s == 'ONGOING') return 'Publishing';
+    if (s == 'ON_HIATUS' || s == 'HIATUS') return 'On Hiatus';
+    if (s == 'DISCONTINUED' || s == 'CANCELLED') return 'Discontinued';
+    if (s == 'NOT_YET_PUBLISHED' || s == 'UPCOMING') return 'Not yet published';
+    return status[0].toUpperCase() + status.substring(1).toLowerCase();
   }
 }

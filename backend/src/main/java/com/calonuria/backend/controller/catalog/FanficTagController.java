@@ -3,7 +3,7 @@ package com.calonuria.backend.controller.catalog;
 import com.calonuria.backend.service.catalog.FanficTagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/fanfiction/{fanficId}/tags")
 @Tag(name = "Fanfic Tags", description = "Gestión de tags de fanfictions")
+@RequiredArgsConstructor
 public class FanficTagController {
 
-    @Autowired
-    private FanficTagService fanficTagService;
+    private final FanficTagService fanficTagService;
 
     @Operation(summary = "Obtener todos los tags de un fanfic")
     @GetMapping

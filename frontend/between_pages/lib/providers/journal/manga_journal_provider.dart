@@ -9,5 +9,16 @@ final mangaJournalProvider = FutureProvider<List<MangaJournalResponseDTO>>((
 ) async {
   final user = await ref.watch(userProfileProvider.future);
   final repository = ref.watch(mangaJournalRepositoryProvider);
-  return await repository.getMangasForUser(user.idUser);
+  return await repository.getForUser(user.idUser);
 });
+
+/// Provider para buscar un journal entry específico por mangaId
+final mangaJournalEntryProvider =
+    FutureProvider.family<MangaJournalResponseDTO?, int>((ref, mangaId) async {
+      final journals = await ref.watch(mangaJournalProvider.future);
+      try {
+        return journals.firstWhere((j) => j.manga?.idManga == mangaId);
+      } catch (e) {
+        return null;
+      }
+    });

@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### macOS ###
+.DS_Store
+
+### Logs ###
+*.log
+app.log
+
+### Configuración local ###
+application-dev.yaml
+application-local.yaml

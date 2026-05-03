@@ -31,7 +31,7 @@ public class BookJournalRegistrationDTO {
     // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado|Pausado",
+    @Pattern(regexp = "PENDING|READING|FINISHED|DROPPED|PAUSED|TBR|WISHLIST|BOUGHT",
             message = "Estado no válido")
     private String status;
 
@@ -39,10 +39,18 @@ public class BookJournalRegistrationDTO {
     private Integer currentPage;
 
     @Min(value = 1, message = "La valoración mínima es 1")
-    @Max(value = 5, message = "La valoración máxima es 5")
+    @Max(value = 10, message = "La valoración máxima es 10")
     private Integer rating;
 
-    @Pattern(regexp = "Fisico|Digital|Audiolibro",
+    @Min(value = 0, message = "Mínimo 0 lágrimas")
+    @Max(value = 5, message = "Máximo 5 lágrimas")
+    private Integer tearDrops;
+
+    @Min(value = 0, message = "Mínimo 0 flames")
+    @Max(value = 5, message = "Máximo 5 flames")
+    private Integer spiceFlames;
+
+    @Pattern(regexp = "PHYSICAL|DIGITAL|AUDIOBOOK",
             message = "Formato no válido")
     private String readingFormat;
 
@@ -55,4 +63,10 @@ public class BookJournalRegistrationDTO {
 
     @Pattern(regexp = "DIGITAL|PHYSICAL|NONE|BORROWED", message = "Propiedad no válida")
     private String ownership;
+
+    // Campos Módulo 2: Series y Préstamos
+    private String seriesName;
+    private Double seriesOrder; // Double para permitir "Libro 1.5"
+    
+    private String loanedTo; // A quién se le ha prestado el libro
 }

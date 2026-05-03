@@ -23,6 +23,12 @@ class AppLocalizationsGl extends AppLocalizations {
   String get searchTitle => 'Buscar';
 
   @override
+  String get catalogTitle => 'Catálogo';
+
+  @override
+  String get journalTitle => 'Journal';
+
+  @override
   String get searchPlaceholder => 'Busca por título, autor ou xénero...';
 
   @override

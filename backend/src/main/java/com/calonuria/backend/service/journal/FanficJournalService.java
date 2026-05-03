@@ -10,7 +10,6 @@ import com.calonuria.backend.repository.catalog.FanfictionRepository;
 import com.calonuria.backend.repository.journal.FanficJournalRepository;
 import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.FanfictionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -23,17 +22,20 @@ import java.util.stream.Collectors;
 @Service
 public class FanficJournalService {
 
-    @Autowired
-    private FanficJournalRepository fanficJournalRepository;
+    private final FanficJournalRepository fanficJournalRepository;
+    private final UserRepository userRepository;
+    private final FanfictionRepository fanfictionRepository;
+    private final FanfictionService fanfictionService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private FanfictionRepository fanfictionRepository;
-
-    @Autowired
-    private FanfictionService fanfictionService;
+    public FanficJournalService(FanficJournalRepository fanficJournalRepository,
+                                UserRepository userRepository,
+                                FanfictionRepository fanfictionRepository,
+                                FanfictionService fanfictionService) {
+        this.fanficJournalRepository = fanficJournalRepository;
+        this.userRepository = userRepository;
+        this.fanfictionRepository = fanfictionRepository;
+        this.fanfictionService = fanfictionService;
+    }
 
     /**
      * Guarda el progreso de lectura de un fanfiction.
@@ -86,9 +88,11 @@ public class FanficJournalService {
             journal.setFanfic(fanfic);
         }
 
-        journal.setStatus(convertStatusToDb(dto.getStatus()));
+        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setRating(dto.getRating());
+        journal.setTearDrops(dto.getTearDrops());
+        journal.setSpiceFlames(dto.getSpiceFlames());
         journal.setMainShip(dto.getMainShip());
         journal.setSecondaryShips(dto.getSecondaryShips());
         journal.setTheme(dto.getTheme());
@@ -157,22 +161,7 @@ public class FanficJournalService {
         fanficJournalRepository.deleteById(journalId);
     }
 
-    /**
-     * Convierte estados en español a inglés mayúsculas para la base de datos.
-     */
-    private String convertStatusToDb(String status) {
-        if (status == null) {
-            return "PENDING";
-        }
-        return switch (status) {
-            case "Pendiente" -> "PENDING";
-            case "Leyendo" -> "READING";
-            case "Terminado" -> "FINISHED";
-            case "Abandonado" -> "DROPPED";
-            case "Pausado" -> "PAUSED";
-            default -> status.toUpperCase();
-        };
-    }
+    // Conversión de estados centralizada en JournalStatusConverter
 
     /**
      * Mapea una entrada del journal a su DTO de respuesta.
@@ -182,10 +171,13 @@ public class FanficJournalService {
     private FanficJournalResponseDTO mapToDTO(FanficJournal journal) {
         FanficJournalResponseDTO dto = new FanficJournalResponseDTO();
         dto.setId(journal.getId());
+        dto.setUserId(journal.getUser().getId());
         dto.setFanfic(fanfictionService.mapToDTO(journal.getFanfic()));
         dto.setStatus(journal.getStatus());
         dto.setCurrentChapter(journal.getCurrentChapter());
         dto.setRating(journal.getRating());
+        dto.setTearDrops(journal.getTearDrops());
+        dto.setSpiceFlames(journal.getSpiceFlames());
         dto.setMainShip(journal.getMainShip());
         dto.setSecondaryShips(journal.getSecondaryShips());
         dto.setAngstLevel(journal.getAngstLevel());
@@ -195,6 +187,7 @@ public class FanficJournalService {
         dto.setPersonalNotes(journal.getPersonalNotes());
         dto.setStartDate(journal.getStartDate());
         dto.setEndDate(journal.getEndDate());
+        dto.setUpdatedAt(journal.getUpdatedAt());
         return dto;
     }
 }

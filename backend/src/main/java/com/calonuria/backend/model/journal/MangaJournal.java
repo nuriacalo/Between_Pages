@@ -42,7 +42,7 @@ public class MangaJournal {
     private Manga manga;
 
     /**
-     * Estado de lectura: PENDING, READING, FINISHED, DROPPED.
+     * Estado de lectura: PENDING, READING, FINISHED, DROPPED, PAUSED, TBR, WISHLIST, BOUGHT.
      */
     @Column(nullable = false, length = 50)
     private String status;
@@ -60,10 +60,22 @@ public class MangaJournal {
     private Integer currentVolume;
 
     /**
-     * Valoración del manga (1-5).
+     * Valoración del manga (1-10).
      */
     @Column
     private Integer rating;
+
+    /**
+     * Nivel de lágrimas (0-5).
+     */
+    @Column(name = "tear_drops")
+    private Integer tearDrops;
+
+    /**
+     * Nivel de picante/flames (0-5).
+     */
+    @Column(name = "spice_flames")
+    private Integer spiceFlames;
 
     /**
      * Formato de lectura: PHYSICAL, DIGITAL.
@@ -116,8 +128,14 @@ public class MangaJournal {
     /**
      * Tipo de propiedad: DIGITAL, PHYSICAL, NONE, BORROWED.
      */
-    @Column(length = 50)
+    @Column(length = 20)
     private String ownership;
+
+    /**
+     * Persona a la que se ha prestado el manga.
+     */
+    @Column(name = "loaned_to", length = 100)
+    private String loanedTo;
 
     /**
      * Método que se ejecuta antes de persistir o actualizar.

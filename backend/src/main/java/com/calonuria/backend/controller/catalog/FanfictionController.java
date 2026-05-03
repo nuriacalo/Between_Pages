@@ -5,7 +5,6 @@ import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,8 +17,11 @@ import java.util.List;
 @Tag(name = "Catálogo de Fanfiction", description = "Endpoints para búsqueda y consulta de fanfictions")
 public class FanfictionController {
 
-    @Autowired
-    private FanfictionService fanfictionService;
+    private final FanfictionService fanfictionService;
+
+    public FanfictionController(FanfictionService fanfictionService) {
+        this.fanfictionService = fanfictionService;
+    }
 
     @Operation(summary = "Buscar fanfics por título")
     @GetMapping("/search")
@@ -39,6 +41,12 @@ public class FanfictionController {
         return fanfictionService.getFanficById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Obtener todos los fanfics de la base de datos")
+    @GetMapping
+    public ResponseEntity<List<FanfictionResponseDTO>> getAll() {
+        return ResponseEntity.ok(fanfictionService.getAllFanfics());
     }
 
     @Operation(summary = "Guardar fanfic en base de datos local")

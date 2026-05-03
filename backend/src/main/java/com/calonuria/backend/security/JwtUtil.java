@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
+import io.jsonwebtoken.io.Decoders;
 
 /**
  * Utilidad para la generación y validación de tokens JWT.
@@ -21,8 +22,12 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @Value("${jwt.refresh-expiration}")
+    private Long refreshExpiration;
+
     private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     /**
@@ -48,7 +53,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getKey())
                 .compact();
     }

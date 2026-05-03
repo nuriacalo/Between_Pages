@@ -13,11 +13,11 @@ import java.util.Optional;
 public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     /**
-     * Busca un manga por su ID de MangaDex.
-     * @param mangadexId ID de MangaDex
+     * Busca un manga por su ID de MyAnimeList.
+     * @param malId ID de MyAnimeList
      * @return Optional con el manga
      */
-    Optional<Manga> findByMangadexId(String mangadexId);
+    Optional<Manga> findByMalId(Integer malId);
 
     /**
      * Busca mangas por título.

@@ -4,7 +4,7 @@ import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.catalog.FanficTag;
 import com.calonuria.backend.repository.catalog.FanficTagRepository;
 import com.calonuria.backend.repository.catalog.FanfictionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -14,13 +14,11 @@ import java.util.stream.Collectors;
  * Servicio para la gestión de tags de fanfictions.
  */
 @Service
+@RequiredArgsConstructor
 public class FanficTagService {
 
-    @Autowired
-    private FanficTagRepository fanficTagRepository;
-
-    @Autowired
-    private FanfictionRepository fanfictionRepository;
+    private final FanficTagRepository fanficTagRepository;
+    private final FanfictionRepository fanfictionRepository;
 
     /**
      * Obtiene todos los tags de un fanfic como lista de Strings.

@@ -6,7 +6,6 @@ import com.calonuria.backend.service.journal.BookJournalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -19,8 +18,11 @@ import java.util.List;
 @Tag(name = "Book Journal", description = "Seguimiento de lectura de libros")
 public class BookJournalController {
 
-    @Autowired
-    private BookJournalService bookJournalService;
+    private final BookJournalService bookJournalService;
+
+    public BookJournalController(BookJournalService bookJournalService) {
+        this.bookJournalService = bookJournalService;
+    }
 
     @Operation(summary = "Guardar o actualizar progreso de un libro")
     @PostMapping

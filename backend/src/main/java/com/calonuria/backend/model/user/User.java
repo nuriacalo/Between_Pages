@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * Mapea la tabla "app_user" de la base de datos.
  */
 @Entity
-@Table(name = "\"user\"")
+@Table(name = "app_user")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,0 +1,18 @@
+package com.calonuria.backend.dto.user;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * DTO para la meta de lectura anual del usuario.
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReadingGoalDTO {
+
+    private Long id;
+    private Integer goalYear;
+    private Integer targetAmount;
+}

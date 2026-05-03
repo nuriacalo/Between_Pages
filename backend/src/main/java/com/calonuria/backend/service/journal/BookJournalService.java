@@ -10,7 +10,6 @@ import com.calonuria.backend.repository.catalog.BookRepository;
 import com.calonuria.backend.repository.journal.BookJournalRepository;
 import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,17 +23,20 @@ import java.util.stream.Collectors;
 @Service
 public class BookJournalService {
 
-    @Autowired
-    private BookJournalRepository bookJournalRepository;
+    private final BookJournalRepository bookJournalRepository;
+    private final UserRepository userRepository;
+    private final BookRepository bookRepository;
+    private final BookService bookService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private BookService bookService;
+    public BookJournalService(BookJournalRepository bookJournalRepository,
+                              UserRepository userRepository,
+                              BookRepository bookRepository,
+                              BookService bookService) {
+        this.bookJournalRepository = bookJournalRepository;
+        this.userRepository = userRepository;
+        this.bookRepository = bookRepository;
+        this.bookService = bookService;
+    }
 
     /**
      * Guarda el progreso de lectura de un libro.
@@ -87,9 +89,11 @@ public class BookJournalService {
             journal.setBook(book);
         }
 
-        journal.setStatus(convertStatusToDb(dto.getStatus()));
+        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
         journal.setCurrentPage(dto.getCurrentPage());
         journal.setRating(dto.getRating());
+        journal.setTearDrops(dto.getTearDrops());
+        journal.setSpiceFlames(dto.getSpiceFlames());
         journal.setReadingFormat(dto.getReadingFormat());
         journal.setEmotions(dto.getEmotions());
         journal.setFavoriteQuotes(dto.getFavoriteQuotes());
@@ -99,6 +103,9 @@ public class BookJournalService {
         journal.setRereading(dto.getRereading());
         
         journal.setOwnership(dto.getOwnership());
+        journal.setSeriesName(dto.getSeriesName());
+        journal.setSeriesOrder(dto.getSeriesOrder());
+        journal.setLoanedTo(dto.getLoanedTo());
 
         BookJournal saved = bookJournalRepository.save(journal);
         return mapToDTO(saved);
@@ -161,38 +168,30 @@ public class BookJournalService {
      * @param journal entrada del journal
      * @return DTO de respuesta
      */
-    /**
-     * Convierte estados en español a inglés mayúsculas para la base de datos.
-     */
-    private String convertStatusToDb(String status) {
-        if (status == null) {
-            return "PENDING";
-        }
-        return switch (status) {
-            case "Pendiente" -> "PENDING";
-            case "Leyendo" -> "READING";
-            case "Terminado" -> "FINISHED";
-            case "Abandonado" -> "DROPPED";
-            case "Pausado" -> "PAUSED";
-            default -> status.toUpperCase();
-        };
-    }
+    // Conversión de estados centralizada en JournalStatusConverter
 
     private BookJournalResponseDTO mapToDTO(BookJournal journal) {
         BookJournalResponseDTO dto = new BookJournalResponseDTO();
         dto.setId(journal.getId());
+        dto.setUserId(journal.getUser().getId());
         dto.setBook(bookService.mapToDTO(journal.getBook()));
         dto.setStatus(journal.getStatus());
         dto.setCurrentPage(journal.getCurrentPage());
         dto.setRating(journal.getRating());
+        dto.setTearDrops(journal.getTearDrops());
+        dto.setSpiceFlames(journal.getSpiceFlames());
         dto.setReadingFormat(journal.getReadingFormat());
         dto.setEmotions(journal.getEmotions());
         dto.setFavoriteQuotes(journal.getFavoriteQuotes());
         dto.setPersonalNotes(journal.getPersonalNotes());
         dto.setStartDate(journal.getStartDate());
         dto.setEndDate(journal.getEndDate());
+        dto.setUpdatedAt(journal.getUpdatedAt());
         dto.setRereading(journal.getRereading());
         dto.setOwnership(journal.getOwnership());
+        dto.setSeriesName(journal.getSeriesName());
+        dto.setSeriesOrder(journal.getSeriesOrder());
+        dto.setLoanedTo(journal.getLoanedTo());
         return dto;
     }
 }

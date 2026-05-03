@@ -16,6 +16,8 @@ class BookJournalRecordDTO {
   final String status;
   final int? currentPage;
   final int? rating;
+  final int? tearDrops;
+  final int? spiceFlames;
   final String? readingFormat;
 
   final List<String>? emotions;
@@ -25,6 +27,9 @@ class BookJournalRecordDTO {
   final String? startDate;
   final String? endDate;
   final String? ownership;
+  final String? seriesName;
+  final double? seriesOrder;
+  final String? loanedTo;
 
   BookJournalRecordDTO({
     required this.userId,
@@ -42,6 +47,8 @@ class BookJournalRecordDTO {
     required this.status,
     this.currentPage,
     this.rating,
+    this.tearDrops,
+    this.spiceFlames,
     this.readingFormat,
     this.emotions,
     this.favoriteQuotes,
@@ -49,6 +56,9 @@ class BookJournalRecordDTO {
     this.startDate,
     this.endDate,
     this.ownership,
+    this.seriesName,
+    this.seriesOrder,
+    this.loanedTo,
   });
 
   factory BookJournalRecordDTO.fromJson(Map<String, dynamic> json) {
@@ -68,6 +78,8 @@ class BookJournalRecordDTO {
       status: json['status'] as String,
       currentPage: json['current_page'] as int?,
       rating: json['rating'] as int?,
+      tearDrops: json['tear_drops'] as int?,
+      spiceFlames: json['spice_flames'] as int?,
       readingFormat: json['reading_format'] as String?,
       emotions: (json['emotions'] as List?)?.cast<String>(),
       favoriteQuotes: json['favorite_quotes'] as String?,
@@ -75,33 +87,41 @@ class BookJournalRecordDTO {
       startDate: json['start_date'] as String?,
       endDate: json['end_date'] as String?,
       ownership: json['ownership'] as String?,
+      seriesName: json['series_name'] as String?,
+      seriesOrder: (json['series_order'] as num?)?.toDouble(),
+      loanedTo: json['loaned_to'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
-      'bookId': bookId,
-      'googleBooksId': googleBooksId,
+      'user_id': userId,
+      'book_id': bookId,
+      'google_books_id': googleBooksId,
       'title': title,
       'author': author,
       'isbn': isbn,
       'publisher': publisher,
       'description': description,
-      'coverUrl': coverUrl,
+      'cover_url': coverUrl,
       'genre': genre,
-      'bookType': bookType,
-      'publicationYear': publicationYear,
+      'book_type': bookType,
+      'publication_year': publicationYear,
       'status': status,
-      'currentPage': currentPage,
+      'current_page': currentPage,
       'rating': rating,
-      'readingFormat': readingFormat,
+      'tear_drops': tearDrops,
+      'spice_flames': spiceFlames,
+      'reading_format': readingFormat,
       'emotions': emotions,
-      'favoriteQuotes': favoriteQuotes,
-      'personalNotes': personalNotes,
-      'startDate': startDate,
-      'endDate': endDate,
+      'favorite_quotes': favoriteQuotes,
+      'personal_notes': personalNotes,
+      'start_date': startDate,
+      'end_date': endDate,
       'ownership': ownership,
+      'series_name': seriesName,
+      'series_order': seriesOrder,
+      'loaned_to': loanedTo,
     };
   }
 }

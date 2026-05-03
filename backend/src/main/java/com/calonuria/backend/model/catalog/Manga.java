@@ -24,10 +24,10 @@ public class Manga {
     private Long id;
 
     /**
-     * Identificador del manga en MangaDex.
+     * Identificador del manga en MyAnimeList.
      */
-    @Column(name = "mangadex_id", unique = true, length = 50)
-    private String mangadexId;
+    @Column(name = "mal_id", unique = true)
+    private Integer malId;
 
     /**
      * Fuente del manga (ej. MangaDex).
@@ -84,8 +84,14 @@ public class Manga {
     private Integer totalVolumes;
 
     /**
-     * Estado de publicación: ONGOING, COMPLETED, PAUSED, CANCELLED.
+     * Estado de publicación.
      */
     @Column(name = "publication_status", length = 50)
     private String publicationStatus;
+
+    /**
+     * Puntuación de MyAnimeList.
+     */
+    @Column(name = "mal_score", precision = 4, scale = 2)
+    private java.math.BigDecimal malScore;
 }

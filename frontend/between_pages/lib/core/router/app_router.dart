@@ -3,13 +3,20 @@ import 'package:between_pages/models/catalog/book_response_dto.dart';
 import 'package:between_pages/models/catalog/manga_response_dto.dart';
 import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
+import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
 import 'package:between_pages/screens/auth/login_page.dart';
 import 'package:between_pages/screens/auth/register_page.dart';
-import 'package:between_pages/screens/detail/book_detail_page.dart';
-import 'package:between_pages/screens/detail/manga_detail_page.dart';
+import 'package:between_pages/screens/catalog/catalog_detail_page.dart';
 import 'package:between_pages/screens/home/home_page.dart';
 import 'package:between_pages/screens/journal/book_journal_edit_page.dart';
+import 'package:between_pages/screens/journal/book_reading_progress_page.dart';
+import 'package:between_pages/screens/journal/fanfic_journal_edit_page.dart';
+import 'package:between_pages/screens/journal/fanfic_reading_session_page.dart';
 import 'package:between_pages/screens/journal/manga_journal_edit_page.dart';
+import 'package:between_pages/screens/journal/reading_session_page.dart';
+import 'package:between_pages/screens/journal/second_brain_page.dart';
+import 'package:between_pages/screens/journal/ocr_scanner_page.dart';
+import 'package:between_pages/screens/profile/settings_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -63,14 +70,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/book/:id',
         builder: (context, state) {
           final book = state.extra as BookResponseDTO;
-          return BookDetailPage(book: book);
+          return CatalogDetailPage(item: book, type: CatalogItemType.book);
         },
       ),
       GoRoute(
         path: '/manga/:id',
         builder: (context, state) {
           final manga = state.extra as MangaResponseDTO;
-          return MangaDetailPage(manga: manga);
+          return CatalogDetailPage(item: manga, type: CatalogItemType.manga);
         },
       ),
       GoRoute(
@@ -81,11 +88,51 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/journal/book/progress',
+        builder: (context, state) {
+          final journal = state.extra as BookJournalResponseDto;
+          return BookReadingProgressPage(journal: journal);
+        },
+      ),
+      GoRoute(
+        path: '/journal/book/session',
+        builder: (context, state) {
+          final journal = state.extra as BookJournalResponseDto;
+          return ReadingSessionPage(journal: journal);
+        },
+      ),
+      GoRoute(
         path: '/journal/manga/edit',
         builder: (context, state) {
           final journal = state.extra as MangaJournalResponseDTO;
           return MangaJournalEditPage(journal: journal);
         },
+      ),
+      GoRoute(
+        path: '/journal/fanfic/edit',
+        builder: (context, state) {
+          final journal = state.extra as FanficJournalResponseDTO;
+          return FanficJournalEditPage(journal: journal);
+        },
+      ),
+      GoRoute(
+        path: '/journal/fanfic/session',
+        builder: (context, state) {
+          final journal = state.extra as FanficJournalResponseDTO;
+          return FanficReadingSessionPage(journal: journal);
+        },
+      ),
+      GoRoute(
+        path: '/second-brain',
+        builder: (context, state) => const SecondBrainPage(),
+      ),
+      GoRoute(
+        path: '/ocr-scanner',
+        builder: (context, state) => const OcrScannerPage(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );

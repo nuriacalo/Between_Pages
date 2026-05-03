@@ -2,6 +2,7 @@ import 'package:between_pages/screens/library/feed_page.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/screens/journal/journal_page.dart';
 import 'package:between_pages/screens/search/search_page.dart';
+import 'package:between_pages/screens/catalog/catalog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:between_pages/screens/profile/profile_page.dart';
@@ -26,7 +27,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       const FeedPage(),
       // Pantalla de Búsqueda
       const SearchPage(),
-      // Pantalla de Journal (Antes FeedPage, tu biblioteca completa)
+      // Catálogo general de obras
+      const CatalogPage(),
+      // Pantalla de Journal (tu biblioteca personal)
       const JournalPage(),
       // Pantalla de Perfil
       const ProfilePage(),
@@ -50,7 +53,14 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: const Icon(Icons.search),
             label: l10n.searchTitle,
           ),
-          const NavigationDestination(icon: Icon(Icons.book), label: 'Journal'),
+          NavigationDestination(
+            icon: const Icon(Icons.library_books),
+            label: l10n.catalogTitle,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.book),
+            label: l10n.journalTitle,
+          ),
           NavigationDestination(
             icon: const Icon(Icons.person),
             label: l10n.profileTitle,

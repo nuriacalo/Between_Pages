@@ -124,6 +124,18 @@ abstract class AppLocalizations {
   /// **'Buscar'**
   String get searchTitle;
 
+  /// No description provided for @catalogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Catálogo'**
+  String get catalogTitle;
+
+  /// No description provided for @journalTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Journal'**
+  String get journalTitle;
+
   /// No description provided for @searchPlaceholder.
   ///
   /// In es, this message translates to:

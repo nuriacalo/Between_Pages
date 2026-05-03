@@ -3,6 +3,8 @@
     "homeTitle": "Home",
     "homeDescription": "Explore the latest book reviews and recommendations.",
     "searchTitle": "Search",
+    "catalogTitle": "Catalog",
+    "journalTitle": "Journal",
     "searchPlaceholder": "Search by title, author, or genre...",
     "profileTitle": "Profile",
     "profileEditProfile": "Edit Profile",

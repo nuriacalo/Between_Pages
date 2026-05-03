@@ -5,7 +5,6 @@ import com.calonuria.backend.model.catalog.Book;
 import com.calonuria.backend.service.catalog.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,8 +17,11 @@ import java.util.List;
 @Tag(name = "Catálogo de Libros", description = "Endpoints para búsqueda en Google Books y base de datos local")
 public class BookController {
 
-    @Autowired
-    private BookService bookService;
+    private final BookService bookService;
+
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
+    }
 
     @Operation(summary = "Buscar libros en Google Books")
     @GetMapping("/search")

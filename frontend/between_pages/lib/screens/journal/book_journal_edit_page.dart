@@ -1,8 +1,7 @@
 import 'package:between_pages/models/journal/book_journal_record_dto.dart';
 import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/repositories/auth_repository.dart';
+import 'package:between_pages/providers/journal/book_journal_provider.dart';
 import 'package:between_pages/repositories/book_journal_repository.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,373 +12,239 @@ class BookJournalEditPage extends ConsumerStatefulWidget {
   const BookJournalEditPage({super.key, required this.journal});
 
   @override
-  ConsumerState<BookJournalEditPage> createState() =>
-      _BookJournalEditPageState();
+  ConsumerState<BookJournalEditPage> createState() => _BookJournalEditPageState();
 }
 
 class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
-  late String _status;
-  late int? _currentPage;
-  late int? _rating;
-  late String? _readingFormat;
-  late String? _personalNotes;
-  late String? _emotions;
-  late String? _favoriteQuotes;
-  late String? _ownership;
-  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
 
-  final List<String> _statusOptions = [
-    'Pendiente',
-    'Leyendo',
-    'Terminado',
-    'Abandonado',
-    'Pausado',
-  ];
-  final List<String> _formatOptions = ['Físico', 'Ebook', 'Audiolibro'];
-  final List<String> _ownershipOptions = ['Digital', 'Físico', 'Ninguno', 'Prestado'];
+  // Controllers for Módulo 2
+  late final TextEditingController _seriesNameController;
+  late final TextEditingController _seriesOrderController;
+  late final TextEditingController _loanedToController;
+
+  // Other controllers
+  late final TextEditingController _currentPageController;
+  late final TextEditingController _personalNotesController;
+  late final TextEditingController _favoriteQuotesController;
+  late String _status;
 
   @override
   void initState() {
     super.initState();
-    final j = widget.journal;
-    _status = _mapStatusToUi(j.status ?? 'PENDING');
-    _currentPage = j.currentPage;
-    _rating = j.rating;
-    _readingFormat = j.readingFormat;
-    _personalNotes = j.personalNotes;
-    _emotions = j.emotions?.join(', ');
-    _favoriteQuotes = j.favoriteQuotes;
-    _ownership = _mapOwnershipToUi(j.ownership);
+    final journal = widget.journal;
+    _seriesNameController = TextEditingController(text: journal.seriesName);
+    _seriesOrderController =
+        TextEditingController(text: journal.seriesOrder?.toString());
+    _loanedToController = TextEditingController(text: journal.loanedTo);
+    _currentPageController =
+        TextEditingController(text: journal.currentPage?.toString() ?? '0');
+    _personalNotesController = TextEditingController(text: journal.personalNotes);
+    _favoriteQuotesController = TextEditingController(text: journal.favoriteQuotes);
+    _status = journal.status ?? 'PENDING';
   }
 
-  String _mapStatusToUi(String status) {
-    return switch (status) {
-      'PENDING' => 'Pendiente',
-      'READING' => 'Leyendo',
-      'FINISHED' => 'Terminado',
-      'DROPPED' => 'Abandonado',
-      'PAUSED' => 'Pausado',
-      _ => status,
-    };
+  @override
+  void dispose() {
+    _seriesNameController.dispose();
+    _seriesOrderController.dispose();
+    _loanedToController.dispose();
+    _currentPageController.dispose();
+    _personalNotesController.dispose();
+    _favoriteQuotesController.dispose();
+    super.dispose();
   }
 
-  String _mapStatusToDb(String status) {
-    return switch (status) {
-      'Pendiente' => 'PENDING',
-      'Leyendo' => 'READING',
-      'Terminado' => 'FINISHED',
-      'Abandonado' => 'DROPPED',
-      'Pausado' => 'PAUSED',
-      _ => status,
-    };
-  }
+  Future<void> _saveJournal() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    if (_isSaving) return;
 
-  String? _mapOwnershipToUi(String? ownership) {
-    return switch (ownership) {
-      'DIGITAL' => 'Digital',
-      'PHYSICAL' => 'Físico',
-      'NONE' => 'Ninguno',
-      'BORROWED' => 'Prestado',
-      _ => ownership,
-    };
-  }
+    setState(() => _isSaving = true);
 
-  String? _mapOwnershipToDb(String? ownership) {
-    return switch (ownership) {
-      'Digital' => 'DIGITAL',
-      'Físico' => 'PHYSICAL',
-      'Ninguno' => 'NONE',
-      'Prestado' => 'BORROWED',
-      _ => ownership,
-    };
-  }
-
-  Future<void> _save() async {
-    setState(() => _isLoading = true);
     try {
-      final authRepository = ref.read(authRepositoryProvider);
-      final journalRepository = ref.read(bookJournalRepositoryProvider);
-      final user = await authRepository.getUserProfile();
+      final oldJournal = widget.journal;
+      final book = oldJournal.book;
 
-      final book = widget.journal.book;
       final dto = BookJournalRecordDTO(
-        userId: user.idUser,
+        userId: oldJournal.userId,
         bookId: book.idBook,
-        googleBooksId: book.googleBooksId,
-        title: book.title,
-        author: book.author,
-        isbn: book.isbn,
-        publisher: book.publisher,
-        description: book.description,
-        coverUrl: book.coverUrl,
-        genre: book.genre,
-        publicationYear: book.publishYear,
-        status: _mapStatusToDb(_status),
-        currentPage: _currentPage,
-        rating: _rating,
-        readingFormat: _readingFormat,
-        emotions: _emotions?.isNotEmpty == true
-            ? _emotions!.split(',').map((e) => e.trim()).toList()
-            : null,
-        favoriteQuotes: _favoriteQuotes,
-        personalNotes: _personalNotes,
-        startDate: widget.journal.startDate,
-        endDate: _status == 'Terminado'
-            ? _formatDate(DateTime.now())
-            : widget.journal.endDate,
-        ownership: _mapOwnershipToDb(_ownership),
+        // Copy all existing fields from the old journal
+        status: _status,
+        rating: oldJournal.rating,
+        tearDrops: oldJournal.tearDrops,
+        spiceFlames: oldJournal.spiceFlames,
+        readingFormat: oldJournal.readingFormat,
+        emotions: oldJournal.emotions,
+        startDate: oldJournal.startDate,
+        endDate: oldJournal.endDate,
+        rereading: oldJournal.rereading,
+        ownership: oldJournal.ownership,
+        // Update with new values from controllers
+        currentPage: int.tryParse(_currentPageController.text) ?? oldJournal.currentPage,
+        personalNotes: _personalNotesController.text,
+        favoriteQuotes: _favoriteQuotesController.text,
+        seriesName: _seriesNameController.text.isNotEmpty ? _seriesNameController.text : null,
+        seriesOrder: _seriesOrderController.text.isNotEmpty ? double.tryParse(_seriesOrderController.text) : null,
+        loanedTo: _loanedToController.text.isNotEmpty ? _loanedToController.text : null,
       );
 
-      await journalRepository.saveOrUpdate(dto);
+      await ref.read(bookJournalRepositoryProvider).saveOrUpdate(dto);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Journal actualizado correctamente')),
-        );
-        context.pop();
-      }
+      // Invalidate providers to refresh data across the app
+      ref.invalidate(bookJournalProvider);
+      ref.invalidate(bookJournalEntryProvider(book.idBook));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Journal actualizado con éxito')),
+      );
+      context.pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar: $e')),
+      );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final book = widget.journal.book;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi Journal'),
+        title: const Text('Editar Journal'),
         actions: [
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
+          if (_isSaving)
+            const Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+            )
           else
-            TextButton(onPressed: _save, child: const Text('Guardar')),
+            IconButton(
+              icon: const Icon(Icons.save_alt_outlined),
+              onPressed: _saveJournal,
+              tooltip: 'Guardar',
+            ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
-            // Portada y título
+            Text(widget.journal.book.title, style: Theme.of(context).textTheme.headlineSmall),
+            Text(widget.journal.book.author, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[600])),
+            const SizedBox(height: 24),
+
+            // --- Módulo 2: Organización ---
+            Text('Organización', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const Divider(height: 20),
+
+            TextFormField(
+              controller: _seriesNameController,
+              decoration: const InputDecoration(
+                labelText: 'Nombre de la Saga/Serie',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.collections_bookmark_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _seriesOrderController,
+              decoration: const InputDecoration(
+                labelText: 'Orden en la saga (ej: 1, 1.5, 2)',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.format_list_numbered),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _loanedToController,
+              decoration: const InputDecoration(
+                labelText: 'Prestado a...',
+                hintText: 'Nombre de la persona y fecha',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person_pin_outlined),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // --- Progreso y Notas ---
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: book.coverUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: book.coverUrl!,
-                          width: 100,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          width: 100,
-                          height: 150,
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.book, size: 40),
-                        ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        book.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        book.author ?? 'Autor desconocido',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      if (book.genre != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          book.genre!,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ],
-                  ),
+                Text('El Segundo Cerebro', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                IconButton.filledTonal(
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  tooltip: 'Escanear texto (OCR)',
+                  onPressed: () async {
+                    final scannedText = await context.push<String>('/ocr-scanner');
+                    if (scannedText != null && scannedText.isNotEmpty) {
+                      setState(() {
+                        final current = _favoriteQuotesController.text.trim();
+                        _favoriteQuotesController.text = current.isEmpty
+                            ? scannedText
+                            : '$current\n\n$scannedText';
+                      });
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Texto extraído y añadido con éxito')),
+                      );
+                    }
+                  },
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const Divider(height: 16),
 
-            // Estado
-            _buildSectionTitle('Estado de lectura'),
-            Wrap(
-              spacing: 8,
-              children: _statusOptions.map((status) {
-                final isSelected = _status == status;
-                return ChoiceChip(
-                  label: Text(status),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _status = status),
-                  selectedColor: colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: isSelected ? colorScheme.onPrimaryContainer : null,
-                  ),
-                );
-              }).toList(),
+            TextFormField(
+              controller: _currentPageController,
+              decoration: const InputDecoration(
+                labelText: 'Página actual',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.book_outlined),
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
+                  return 'Introduce un número válido';
+                }
+                return null;
+              },
             ),
-            const SizedBox(height: 24),
-
-            // Progreso
-            _buildSectionTitle('Progreso'),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildNumberField(
-                    label: 'Página actual',
-                    value: _currentPage,
-                    onChanged: (v) => setState(() => _currentPage = v),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildNumberField(
-                    label: 'Valoración (1-10)',
-                    value: _rating,
-                    onChanged: (v) => setState(() => _rating = v),
-                    max: 10,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Formato
-            _buildSectionTitle('Formato de lectura'),
-            Wrap(
-              spacing: 8,
-              children: _formatOptions.map((format) {
-                final isSelected = _readingFormat == format;
-                return ChoiceChip(
-                  label: Text(format),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _readingFormat = format),
-                  selectedColor: colorScheme.secondaryContainer,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-
-            // Propiedad (Ownership)
-            _buildSectionTitle('Propiedad'),
-            Wrap(
-              spacing: 8,
-              children: _ownershipOptions.map((ownership) {
-                final isSelected = _ownership == ownership;
-                return ChoiceChip(
-                  label: Text(ownership),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _ownership = ownership),
-                  selectedColor: colorScheme.tertiaryContainer,
-                  labelStyle: TextStyle(
-                    color: isSelected ? colorScheme.onTertiaryContainer : null,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-
-            // Notas personales
-            _buildSectionTitle('Notas personales'),
-            TextField(
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _favoriteQuotesController,
+              decoration: const InputDecoration(
+                labelText: 'Citas favoritas',
+                hintText: 'Guarda frases memorables aquí...',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Escribe tus pensamientos sobre este libro...',
-                border: OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: _personalNotes),
-              onChanged: (v) => _personalNotes = v,
+              minLines: 2,
             ),
-            const SizedBox(height: 24),
-
-            // Emociones
-            _buildSectionTitle('Emociones'),
-            TextField(
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _personalNotesController,
               decoration: const InputDecoration(
-                hintText:
-                    '¿Cómo te hizo sentir? (ej: Feliz, Triste, Emocionado)',
+                labelText: 'Notas personales',
                 border: OutlineInputBorder(),
+                alignLabelWithHint: true,
               ),
-              controller: TextEditingController(text: _emotions),
-              onChanged: (v) => _emotions = v,
-            ),
-            const SizedBox(height: 24),
-
-            // Frases favoritas
-            _buildSectionTitle('Frases favoritas'),
-            TextField(
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Cita tus frases favoritas del libro...',
-                border: OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: _favoriteQuotes),
-              onChanged: (v) => _favoriteQuotes = v,
+              maxLines: 5,
+              minLines: 3,
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNumberField({
-    required String label,
-    required int? value,
-    required Function(int?) onChanged,
-    int max = 9999,
-  }) {
-    return TextField(
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      controller: TextEditingController(text: value?.toString() ?? ''),
-      onChanged: (v) {
-        final num = int.tryParse(v);
-        if (num != null && num >= 0 && num <= max) {
-          onChanged(num);
-        } else if (v.isEmpty) {
-          onChanged(null);
-        }
-      },
     );
   }
 }

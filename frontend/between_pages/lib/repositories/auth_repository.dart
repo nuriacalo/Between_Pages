@@ -6,37 +6,79 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:between_pages/models/user/user_response_dto.dart';
 
+/// Repositorio encargado de toda la lógica de autenticación:
+/// login, registro, logout, refresh de tokens y verificación de sesión.
 class AuthRepository {
   final ApiClient _apiClient;
   final AuthTokenStorage _authTokenStorage;
 
   AuthRepository(this._apiClient, this._authTokenStorage);
 
-  // Iniciar sesión
+  /// Inicia sesión y almacena tanto accessToken como refreshToken de forma segura.
   Future<void> login(String email, String password) async {
     try {
-      //P¡ Post a la ruta de login
       final response = await _apiClient.post(
         ApiConstants.login,
         data: {'email': email, 'password': password},
       );
-      // Guardar el token de autenticación
-      final token = response.data['accessToken'];
-      if (token != null) {
-        await _authTokenStorage.saveToken(token);
-      } else {
+
+      final accessToken = response.data['accessToken'] as String?;
+      final refreshToken = response.data['refreshToken'] as String?;
+
+      if (accessToken == null || accessToken.isEmpty) {
         throw Exception(
           'Token no encontrado. El servidor devolvió: ${response.data}',
         );
       }
+
+      await _authTokenStorage.saveToken(accessToken);
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await _authTokenStorage.saveRefreshToken(refreshToken);
+      }
     } on DioException catch (e) {
+      print('⚠️ Error 400 Body: ${e.response?.data}');
       throw Exception(
         e.response?.data['message'] ?? 'Error al iniciar sesión: ${e.message}',
       );
     }
   }
 
-  // Registrar usuario
+  /// Intenta renovar el accessToken usando el refreshToken almacenado.
+  /// Retorna true si tuvo éxito, false en caso contrario.
+  Future<bool> refreshAccessToken() async {
+    final refreshToken = await _authTokenStorage.readRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return false;
+    }
+
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.refresh,
+        data: {'refreshToken': refreshToken},
+      );
+
+      final newAccessToken = response.data['accessToken'] as String?;
+      final newRefreshToken = response.data['refreshToken'] as String?;
+
+      if (newAccessToken == null || newAccessToken.isEmpty) {
+        return false;
+      }
+
+      await _authTokenStorage.saveToken(newAccessToken);
+      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+        await _authTokenStorage.saveRefreshToken(newRefreshToken);
+      }
+      return true;
+    } on DioException catch (_) {
+      await _authTokenStorage.clearAll();
+      return false;
+    } catch (_) {
+      await _authTokenStorage.clearAll();
+      return false;
+    }
+  }
+
+  /// Registra un nuevo usuario.
   Future<void> register(String name, String email, String password) async {
     try {
       await _apiClient.post(
@@ -51,49 +93,58 @@ class AuthRepository {
     }
   }
 
-  // Cerrar sesión
+  /// Cierra sesión eliminando todos los tokens de forma segura.
   Future<void> logout() async {
-    await _authTokenStorage.removeToken();
+    await _authTokenStorage.clearAll();
   }
 
-  // Obtener perfil del usuario autenticado
+  /// Obtiene el perfil del usuario autenticado.
   Future<UserResponseDTO> getUserProfile() async {
     try {
       final response = await _apiClient.get(ApiConstants.me);
-      // Transformamos el JSON al modelo que ya tienes creado
       return UserResponseDTO.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception('Error al obtener perfil: ${e.message}');
     }
   }
 
-  // Verificar si hay un token válido (sesión activa)
+  /// Verifica si hay una sesión activa. Si el accessToken falla,
+  /// intenta automáticamente un refresh antes de dar por terminada la sesión.
   Future<bool> isLoggedIn() async {
     final token = await _authTokenStorage.readToken();
     if (token == null || token.isEmpty) {
       return false;
     }
 
-    // Verificar que el token sea válido haciendo una petición al backend
     try {
       await _apiClient.get(ApiConstants.me);
       return true;
     } on DioException catch (e) {
-      // Si el token es inválido o expiró, eliminarlo
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        await _authTokenStorage.removeToken();
+        final refreshed = await refreshAccessToken();
+        if (refreshed) {
+          // Reintentar una vez con el nuevo token
+          try {
+            await _apiClient.get(ApiConstants.me);
+            return true;
+          } catch (_) {
+            await _authTokenStorage.clearAll();
+            return false;
+          }
+        }
       }
+      await _authTokenStorage.clearAll();
       return false;
     } catch (_) {
       return false;
     }
   }
 
-  // Stream que notifica cuando el token cambia (para redirección automática)
+  /// Stream que notifica cuando el token cambia (para redirección automática).
   Stream<void> get onTokenChanged => _authTokenStorage.onTokenChanged;
 }
 
-//Proveedor del repositorio
+/// Provider del repositorio de autenticación.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     ref.watch(apiClientProvider),

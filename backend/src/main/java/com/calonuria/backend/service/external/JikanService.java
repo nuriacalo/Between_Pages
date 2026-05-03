@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,18 +16,18 @@ import java.util.List;
 /**
  * Servicio para integración con Jikan API (MyAnimeList unofficial API).
  * Proporciona búsqueda de manga desde MyAnimeList.
- * 
+ *
  * Rate limits: 60 requests/min, 3 requests/sec
  * Documentación: https://api.jikan.moe/v4/
  */
 @Service
+@RequiredArgsConstructor
 public class JikanService {
 
     private static final Logger log = LoggerFactory.getLogger(JikanService.class);
     private static final String JIKAN_BASE_URL = "https://api.jikan.moe/v4";
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     /**
      * Busca manga por título en MyAnimeList vía Jikan.
@@ -94,7 +94,22 @@ public class JikanService {
         MangaResponseDTO dto = new MangaResponseDTO();
         
         dto.setId(null); // No es nuestro ID de BD, es externo
-        dto.setMangadexId(null); // Jikan usa MAL ID, no MangaDex
+        
+        // Extraer mal_id del nodo data
+        Integer malId = null;
+        if (manga.has("mal_id") && !manga.get("mal_id").isNull()) {
+            malId = manga.get("mal_id").asInt();
+        }
+        dto.setMalId(malId);
+        
+        // Extraer score si está disponible
+        java.math.BigDecimal malScore = null;
+        if (manga.has("score") && !manga.get("score").isNull()) {
+            double score = manga.get("score").asDouble();
+            malScore = java.math.BigDecimal.valueOf(score);
+        }
+        dto.setMalScore(malScore);
+        
         dto.setSource("MyAnimeList (Jikan)");
         
         // Título
@@ -182,19 +197,17 @@ public class JikanService {
 
     private String mapStatus(String jikanStatus) {
         if (jikanStatus == null) return null;
-        
-        switch (jikanStatus.toLowerCase()) {
-            case "publishing":
-                return "ONGOING";
-            case "finished":
-            case "completed":
-                return "COMPLETED";
-            case "on_hiatus":
-                return "PAUSED";
-            case "discontinued":
-                return "CANCELLED";
-            default:
-                return jikanStatus.toUpperCase();
-        }
+
+        return switch (jikanStatus.toLowerCase()) {
+            case "publishing" -> "Publishing";
+            case "finished", "completed" -> "Finished";
+            case "on_hiatus", "hiatus" -> "On Hiatus";
+            case "discontinued", "cancelled", "canceled" -> "Discontinued";
+            case "not_yet_published" -> "Not yet published";
+            default -> {
+                log.warn("Estado de manga desconocido de Jikan: {}", jikanStatus);
+                yield jikanStatus;
+            }
+        };
     }
 }

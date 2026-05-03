@@ -3,7 +3,7 @@ class FanfictionResponseDTO {
   final String? ao3Id;
   final String? title;
   final String? author;
-  final String? baseStory;
+  final String? sourceMaterial;
   final String? description;
   final String? coverUrl;
   final String? genre;
@@ -19,7 +19,7 @@ class FanfictionResponseDTO {
     this.ao3Id,
     this.title,
     this.author,
-    this.baseStory,
+    this.sourceMaterial,
     this.description,
     this.coverUrl,
     this.genre,
@@ -37,7 +37,7 @@ class FanfictionResponseDTO {
       ao3Id: json['ao3_id'] as String?,
       title: json['title'] as String?,
       author: json['author'] as String?,
-      baseStory: json['source_material'] as String?,
+      sourceMaterial: json['source_material'] as String?,
       description: json['description'] as String?,
       coverUrl: json['cover_url'] as String?,
       genre: json['genre'] as String?,
@@ -56,7 +56,7 @@ class FanfictionResponseDTO {
       'ao3_id': ao3Id,
       'title': title,
       'author': author,
-      'source_material': baseStory,
+      'source_material': sourceMaterial,
       'description': description,
       'cover_url': coverUrl,
       'genre': genre,

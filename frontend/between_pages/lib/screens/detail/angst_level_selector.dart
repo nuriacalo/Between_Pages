@@ -45,7 +45,7 @@ class AngstLevelSelector extends StatelessWidget {
           max: 4,
           divisions: 4,
           activeColor: colors[currentIndex],
-          inactiveColor: colors[currentIndex].withOpacity(0.3),
+          inactiveColor: colors[currentIndex].withValues(alpha: 0.3),
           onChanged: (val) {
             onChanged(levels[val.toInt()]);
           },

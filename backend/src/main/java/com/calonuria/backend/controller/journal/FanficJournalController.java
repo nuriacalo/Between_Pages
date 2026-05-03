@@ -6,7 +6,6 @@ import com.calonuria.backend.service.journal.FanficJournalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -19,8 +18,11 @@ import java.util.List;
 @Tag(name = "Fanfic Journal", description = "Seguimiento de lectura de fanfictions")
 public class FanficJournalController {
 
-    @Autowired
-    private FanficJournalService fanficJournalService;
+    private final FanficJournalService fanficJournalService;
+
+    public FanficJournalController(FanficJournalService fanficJournalService) {
+        this.fanficJournalService = fanficJournalService;
+    }
 
     @Operation(summary = "Guardar o actualizar progreso de un fanfic")
     @PostMapping

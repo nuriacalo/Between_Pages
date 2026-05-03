@@ -3,22 +3,20 @@ package com.calonuria.backend.service;
 import com.calonuria.backend.config.GoogleBooksConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@RequiredArgsConstructor
 public class GoogleBooksService {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleBooksService.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private GoogleBooksConfig config;
+    private final RestTemplate restTemplate;
+    private final GoogleBooksConfig config;
 
     public JsonNode buscarPorTitulo(String titulo) {
         String url = "https://www.googleapis.com/books/v1/volumes?q=intitle:"

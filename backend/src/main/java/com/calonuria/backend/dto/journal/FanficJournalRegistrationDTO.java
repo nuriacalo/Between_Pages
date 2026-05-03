@@ -29,7 +29,7 @@ public class FanficJournalRegistrationDTO {
     // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado|Pausado",
+    @Pattern(regexp = "PENDING|READING|FINISHED|DROPPED|PAUSED|TBR|WISHLIST|BOUGHT",
             message = "Estado no válido")
     private String status;
 
@@ -37,8 +37,16 @@ public class FanficJournalRegistrationDTO {
     private Integer currentChapter;
 
     @Min(value = 1, message = "La valoración mínima es 1")
-    @Max(value = 5, message = "La valoración máxima es 5")
+    @Max(value = 10, message = "La valoración máxima es 10")
     private Integer rating;
+
+    @Min(value = 0, message = "Mínimo 0 lágrimas")
+    @Max(value = 5, message = "Máximo 5 lágrimas")
+    private Integer tearDrops;
+
+    @Min(value = 0, message = "Mínimo 0 flames")
+    @Max(value = 5, message = "Máximo 5 flames")
+    private Integer spiceFlames;
 
     private String mainShip;
     private String secondaryShips;

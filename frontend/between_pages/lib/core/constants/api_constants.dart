@@ -1,6 +1,9 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.0.13:8080/api';
-  // 10.0.2.2 = localhost desde el emulador Android
+  /// URL base del backend. Se puede sobreescribir mediante --dart-define=API_BASE_URL=http://...
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue:'http://192.168.0.17:8080/api',
+  );
 
   // JIKAN API (MyAnimeList - Unofficial)
   // Documentación: https://api.jikan.moe/v4/
@@ -45,14 +48,14 @@ class ApiConstants {
   static const externalMangaSearch = '$baseUrl/external/manga/search';
   static const externalManga = '$baseUrl/external/manga';
 
-  // LISTAS DE LECTURA (/api/reading-list)
-  static const listCreate = '$baseUrl/reading-list';
-  static const listUser = '$baseUrl/reading-list/user/';
-  static const listGet = '$baseUrl/reading-list/';
-  static const listUpdate = '$baseUrl/reading-list/';
-  static const listDelete = '$baseUrl/reading-list/';
-  static const listAddItem = '$baseUrl/reading-list/{listId}/items';
-  static const listRemoveItem = '$baseUrl/reading-list/{listId}/items';
+    // LISTAS DE LECTURA (/api/lists)
+    static const listCreate = '$baseUrl/lists';
+    static const listUser = '$baseUrl/lists/user/';
+    static const listGet = '$baseUrl/lists/';
+    static const listUpdate = '$baseUrl/lists/';
+    static const listDelete = '$baseUrl/lists/';
+    static const listAddItem = '$baseUrl/lists/{listId}/items';
+    static const listRemoveItem = '$baseUrl/lists/{listId}/items';
 
   // JOURNAL - BOOKS (/api/book-journal)
   static const bookJournal = '$baseUrl/book-journal';
@@ -77,4 +80,13 @@ class ApiConstants {
       '$baseUrl/fanfic-journal/user/{userId}/status';
   static const fanficJournalUserRereadings =
       '$baseUrl/fanfic-journal/user/{userId}/rereadings';
+
+  // JOURNAL - READING SESSIONS (/api/reading-sessions)
+  static const readingSessions = '$baseUrl/reading-sessions';
+
+  // READING STATS (/api/reading-stats)
+  static const readingStats = '$baseUrl/reading-stats';
+  static const readingStatsGoal = '$baseUrl/reading-stats/goal';
+  static const readingStatsStreak = '$baseUrl/reading-stats/streak';
+  static const readingStatsActivity = '$baseUrl/reading-stats/activity';
 }

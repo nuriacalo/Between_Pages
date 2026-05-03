@@ -2,7 +2,7 @@ package com.calonuria.backend.config;
 
 import com.calonuria.backend.security.JwtAuthenticationFilter;
 import com.calonuria.backend.service.user.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,11 +31,17 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService userDetailsService;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    @Value("${cors.allowed-origins}")
+    private String corsAllowedOrigins;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          CustomUserDetailsService userDetailsService) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.userDetailsService = userDetailsService;
+    }
 
     /**
      * Configura la cadena de filtros de seguridad.
@@ -52,6 +59,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas
                         .requestMatchers(
+                                "/error",
                                 "/api/user/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
@@ -70,7 +78,7 @@ public class SecurityConfig {
                         // Rutas autenticadas (requiere token)
                         .requestMatchers("/api/auth/me").authenticated()
                         // Solo ADMIN
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**", "/admin/**").hasRole("ADMIN")
                         // Todo lo demás requiere token
                         .anyRequest().authenticated()
                 )
@@ -112,12 +120,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://192.168.0.17:8080",
-                "http://192.168.0.17"  // IP del dispositivo Android
-        ));
+        List<String> origins = Arrays.asList(corsAllowedOrigins.split(","));
+        configuration.setAllowedOrigins(origins.stream().map(String::trim).toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

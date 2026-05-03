@@ -16,7 +16,7 @@ public class MangaJournalRegistrationDTO {
     private Long mangaId;
 
     // --- Datos del manga (Por si es la primera vez que se añade a la app) ---
-    private String mangadexId;
+    private Integer malId;
     private String source;
     private String title;
     private String author;
@@ -30,7 +30,7 @@ public class MangaJournalRegistrationDTO {
     // ------------------------------------------------------------------------
 
     @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "Pendiente|Leyendo|Terminado|Abandonado|Pausado",
+    @Pattern(regexp = "PENDING|READING|FINISHED|DROPPED|PAUSED|TBR|WISHLIST|BOUGHT",
             message = "Estado no válido")
     private String status;
 
@@ -41,10 +41,18 @@ public class MangaJournalRegistrationDTO {
     private Integer currentVolume;
 
     @Min(value = 1, message = "La valoración mínima es 1")
-    @Max(value = 5, message = "La valoración máxima es 5")
+    @Max(value = 10, message = "La valoración máxima es 10")
     private Integer rating;
 
-    @Pattern(regexp = "Fisico|Digital",
+    @Min(value = 0, message = "Mínimo 0 lágrimas")
+    @Max(value = 5, message = "Máximo 5 lágrimas")
+    private Integer tearDrops;
+
+    @Min(value = 0, message = "Mínimo 0 flames")
+    @Max(value = 5, message = "Máximo 5 flames")
+    private Integer spiceFlames;
+
+    @Pattern(regexp = "PHYSICAL|DIGITAL",
             message = "Formato no válido")
     private String readingFormat;
 
@@ -57,4 +65,7 @@ public class MangaJournalRegistrationDTO {
 
     @Pattern(regexp = "DIGITAL|PHYSICAL|NONE|BORROWED", message = "Propiedad no válida")
     private String ownership;
+
+    // Campos Módulo 2: Préstamos
+    private String loanedTo;
 }

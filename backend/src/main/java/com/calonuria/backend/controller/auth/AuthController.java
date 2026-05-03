@@ -10,7 +10,6 @@ import com.calonuria.backend.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,9 +25,17 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Autenticación", description = "Login y gestión de tokens JWT")
 public class AuthController {
 
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private JwtUtil jwtUtil;
-    @Autowired private UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtUtil jwtUtil,
+                          UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
 
     @Operation(summary = "Login — devuelve accessToken y refreshToken")
     @PostMapping("/login")

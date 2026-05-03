@@ -5,7 +5,6 @@ import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.catalog.FanficTag;
 import com.calonuria.backend.repository.catalog.FanfictionRepository;
 import com.calonuria.backend.repository.catalog.FanficTagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class FanfictionService {
 
-    @Autowired
-    private FanfictionRepository fanfictionRepository;
+    private final FanfictionRepository fanfictionRepository;
+    private final FanficTagRepository fanficTagRepository;
 
-    @Autowired
-    private FanficTagRepository fanficTagRepository;
+    public FanfictionService(FanfictionRepository fanfictionRepository,
+                             FanficTagRepository fanficTagRepository) {
+        this.fanfictionRepository = fanfictionRepository;
+        this.fanficTagRepository = fanficTagRepository;
+    }
 
     /**
      * Guarda un fanfiction solo si no existe ya por ao3Id.
@@ -65,6 +67,16 @@ public class FanfictionService {
     public List<FanfictionResponseDTO> searchByStatus(String status) {
         return fanfictionRepository.findByPublicationStatusIgnoreCase(status)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los fanfictions del catálogo.
+     * @return lista de todos los fanfictions
+     */
+    public List<FanfictionResponseDTO> getAllFanfics() {
+        return fanfictionRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     /**

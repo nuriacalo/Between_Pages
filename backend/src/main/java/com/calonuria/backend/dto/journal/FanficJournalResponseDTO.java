@@ -3,6 +3,7 @@ package com.calonuria.backend.dto.journal;
 import com.calonuria.backend.dto.catalog.FanfictionResponseDTO;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO para la respuesta con información de diario de lectura de fanfictions.
@@ -11,10 +12,13 @@ import java.time.LocalDate;
 public class FanficJournalResponseDTO {
 
     private Long id;
+    private Long userId;
     private FanfictionResponseDTO fanfic;
     private String status;
     private Integer currentChapter;
     private Integer rating;
+    private Integer tearDrops;
+    private Integer spiceFlames;
     private String mainShip;
     private String secondaryShips;
     private String theme;
@@ -25,4 +29,5 @@ public class FanficJournalResponseDTO {
     private String personalNotes;
     private LocalDate startDate;
     private LocalDate endDate;
+    private LocalDateTime updatedAt;
 }

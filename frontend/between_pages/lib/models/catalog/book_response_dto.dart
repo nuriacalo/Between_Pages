@@ -10,6 +10,7 @@ class BookResponseDTO {
   final String? genre;
   final String? bookType;
   final int? publishYear;
+  final int? pageCount;
 
   BookResponseDTO({
     required this.idBook,
@@ -23,6 +24,7 @@ class BookResponseDTO {
     this.genre,
     this.bookType,
     this.publishYear,
+    this.pageCount,
   });
 
   factory BookResponseDTO.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class BookResponseDTO {
       genre: json['genre'] as String?,
       bookType: json['book_type'] as String?,
       publishYear: json['publication_year'] as int?,
+      pageCount: json['page_count'] as int? ?? json['pages'] as int?,
     );
   }
 
@@ -54,6 +57,8 @@ class BookResponseDTO {
       'genre': genre,
       'book_type': bookType,
       'publication_year': publishYear,
+      'page_count': pageCount,
     };
   }
 }
+

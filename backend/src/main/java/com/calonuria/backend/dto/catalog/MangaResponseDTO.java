@@ -11,8 +11,11 @@ public class MangaResponseDTO {
 
     private Long id;
 
-    @JsonProperty("mangadex_id")
-    private String mangadexId;
+    @JsonProperty("mal_id")
+    private Integer malId;
+
+    @JsonProperty("mal_score")
+    private java.math.BigDecimal malScore;
 
     private String source;
     private String title;

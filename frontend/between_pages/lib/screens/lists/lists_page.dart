@@ -93,12 +93,19 @@ class ListsPage extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text(
-                    '${list.items.length} elementos',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                  subtitle: list.description != null
+                      ? Text(
+                          list.description!,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        )
+                      : Text(
+                          'Sin descripción',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     // TODO: Navegar al detalle de la lista

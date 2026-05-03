@@ -3,6 +3,8 @@
     "homeTitle": "Inicio",
     "homeDescription": "Explora las últimas reseñas y recomendaciones de libros.",
     "searchTitle": "Buscar",
+    "catalogTitle": "Catálogo",
+    "journalTitle": "Journal",
     "searchPlaceholder": "Busca por título, autor o género...",
     "profileTitle": "Perfil",
     "profileEditProfile": "Editar perfil",

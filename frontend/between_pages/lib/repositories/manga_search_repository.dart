@@ -4,11 +4,13 @@ import 'package:between_pages/models/catalog/manga_response_dto.dart';
 import 'package:between_pages/providers/auth/api_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Repositorio para buscar mangas en el catálogo.
 class MangaSearchRepository {
   final ApiClient _apiClient;
 
   MangaSearchRepository(this._apiClient);
 
+  /// Busca mangas por título o término de búsqueda.
   Future<List<MangaResponseDTO>> searchManga(
     String query, {
     int page = 0,
@@ -19,6 +21,8 @@ class MangaSearchRepository {
         ApiConstants.mangaSearch,
         queryParameters: {
           'q': query, // El backend espera 'q'
+          'page': page,
+          'size': size,
         },
       );
 
