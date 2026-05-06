@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * Integra con Jikan API (MyAnimeList) para búsquedas externas.
  */
 @Service
-public class MangaService {
+public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Long> {
 
     private static final Logger log = LoggerFactory.getLogger(MangaService.class);
 
@@ -27,6 +28,7 @@ public class MangaService {
     private final RestTemplate restTemplate;
 
     public MangaService(MangaRepository mangaRepository, RestTemplate restTemplate) {
+        super(mangaRepository);
         this.mangaRepository = mangaRepository;
         this.restTemplate = restTemplate;
     }
@@ -43,16 +45,33 @@ public class MangaService {
                 return mapToDTO(existing.get());
             }
         }
-        return mapToDTO(mangaRepository.save(manga));
+        return saveAndMap(manga);
     }
 
     /**
-     * Obtiene un manga por su ID.
-     * @param id ID del manga
-     * @return Optional con el DTO del manga
+     * Crea y guarda un manga desde un DTO si no existe.
+     * @param dto DTO con los datos del manga
+     * @return DTO con la información del manga guardado
      */
+    public MangaResponseDTO saveFromDTO(MangaResponseDTO dto) {
+        Manga manga = new Manga();
+        manga.setMalId(dto.getMalId());
+        manga.setSource("MyAnimeList");
+        manga.setTitle(dto.getTitle());
+        manga.setAuthor(dto.getAuthor());
+        manga.setDemographic(dto.getDemographic());
+        manga.setGenre(dto.getGenre());
+        manga.setDescription(dto.getDescription());
+        manga.setCoverUrl(dto.getCoverUrl());
+        manga.setTotalChapters(dto.getTotalChapters());
+        manga.setTotalVolumes(dto.getTotalVolumes());
+        manga.setPublicationStatus(dto.getPublicationStatus());
+        return saveIfNotExists(manga);
+    }
+
+    // Alias para compatibilidad con controllers existentes
     public Optional<MangaResponseDTO> getMangaById(Long id) {
-        return mangaRepository.findById(id).map(this::mapToDTO);
+        return findById(id);
     }
 
     /**
@@ -93,7 +112,7 @@ public class MangaService {
                     }
 
                     // Estado - mapear valores de Jikan a valores de BD
-                    dto.setPublicationStatus(mapJikanStatus(item.path("status").asText(null)));
+                    dto.setPublicationStatus(PublicationStatusConverter.toDatabase(item.path("status").asText(null)));
 
                     // Demografía
                     JsonNode demographics = item.path("demographics");
@@ -137,24 +156,20 @@ public class MangaService {
         return results;
     }
 
-    /**
-     * Busca mangas en la base de datos local.
-     * @param title título a buscar
-     * @return lista de mangas encontrados
-     */
-    public List<MangaResponseDTO> searchInDatabase(String title) {
+    @Override
+    public List<MangaResponseDTO> searchByTitle(String title) {
         return mangaRepository.findByTitleContainingIgnoreCase(title)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene todos los mangas del catálogo.
-     * @return lista de todos los mangas
-     */
+    // Alias para compatibilidad con controllers existentes
+    public List<MangaResponseDTO> searchInDatabase(String title) {
+        return searchByTitle(title);
+    }
+
+    // Alias para compatibilidad con controllers existentes
     public List<MangaResponseDTO> getAllMangas() {
-        return mangaRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        return findAll();
     }
 
     /**
@@ -162,6 +177,7 @@ public class MangaService {
      * @param manga manga
      * @return DTO de respuesta
      */
+    @Override
     public MangaResponseDTO mapToDTO(Manga manga) {
         MangaResponseDTO dto = new MangaResponseDTO();
         dto.setId(manga.getId());
@@ -180,23 +196,4 @@ public class MangaService {
         return dto;
     }
 
-    /**
-     * Mapea el estado de publicación de Jikan API a valores de BD.
-     * BD espera: 'Publishing', 'Finished', 'On Hiatus', 'Discontinued', 'Not yet published'
-     */
-    private String mapJikanStatus(String jikanStatus) {
-        if (jikanStatus == null) return null;
-
-        return switch (jikanStatus.toLowerCase()) {
-            case "publishing" -> "Publishing";
-            case "finished", "completed" -> "Finished";
-            case "on_hiatus", "hiatus" -> "On Hiatus";
-            case "discontinued", "cancelled", "canceled" -> "Discontinued";
-            case "not_yet_published" -> "Not yet published";
-            default -> {
-                log.warn("Estado de manga desconocido de Jikan: {}", jikanStatus);
-                yield jikanStatus;
-            }
-        };
-    }
 }

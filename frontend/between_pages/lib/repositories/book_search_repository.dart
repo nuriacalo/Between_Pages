@@ -29,6 +29,18 @@ class BookSearchRepository {
       throw Exception('Error buscando libros: $e');
     }
   }
+
+  /// Obtiene los detalles de un libro específico mediante su ID de Google.
+  Future<BookResponseDTO> getBookByGoogleId(String googleBooksId) async {
+    try {
+      final response = await _apiClient.get(
+        '${ApiConstants.bookSearch}/$googleBooksId', // Ajusta este endpoint si tu backend usa otra ruta
+      );
+      return BookResponseDTO.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Error buscando libro por ID: $e');
+    }
+  }
 }
 
 final bookSearchRepositoryProvider = Provider<BookSearchRepository>((ref) {

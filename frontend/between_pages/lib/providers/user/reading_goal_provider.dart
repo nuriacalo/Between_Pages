@@ -2,11 +2,18 @@ import 'package:between_pages/models/user/reading_goal_dto.dart';
 import 'package:between_pages/repositories/reading_stats_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Provider para la meta de lectura anual del usuario
-final readingGoalProvider = FutureProvider<ReadingGoalDTO>((ref) async {
-  final repository = ref.watch(readingStatsRepositoryProvider);
-  return await repository.getReadingGoal();
+final readingGoalProvider = FutureProvider.family<ReadingGoalDTO?, int>((ref, year) async {
+  final repo = ref.read(readingStatsRepositoryProvider);
+  return repo.getReadingGoal();
 });
 
-/// Provider para la meta actual (valor mutable para edición)
-final readingGoalValueProvider = StateProvider<int>((ref) => 12);
+final currentReadingGoalProvider = FutureProvider<ReadingGoalDTO?>((ref) async {
+  final year = DateTime.now().year;
+  return ref.watch(readingGoalProvider(year).future);
+});
+
+final updateReadingGoalProvider = AutoDisposeFutureProvider.family<void, int>((ref, goal) async {
+  final repo = ref.read(readingStatsRepositoryProvider);
+  await repo.updateReadingGoal(goal);
+  ref.invalidate(currentReadingGoalProvider);
+});

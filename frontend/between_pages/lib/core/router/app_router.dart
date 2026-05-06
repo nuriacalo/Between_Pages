@@ -5,17 +5,18 @@ import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
 import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
 import 'package:between_pages/screens/auth/login_page.dart';
+import 'package:flutter/material.dart';
 import 'package:between_pages/screens/auth/register_page.dart';
 import 'package:between_pages/screens/catalog/catalog_detail_page.dart';
 import 'package:between_pages/screens/home/home_page.dart';
 import 'package:between_pages/screens/journal/book_journal_edit_page.dart';
 import 'package:between_pages/screens/journal/book_reading_progress_page.dart';
+import 'package:between_pages/screens/journal/diary_page.dart';
 import 'package:between_pages/screens/journal/fanfic_journal_edit_page.dart';
-import 'package:between_pages/screens/journal/fanfic_reading_session_page.dart';
 import 'package:between_pages/screens/journal/manga_journal_edit_page.dart';
-import 'package:between_pages/screens/journal/reading_session_page.dart';
-import 'package:between_pages/screens/journal/second_brain_page.dart';
-import 'package:between_pages/screens/journal/ocr_scanner_page.dart';
+import 'package:between_pages/screens/journal/universal_session_page.dart';
+import 'package:between_pages/repositories/journal_mappers.dart';
+import 'package:between_pages/screens/lists/reading_lists_page.dart';
 import 'package:between_pages/screens/profile/settings_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,40 +24,21 @@ import 'package:go_router/go_router.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    // Ruta en la que arranca la app
     initialLocation: '/',
-    // Notificamos a GoRouter cada vez que el estado cambie
     refreshListenable: _GoRouterNotifier(ref),
     redirect: (context, state) {
-      // Usamos ref.read en lugar de ref.watch para evitar reconstruir todo el router
       final authState = ref.read(isLoggedInProvider);
-
-      // Verificamos si intenta ir a CUALQUIER pantalla de autenticación
       final isGoingToAuth =
           state.uri.toString() == '/login' ||
           state.uri.toString() == '/register';
-
-      // Esperamos a que el stream tenga datos
       final isLoggedIn = authState.when(
         data: (loggedIn) => loggedIn,
-        loading: () => null, // Esperando, no redirigimos aún
-        error: (_, _) => false, // En error, asumimos no logueado
+        loading: () => null,
+        error: (_, _) => false,
       );
-
-      // Si aún estamos cargando, no redirigimos
       if (isLoggedIn == null) return null;
-
-      // Si NO está logueado y NO va a auth -> Lo obligamos a ir al login
-      if (!isLoggedIn && !isGoingToAuth) {
-        return '/login';
-      }
-
-      // Si SÍ está logueado pero intenta ir a auth -> Lo mandamos al inicio
-      if (isLoggedIn && isGoingToAuth) {
-        return '/';
-      }
-
-      // Si todo está bien, devuelve null (significa "déjalo pasar")
+      if (!isLoggedIn && !isGoingToAuth) return '/login';
+      if (isLoggedIn && isGoingToAuth) return '/';
       return null;
     },
     routes: [
@@ -98,7 +80,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/journal/book/session',
         builder: (context, state) {
           final journal = state.extra as BookJournalResponseDto;
-          return ReadingSessionPage(journal: journal);
+          return UniversalSessionPage(data: journal.toSessionData());
+        },
+      ),
+      GoRoute(
+        path: '/journal/book/diary',
+        builder: (context, state) {
+          final journal = state.extra as BookJournalResponseDto;
+          return DiaryPage(data: journal.toDiaryData());
         },
       ),
       GoRoute(
@@ -116,19 +105,36 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/journal/fanfic/session',
+        path: '/journal/manga/diary',
         builder: (context, state) {
-          final journal = state.extra as FanficJournalResponseDTO;
-          return FanficReadingSessionPage(journal: journal);
+          final journal = state.extra as MangaJournalResponseDTO;
+          return DiaryPage(data: journal.toDiaryData());
         },
       ),
       GoRoute(
-        path: '/second-brain',
-        builder: (context, state) => const SecondBrainPage(),
+        path: '/journal/fanfic/diary',
+        builder: (context, state) {
+          final journal = state.extra as FanficJournalResponseDTO;
+          return DiaryPage(data: journal.toDiaryData());
+        },
       ),
       GoRoute(
-        path: '/ocr-scanner',
-        builder: (context, state) => const OcrScannerPage(),
+        path: '/journal/manga/session',
+        builder: (context, state) {
+          final journal = state.extra as MangaJournalResponseDTO;
+          return UniversalSessionPage(data: journal.toSessionData());
+        },
+      ),
+      GoRoute(
+        path: '/journal/fanfic/session',
+        builder: (context, state) {
+          final journal = state.extra as FanficJournalResponseDTO;
+          return UniversalSessionPage(data: journal.toSessionData());
+        },
+      ),
+      GoRoute(
+        path: '/lists',
+        builder: (context, state) => const ReadingListsPage(),
       ),
       GoRoute(
         path: '/settings',
@@ -138,7 +144,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// Clase auxiliar que avisa a GoRouter cuando cambia la sesión
 class _GoRouterNotifier extends ChangeNotifier {
   _GoRouterNotifier(Ref ref) {
     ref.listen(isLoggedInProvider, (_, _) => notifyListeners());

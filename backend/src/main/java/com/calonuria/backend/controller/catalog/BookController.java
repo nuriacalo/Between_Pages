@@ -1,12 +1,12 @@
 package com.calonuria.backend.controller.catalog;
 
 import com.calonuria.backend.dto.catalog.BookResponseDTO;
-import com.calonuria.backend.model.catalog.Book;
 import com.calonuria.backend.service.catalog.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -58,17 +58,6 @@ public class BookController {
     @Operation(summary = "Guardar libro en base de datos local")
     @PostMapping
     public ResponseEntity<BookResponseDTO> saveBook(@RequestBody BookResponseDTO dto) {
-        Book book = new Book();
-        book.setGoogleBooksId(dto.getGoogleBooksId());
-        book.setTitle(dto.getTitle());
-        book.setAuthor(dto.getAuthor());
-        book.setIsbn(dto.getIsbn());
-        book.setPublisher(dto.getPublisher());
-        book.setDescription(dto.getDescription());
-        book.setCoverUrl(dto.getCoverUrl());
-        book.setGenre(dto.getGenre());
-        book.setBookType(dto.getBookType());
-        book.setPublicationYear(dto.getPublicationYear());
-        return ResponseEntity.ok(bookService.saveIfNotExists(book));
+        return ResponseEntity.ok(bookService.saveFromDTO(dto));
     }
 }

@@ -3,7 +3,6 @@ package com.calonuria.backend.repository.journal;
 import com.calonuria.backend.model.catalog.Book;
 import com.calonuria.backend.model.journal.BookJournal;
 import com.calonuria.backend.model.user.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +14,7 @@ import java.util.Optional;
  * Repositorio para la gestión de diarios de lectura de libros.
  */
 @Repository
-public interface BookJournalRepository extends JpaRepository<BookJournal, Long> {
+public interface BookJournalRepository extends BaseJournalRepository<BookJournal> {
 
     /**
      * Busca todos los diarios de un usuario.
@@ -32,14 +31,6 @@ public interface BookJournalRepository extends JpaRepository<BookJournal, Long> 
      * @return Optional con el diario
      */
     Optional<BookJournal> findByUserAndBook(User user, Book book);
-
-    /**
-     * Busca diarios por estado.
-     * @param user usuario
-     * @param status estado de lectura
-     * @return lista de diarios
-     */
-    List<BookJournal> findByUserAndStatus(User user, String status);
 
     /**
      * Busca diarios por valoración exacta.
@@ -74,11 +65,4 @@ public interface BookJournalRepository extends JpaRepository<BookJournal, Long> 
      * @return lista de diarios
      */
     List<BookJournal> findByUserAndStartDateBetween(User user, LocalDate start, LocalDate end);
-
-    /**
-     * Busca solo relecturas.
-     * @param user usuario
-     * @return lista de diarios
-     */
-    List<BookJournal> findByUserAndRereadingTrue(User user);
 }

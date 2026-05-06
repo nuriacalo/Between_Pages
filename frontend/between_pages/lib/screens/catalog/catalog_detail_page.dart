@@ -1,21 +1,19 @@
 import 'package:between_pages/models/catalog/book_response_dto.dart';
-import 'package:between_pages/models/catalog/manga_response_dto.dart';
 import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
-import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
+import 'package:between_pages/models/catalog/manga_response_dto.dart';
 import 'package:between_pages/models/journal/book_journal_record_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_record_dto.dart';
+import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/fanfic_journal_record_dto.dart';
+import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
+import 'package:between_pages/models/journal/manga_journal_record_dto.dart';
+import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
 import 'package:between_pages/providers/journal/book_journal_provider.dart';
-import 'package:between_pages/providers/journal/manga_journal_provider.dart';
 import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
+import 'package:between_pages/providers/journal/manga_journal_provider.dart';
 import 'package:between_pages/providers/user/user_provider.dart';
 import 'package:between_pages/repositories/book_journal_repository.dart';
-import 'package:between_pages/repositories/manga_journal_repository.dart';
 import 'package:between_pages/repositories/fanfic_journal_repository.dart';
-import 'package:between_pages/screens/journal/book_journal_edit_page.dart';
-import 'package:between_pages/screens/journal/manga_journal_edit_page.dart';
+import 'package:between_pages/repositories/manga_journal_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,12 +21,35 @@ import 'package:go_router/go_router.dart';
 
 enum CatalogItemType { book, manga, fanfic }
 
+class UnifiedCatalogData {
+  final String title;
+  final String author;
+  final String? coverUrl;
+  final String? description;
+  final String? genre;
+  final int? totalChapters;
+  final String? publicationStatus;
+
+  UnifiedCatalogData({
+    required this.title,
+    required this.author,
+    this.coverUrl,
+    this.description,
+    this.genre,
+    this.totalChapters,
+    this.publicationStatus,
+  });
+}
+
 class CatalogDetailPage extends ConsumerStatefulWidget {
-  final dynamic
-  item; // BookResponseDTO, MangaResponseDTO, or FanfictionResponseDTO
+  final dynamic item; // BookResponseDTO, MangaResponseDTO, or FanfictionResponseDTO
   final CatalogItemType type;
 
-  const CatalogDetailPage({super.key, required this.item, required this.type});
+  const CatalogDetailPage({
+    super.key,
+    required this.item,
+    required this.type,
+  });
 
   @override
   ConsumerState<CatalogDetailPage> createState() => _CatalogDetailPageState();
@@ -37,81 +58,39 @@ class CatalogDetailPage extends ConsumerStatefulWidget {
 class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   bool _isAdding = false;
 
-  String _getTitle() {
+  UnifiedCatalogData get _data {
     switch (widget.type) {
       case CatalogItemType.book:
-        return (widget.item as BookResponseDTO).title;
+        final b = widget.item as BookResponseDTO;
+        return UnifiedCatalogData(
+          title: b.title,
+          author: b.author,
+          coverUrl: b.coverUrl,
+          description: b.description,
+          genre: b.genre,
+        );
       case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).title ?? 'Sin título';
+        final m = widget.item as MangaResponseDTO;
+        return UnifiedCatalogData(
+          title: m.title ?? 'Sin título',
+          author: m.author ?? 'Autor desconocido',
+          coverUrl: m.coverUrl,
+          description: m.description,
+          genre: m.genre,
+          totalChapters: m.totalChapters,
+          publicationStatus: m.publicationStatus,
+        );
       case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).title ?? 'Sin título';
-    }
-  }
-
-  String? _getCoverUrl() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return (widget.item as BookResponseDTO).coverUrl;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).coverUrl;
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).coverUrl;
-    }
-  }
-
-  String _getAuthor() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return (widget.item as BookResponseDTO).author;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).author ?? 'Autor desconocido';
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).author ??
-            'Autor desconocido';
-    }
-  }
-
-  String? _getDescription() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return (widget.item as BookResponseDTO).description;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).description;
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).description;
-    }
-  }
-
-  String? _getGenre() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return (widget.item as BookResponseDTO).genre;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).genre;
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).genre;
-    }
-  }
-
-  int? _getTotalChapters() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return null;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).totalChapters;
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).totalChapters;
-    }
-  }
-
-  String? _getPublicationStatus() {
-    switch (widget.type) {
-      case CatalogItemType.book:
-        return null;
-      case CatalogItemType.manga:
-        return (widget.item as MangaResponseDTO).publicationStatus;
-      case CatalogItemType.fanfic:
-        return (widget.item as FanfictionResponseDTO).publicationStatus;
+        final f = widget.item as FanfictionResponseDTO;
+        return UnifiedCatalogData(
+          title: f.title ?? 'Sin título',
+          author: f.author ?? 'Autor desconocido',
+          coverUrl: f.coverUrl,
+          description: f.description,
+          genre: f.genre,
+          totalChapters: f.totalChapters,
+          publicationStatus: f.publicationStatus,
+        );
     }
   }
 
@@ -120,31 +99,15 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       case CatalogItemType.book:
         final book = widget.item as BookResponseDTO;
         final asyncValue = ref.watch(bookJournalEntryProvider(book.idBook));
-        return asyncValue.when(
-          data: (data) => data,
-          loading: () => null,
-          error: (error, stackTrace) => null,
-        );
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
       case CatalogItemType.manga:
         final manga = widget.item as MangaResponseDTO;
-        final asyncValue = ref.watch(
-          mangaJournalEntryProvider(manga.idManga ?? 0),
-        );
-        return asyncValue.when(
-          data: (data) => data,
-          loading: () => null,
-          error: (error, stackTrace) => null,
-        );
+        final asyncValue = ref.watch(mangaJournalEntryProvider(manga.idManga ?? 0));
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
       case CatalogItemType.fanfic:
         final fanfic = widget.item as FanfictionResponseDTO;
-        final asyncValue = ref.watch(
-          fanficJournalEntryProvider(fanfic.idFanfic?.toString() ?? ''),
-        );
-        return asyncValue.when(
-          data: (data) => data,
-          loading: () => null,
-          error: (error, stackTrace) => null,
-        );
+        final asyncValue = ref.watch(fanficJournalEntryProvider(fanfic.idFanfic?.toString() ?? ''));
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
     }
   }
 
@@ -225,24 +188,22 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       ref.invalidate(fanficJournalProvider);
 
       if (!mounted) return;
+
+      final msg = switch (status) {
+        'READING' => 'Comenzaste a leer "${_data.title}"',
+        'WISHLIST' => 'Añadido a tu lista de deseos',
+        'TBR' => '"${_data.title}" añadido a tu lista',
+        _ => '"${_data.title}" añadido a tu lista',
+      };
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            status == 'READING'
-                ? 'Comenzaste a leer "${_getTitle()}"'
-                : status == 'WISHLIST'
-                ? 'Añadido a tu lista de deseos'
-                : status == 'BOUGHT'
-                ? 'Marcado como comprado'
-                : '"${_getTitle()}" añadido a tu lista',
-          ),
-        ),
+        SnackBar(content: Text(msg)),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     } finally {
       setState(() => _isAdding = false);
     }
@@ -251,22 +212,13 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   void _openJournalEdit(dynamic journal) {
     switch (widget.type) {
       case CatalogItemType.book:
-        context.push(
-          '/journal/book/edit',
-          extra: journal as BookJournalResponseDto,
-        );
+        context.push('/journal/book/edit', extra: journal as BookJournalResponseDto);
         break;
       case CatalogItemType.manga:
-        context.push(
-          '/journal/manga/edit',
-          extra: journal as MangaJournalResponseDTO,
-        );
+        context.push('/journal/manga/edit', extra: journal as MangaJournalResponseDTO);
         break;
       case CatalogItemType.fanfic:
-        context.push(
-          '/journal/fanfic/edit',
-          extra: journal as FanficJournalResponseDTO,
-        );
+        context.push('/journal/fanfic/edit', extra: journal as FanficJournalResponseDTO);
         break;
     }
   }
@@ -288,17 +240,17 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isAdding ? null : () => _addToJournal('PENDING'),
+                  onPressed: _isAdding ? null : () => _addToJournal('TBR'),
                   icon: const Icon(Icons.bookmark_add),
-                  label: const Text('Pendiente'),
+                  label: const Text('Por leer'),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isAdding ? null : () => _addToJournal('TBR'),
-                  icon: const Icon(Icons.format_list_bulleted),
-                  label: const Text('Por leer'),
+                  onPressed: _isAdding ? null : () => _addToJournal('READING'),
+                  icon: const Icon(Icons.timer_outlined),
+                  label: const Text('Leyendo'),
                 ),
               ),
               PopupMenuButton<String>(
@@ -310,10 +262,8 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                     value: 'WISHLIST',
                     child: Text('Añadir a Wishlist'),
                   ),
-                  const PopupMenuItem(
-                    value: 'BOUGHT',
-                    child: Text('Marcar como Comprado'),
-                  ),
+                  // Según tu SQL final, BOUGHT ya no forma parte del CHECK de status,
+                  // así que lo eliminamos del flujo del catálogo.
                 ],
               ),
             ],
@@ -323,10 +273,8 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
     }
 
     final status = existingJournal.status?.toString().toLowerCase() ?? '';
-    final bool isReading =
-        status.contains('leyendo') || status.contains('reading');
-    final bool isFinished =
-        status.contains('terminado') || status.contains('finished');
+    final bool isReading = status.contains('leyendo') || status.contains('reading');
+    final bool isFinished = status.contains('terminado') || status.contains('finished');
 
     return Column(
       children: [
@@ -336,14 +284,10 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             child: FilledButton.icon(
               onPressed: () {
                 if (widget.type == CatalogItemType.book) {
-                  // Te lleva a la pantalla de progreso e información
-                  context.push(
-                    '/journal/book/progress',
-                    extra: existingJournal,
-                  );
+                  context.push('/journal/book/progress', extra: existingJournal);
                 } else if (widget.type == CatalogItemType.manga) {
                   context.push('/journal/manga/edit', extra: existingJournal);
-                } else if (widget.type == CatalogItemType.fanfic) {
+                } else {
                   context.push('/journal/fanfic/edit', extra: existingJournal);
                 }
               },
@@ -351,42 +295,35 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               label: const Text('Ver progreso de lectura'),
             ),
           ),
-          if (widget.type == CatalogItemType.book ||
-              widget.type == CatalogItemType.manga ||
-              widget.type == CatalogItemType.fanfic) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
-                  String route;
-                  if (widget.type == CatalogItemType.book) {
-                    route = '/journal/book/session';
-                  } else if (widget.type == CatalogItemType.manga) {
-                    route = '/journal/manga/session';
-                  } else {
-                    route = '/journal/fanfic/session';
-                  }
-                  context.push(route, extra: existingJournal);
-                },
-                icon: const Icon(Icons.timer_outlined),
-                label: const Text('Iniciar sesión de lectura'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () {
+                final route = switch (widget.type) {
+                  CatalogItemType.book => '/journal/book/session',
+                  CatalogItemType.manga => '/journal/manga/session',
+                  CatalogItemType.fanfic => '/journal/fanfic/session',
+                };
+                context.push(route, extra: existingJournal);
+              },
+              icon: const Icon(Icons.timer_outlined),
+              label: const Text('Iniciar sesión de lectura'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _openJournalEdit(existingJournal),
-                icon: const Icon(Icons.pause),
-                label: const Text('Pausar o abandonar lectura'),
-              ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _openJournalEdit(existingJournal),
+              icon: const Icon(Icons.pause),
+              label: const Text('Pausar o abandonar lectura'),
             ),
-          ],
+          ),
         ] else if (isFinished) ...[
           SizedBox(
             width: double.infinity,
@@ -421,7 +358,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   Widget build(BuildContext context) {
     final existingJournal = _getExistingJournal();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = const Color(0xFFA87C80);
+    const accent = Color(0xFFA87C80);
     final bgColor = isDark ? const Color(0xFF2C2025) : const Color(0xFFF5E6E0);
 
     return Scaffold(
@@ -479,9 +416,9 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                   child: SizedBox(
                     width: 140,
                     height: 210,
-                    child: _getCoverUrl() != null && _getCoverUrl()!.isNotEmpty
+                    child: _data.coverUrl != null && _data.coverUrl!.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: _getCoverUrl()!,
+                            imageUrl: _data.coverUrl!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
                               color: Colors.white.withValues(alpha: 0.1),
@@ -508,7 +445,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                _getTitle(),
+                _data.title,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -521,7 +458,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                _getAuthor(),
+                _data.author,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14,
@@ -538,10 +475,10 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   }
 
   Widget _buildInfoSection(Color accent) {
-    final totalChapters = _getTotalChapters();
-    final publicationStatus = _getPublicationStatus();
-    final description = _getDescription();
-    final genre = _getGenre();
+    final totalChapters = _data.totalChapters;
+    final publicationStatus = _data.publicationStatus;
+    final description = _data.description;
+    final genre = _data.genre;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

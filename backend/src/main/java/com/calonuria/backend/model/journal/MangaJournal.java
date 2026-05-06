@@ -1,38 +1,20 @@
 package com.calonuria.backend.model.journal;
 
-import com.calonuria.backend.model.user.User;
 import com.calonuria.backend.model.catalog.Manga;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 /**
  * Entidad que representa el diario de lectura de un manga.
  * Mapea la tabla "manga_journal" de la base de datos.
+ * Extiende de BaseJournal para campos comunes.
  */
 @Entity
 @Table(name = "manga_journal")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class MangaJournal {
-
-    /**
-     * Identificador único del diario.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    /**
-     * Usuario propietario del diario.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+@EqualsAndHashCode(callSuper = true)
+public class MangaJournal extends BaseJournal {
 
     /**
      * Manga asociado al diario.
@@ -40,12 +22,6 @@ public class MangaJournal {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
     private Manga manga;
-
-    /**
-     * Estado de lectura: PENDING, READING, FINISHED, DROPPED, PAUSED, TBR, WISHLIST, BOUGHT.
-     */
-    @Column(nullable = false, length = 50)
-    private String status;
 
     /**
      * Capítulo actual de lectura.
@@ -58,24 +34,6 @@ public class MangaJournal {
      */
     @Column(name = "current_volume")
     private Integer currentVolume;
-
-    /**
-     * Valoración del manga (1-10).
-     */
-    @Column
-    private Integer rating;
-
-    /**
-     * Nivel de lágrimas (0-5).
-     */
-    @Column(name = "tear_drops")
-    private Integer tearDrops;
-
-    /**
-     * Nivel de picante/flames (0-5).
-     */
-    @Column(name = "spice_flames")
-    private Integer spiceFlames;
 
     /**
      * Formato de lectura: PHYSICAL, DIGITAL.
@@ -96,36 +54,6 @@ public class MangaJournal {
     private String favoriteArc;
 
     /**
-     * Notas personales del usuario sobre el manga.
-     */
-    @Column(name = "personal_notes", columnDefinition = "TEXT")
-    private String personalNotes;
-
-    /**
-     * Fecha de inicio de lectura.
-     */
-    @Column(name = "start_date")
-    private LocalDate startDate;
-
-    /**
-     * Fecha de finalización de lectura.
-     */
-    @Column(name = "end_date")
-    private LocalDate endDate;
-
-    /**
-     * Fecha de última actualización del diario.
-     */
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    /**
-     * Indica si es una relectura.
-     */
-    @Column
-    private Boolean rereading;
-
-    /**
      * Tipo de propiedad: DIGITAL, PHYSICAL, NONE, BORROWED.
      */
     @Column(length = 20)
@@ -136,14 +64,4 @@ public class MangaJournal {
      */
     @Column(name = "loaned_to", length = 100)
     private String loanedTo;
-
-    /**
-     * Método que se ejecuta antes de persistir o actualizar.
-     * Establece la fecha de actualización automáticamente.
-     */
-    @PrePersist
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

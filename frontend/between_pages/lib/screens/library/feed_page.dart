@@ -11,6 +11,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/repositories/journal_status_extensions.dart';
+
 
 /// Provider temporal para la meta de lectura (persiste en memoria).
 /// TODO: Conectar a SharedPreferences o backend.
@@ -206,7 +208,7 @@ class FeedPage extends ConsumerWidget {
                     color: const Color(0xFF7F8C95),
                     asyncValue: booksAsync,
                     onTap: (item) {
-                      final route = item.status == 'READING'
+                      final route = item.status.isReading
                           ? '/journal/book/progress'
                           : '/journal/book/edit';
                       context.push(route, extra: item);

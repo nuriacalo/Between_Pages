@@ -16,6 +16,8 @@ class FanficJournalRecordDTO {
   final String status;
   final int? currentChapter;
   final int? rating;
+  final int? tearDrops;
+  final int? spiceFlames;
 
   final String? mainShip;
   final String? secondaryShips;
@@ -47,6 +49,8 @@ class FanficJournalRecordDTO {
     required this.status,
     this.currentChapter,
     this.rating,
+    this.tearDrops,
+    this.spiceFlames,
     this.mainShip,
     this.secondaryShips,
     this.angstLevel,
@@ -75,6 +79,8 @@ class FanficJournalRecordDTO {
       status: json['status'] as String,
       currentChapter: json['current_chapter'] as int?,
       rating: json['rating'] as int?,
+      tearDrops: json['tear_drops'] as int?,
+      spiceFlames: json['spice_flames'] as int?,
       mainShip: json['main_ship'] as String?,
       secondaryShips: json['secondary_ships'] as String?,
       angstLevel: json['angst_level'] as String?,
@@ -104,6 +110,8 @@ class FanficJournalRecordDTO {
       'status': status,
       'current_chapter': currentChapter,
       'rating': rating,
+      'tear_drops': tearDrops,
+      'spice_flames': spiceFlames,
       'main_ship': mainShip,
       'secondary_ships': secondaryShips,
       'angst_level': angstLevel,

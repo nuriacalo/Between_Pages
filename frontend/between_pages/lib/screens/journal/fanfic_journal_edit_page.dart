@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/repositories/journal_status_helper.dart';
 
 class FanficJournalEditPage extends ConsumerStatefulWidget {
   final FanficJournalResponseDTO journal;
@@ -22,47 +23,21 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
   late String _status;
   late int? _currentChapter;
   late int? _rating;
+  late int? _tearDrops;
+  late int? _spiceFlames;
   late String? _personalNotes;
   bool _isLoading = false;
-
-  final List<String> _statusOptions = [
-    'Pendiente',
-    'Leyendo',
-    'Pausado',
-    'Terminado',
-    'Abandonado',
-  ];
 
   @override
   void initState() {
     super.initState();
     final j = widget.journal;
-    _status = _mapStatusToUi(j.status ?? 'PENDING');
+    _status = JournalStatusHelper.mapStatusToUi(j.status ?? 'TBR');
     _currentChapter = j.currentChapter;
     _rating = j.rating;
+    _tearDrops = j.tearDrops;
+    _spiceFlames = j.spiceFlames;
     _personalNotes = j.personalNotes;
-  }
-
-  String _mapStatusToUi(String status) {
-    return switch (status) {
-      'PENDING' => 'Pendiente',
-      'READING' => 'Leyendo',
-      'FINISHED' => 'Terminado',
-      'DROPPED' => 'Abandonado',
-      'PAUSED' => 'Pausado',
-      _ => status,
-    };
-  }
-
-  String _mapStatusToDb(String status) {
-    return switch (status) {
-      'Pendiente' => 'PENDING',
-      'Leyendo' => 'READING',
-      'Terminado' => 'FINISHED',
-      'Abandonado' => 'DROPPED',
-      'Pausado' => 'PAUSED',
-      _ => status,
-    };
   }
 
   Future<void> _save() async {
@@ -86,9 +61,11 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
         theme: fanfic.theme,
         totalChapters: fanfic.totalChapters,
         publicationStatus: fanfic.publicationStatus,
-        status: _mapStatusToDb(_status),
+        status: JournalStatusHelper.mapStatusToDb(_status),
         currentChapter: _currentChapter,
         rating: _rating,
+        tearDrops: _tearDrops,
+        spiceFlames: _spiceFlames,
         personalNotes: _personalNotes,
         startDate: widget.journal.startDate,
         endDate: _status == 'Terminado'
@@ -100,15 +77,21 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
       ref.invalidate(fanficJournalProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Journal de Fanfic actualizado')),
-        );
-        context.pop();
+        // Si se marcó como terminado, abrir la pantalla inmersiva del Diario
+        if (_status == 'Terminado' && widget.journal.status != 'FINISHED') {
+          context.push('/journal/fanfic/diary', extra: widget.journal);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Journal de Fanfic actualizado')),
+          );
+          context.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -162,17 +145,15 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
                     children: [
                       Text(
                         fanfic.title ?? 'Sin título',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         fanfic.author ?? 'Autor desconocido',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -187,7 +168,10 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () {
-                    context.push('/journal/fanfic/session', extra: widget.journal);
+                    context.push(
+                      '/journal/fanfic/session',
+                      extra: widget.journal,
+                    );
                   },
                   icon: const Icon(Icons.timer_outlined),
                   label: const Text('Iniciar sesión de lectura'),
@@ -202,10 +186,13 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
             ],
 
             // Estado
-            Text('Estado de lectura', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Estado de lectura',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             Wrap(
               spacing: 8,
-              children: _statusOptions.map((status) {
+          children: JournalStatusHelper.statusOptions.map((status) {
                 final isSelected = _status == status;
                 return ChoiceChip(
                   label: Text(status),
@@ -219,26 +206,71 @@ class _FanficJournalEditPageState extends ConsumerState<FanficJournalEditPage> {
             // Progreso
             Text('Progreso', style: Theme.of(context).textTheme.titleSmall),
             TextField(
-              controller: TextEditingController(text: _currentChapter?.toString() ?? ''),
+              controller: TextEditingController(
+                text: _currentChapter?.toString() ?? '',
+              ),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Capítulo actual'),
               onChanged: (v) => _currentChapter = int.tryParse(v),
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: TextEditingController(text: _rating?.toString() ?? ''),
+              controller: TextEditingController(
+                text: _rating?.toString() ?? '',
+              ),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Valoración (1-10)'),
               onChanged: (v) => _rating = int.tryParse(v),
             ),
+            const SizedBox(height: 16),
+
+            // Tear Drops (0-5)
+            Text(
+              'Lágrimas derramadas',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Wrap(
+              spacing: 8,
+              children: List.generate(6, (index) {
+                final isSelected = _tearDrops == index;
+                return ChoiceChip(
+                  label: Text('$index 💧'),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _tearDrops = index),
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+
+            // Spice Flames (0-5)
+            Text(
+              'Nivel de spice',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Wrap(
+              spacing: 8,
+              children: List.generate(6, (index) {
+                final isSelected = _spiceFlames == index;
+                return ChoiceChip(
+                  label: Text('$index 🔥'),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _spiceFlames = index),
+                );
+              }),
+            ),
             const SizedBox(height: 24),
 
             // Notas
-            Text('Notas personales', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Notas personales',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             TextField(
               controller: TextEditingController(text: _personalNotes),
               maxLines: 4,
-              decoration: const InputDecoration(hintText: 'Escribe tus pensamientos...'),
+              decoration: const InputDecoration(
+                hintText: 'Escribe tus pensamientos...',
+              ),
               onChanged: (v) => _personalNotes = v,
             ),
           ],

@@ -3,7 +3,6 @@ package com.calonuria.backend.repository.journal;
 import com.calonuria.backend.model.catalog.Fanfiction;
 import com.calonuria.backend.model.journal.FanficJournal;
 import com.calonuria.backend.model.user.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +14,7 @@ import java.util.Optional;
  * Repositorio para la gestión de diarios de lectura de fanfiction.
  */
 @Repository
-public interface FanficJournalRepository extends JpaRepository<FanficJournal, Long> {
+public interface FanficJournalRepository extends BaseJournalRepository<FanficJournal> {
 
     /**
      * Busca todos los diarios de un usuario.
@@ -34,14 +33,6 @@ public interface FanficJournalRepository extends JpaRepository<FanficJournal, Lo
     Optional<FanficJournal> findByUserAndFanfic(User user, Fanfiction fanfic);
 
     /**
-     * Busca diarios por estado.
-     * @param user usuario
-     * @param status estado de lectura
-     * @return lista de diarios
-     */
-    List<FanficJournal> findByUserAndStatus(User user, String status);
-
-    /**
      * Busca diarios por valoración exacta.
      * @param user usuario
      * @param rating valoración
@@ -56,13 +47,6 @@ public interface FanficJournalRepository extends JpaRepository<FanficJournal, Lo
      * @return lista de diarios
      */
     List<FanficJournal> findByUserAndRatingGreaterThanEqual(User user, Integer rating);
-
-    /**
-     * Busca solo relecturas.
-     * @param user usuario
-     * @return lista de diarios
-     */
-    List<FanficJournal> findByUserAndRereadingTrue(User user);
 
     /**
      * Busca diarios por nivel de angst.

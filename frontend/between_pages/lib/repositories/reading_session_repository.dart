@@ -1,23 +1,24 @@
-import 'package:between_pages/api/api_client.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:between_pages/models/journal/reading_session_record_dto.dart';
-import 'package:dio/dio.dart';
+import 'package:between_pages/providers/auth/api_provider.dart';
+import 'package:between_pages/api/api_client.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repositorio para gestionar sesiones de lectura y estadísticas
 /// de velocidad de lectura.
 class ReadingSessionRepository {
-  final Dio _dio;
+  final ApiClient _apiClient;
 
-  ReadingSessionRepository(this._dio);
+  ReadingSessionRepository(this._apiClient);
 
   Future<void> saveSession(ReadingSessionRecordDTO dto) async {
     try {
-      await _dio.post(ApiConstants.readingSessions, data: dto.toJson());
+      await _apiClient.post(ApiConstants.readingSessions, data: dto.toJson());
     } catch (e) {
       // No relanzamos el error para no interrumpir al usuario,
       // pero lo dejamos registrado por si hay que depurar.
-      print('Error al guardar la sesión de lectura: $e');
+      debugPrint('Error al guardar la sesión de lectura: $e');
     }
   }
 
@@ -33,14 +34,15 @@ class ReadingSessionRepository {
       if (mangaId != null) queryParams['mangaId'] = mangaId;
       if (fanficId != null) queryParams['fanficId'] = fanficId;
 
-      final response = await _dio.get(
+      final response = await _apiClient.get(
         '${ApiConstants.readingSessions}/stats',
         queryParameters: queryParams,
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      // Fallback silencioso si no hay conexión o da error
-      return {'speedPagesPerHour': 0.0, 'estimatedTimeRemainingSeconds': 0};
+      // Lanzamos la excepción para evitar que el UI interprete un error 404 
+      // como una petición exitosa, lo que estaba causando el bucle infinito.
+      throw Exception('Error al obtener las estadísticas de lectura: $e');
     }
   }
 }

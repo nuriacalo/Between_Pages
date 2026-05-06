@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * Integra con Google Books API para búsquedas externas.
  */
 @Service
-public class BookService {
+public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long> {
 
     private static final Logger log = LoggerFactory.getLogger(BookService.class);
 
@@ -33,6 +33,7 @@ public class BookService {
     public BookService(BookRepository bookRepository,
                        RestTemplate restTemplate,
                        GoogleBooksConfig googleBooksConfig) {
+        super(bookRepository);
         this.bookRepository = bookRepository;
         this.restTemplate = restTemplate;
         this.googleBooksConfig = googleBooksConfig;
@@ -50,16 +51,32 @@ public class BookService {
                 return mapToDTO(existing.get());
             }
         }
-        return mapToDTO(bookRepository.save(book));
+        return saveAndMap(book);
     }
 
     /**
-     * Obtiene un libro por su ID.
-     * @param id ID del libro
-     * @return Optional con el DTO del libro
+     * Crea y guarda un libro desde un DTO si no existe.
+     * @param dto DTO con los datos del libro
+     * @return DTO con la información del libro guardado
      */
+    public BookResponseDTO saveFromDTO(BookResponseDTO dto) {
+        Book book = new Book();
+        book.setGoogleBooksId(dto.getGoogleBooksId());
+        book.setTitle(dto.getTitle());
+        book.setAuthor(dto.getAuthor());
+        book.setIsbn(dto.getIsbn());
+        book.setPublisher(dto.getPublisher());
+        book.setDescription(dto.getDescription());
+        book.setCoverUrl(dto.getCoverUrl());
+        book.setGenre(dto.getGenre());
+        book.setBookType(dto.getBookType());
+        book.setPublicationYear(dto.getPublicationYear());
+        return saveIfNotExists(book);
+    }
+
+    // Alias para compatibilidad con controllers existentes
     public Optional<BookResponseDTO> getBookById(Long id) {
-        return bookRepository.findById(id).map(this::mapToDTO);
+        return findById(id);
     }
 
     /**
@@ -85,7 +102,7 @@ public class BookService {
             String json = restTemplate.getForObject(url, String.class);
             if (!StringUtils.hasText(json)) {
                 log.warn("Google Books devolvió una respuesta vacía para el título '{}'", title);
-                return searchInDatabase(title);
+                return searchByTitle(title);
             }
 
             JsonNode root = new ObjectMapper().readTree(json);
@@ -95,7 +112,7 @@ public class BookService {
                         error.path("code").asInt(),
                         title,
                         error.path("message").asText("sin mensaje"));
-                return searchInDatabase(title);
+                return searchByTitle(title);
             }
 
             JsonNode items = root.path("items");
@@ -156,12 +173,12 @@ public class BookService {
             }
         } catch (Exception e) {
             log.error("Error al conectar con Google Books para '{}': {}", title, e.getMessage());
-            return searchInDatabase(title);
+            return searchByTitle(title);
         }
 
         if (results.isEmpty()) {
             log.info("No se encontraron resultados en Google Books para '{}', buscando en BD local", title);
-            return searchInDatabase(title);
+            return searchByTitle(title);
         }
 
         log.info("Enviando {} libros para '{}':", results.size(), title);
@@ -172,24 +189,19 @@ public class BookService {
         return results;
     }
 
-    /**
-     * Busca libros en la base de datos local.
-     * @param title título a buscar
-     * @return lista de libros encontrados
-     */
-    public List<BookResponseDTO> searchInDatabase(String title) {
+    @Override
+    public List<BookResponseDTO> searchByTitle(String title) {
         return bookRepository.findByTitleContainingIgnoreCase(title)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene todos los libros del catálogo.
-     * @return lista de todos los libros
-     */
+    public List<BookResponseDTO> searchInDatabase(String title) {
+        return searchByTitle(title);
+    }
+
+    // Alias para compatibilidad con controllers existentes
     public List<BookResponseDTO> getAllBooks() {
-        return bookRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        return findAll();
     }
 
     /**
@@ -197,6 +209,7 @@ public class BookService {
      * @param book libro
      * @return DTO de respuesta
      */
+    @Override
     public BookResponseDTO mapToDTO(Book book) {
         BookResponseDTO dto = new BookResponseDTO();
         dto.setId(book.getId());

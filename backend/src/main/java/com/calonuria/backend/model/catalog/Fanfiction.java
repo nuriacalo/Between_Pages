@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidad que representa un fanfiction en el catálogo.
@@ -94,4 +98,11 @@ public class Fanfiction {
      */
     @Column(name = "publication_status", length = 50)
     private String publicationStatus;
+
+    /**
+     * Etiquetas asociadas al fanfiction.
+     */
+    @OneToMany(mappedBy = "fanfic", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
+    private List<FanficTag> tags = new ArrayList<>();
 }

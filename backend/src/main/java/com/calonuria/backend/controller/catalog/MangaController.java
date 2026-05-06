@@ -1,12 +1,12 @@
 package com.calonuria.backend.controller.catalog;
 
 import com.calonuria.backend.dto.catalog.MangaResponseDTO;
-import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.service.catalog.MangaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -52,18 +52,6 @@ public class MangaController {
     @Operation(summary = "Guardar manga en base de datos local")
     @PostMapping
     public ResponseEntity<MangaResponseDTO> saveManga(@RequestBody MangaResponseDTO dto) {
-        Manga manga = new Manga();
-        manga.setMalId(dto.getMalId());
-        manga.setSource("MyAnimeList");
-        manga.setTitle(dto.getTitle());
-        manga.setAuthor(dto.getAuthor());
-        manga.setDemographic(dto.getDemographic());
-        manga.setGenre(dto.getGenre());
-        manga.setDescription(dto.getDescription());
-        manga.setCoverUrl(dto.getCoverUrl());
-        manga.setTotalChapters(dto.getTotalChapters());
-        manga.setTotalVolumes(dto.getTotalVolumes());
-        manga.setPublicationStatus(dto.getPublicationStatus());
-        return ResponseEntity.ok(mangaService.saveIfNotExists(manga));
+        return ResponseEntity.ok(mangaService.saveFromDTO(dto));
     }
 }

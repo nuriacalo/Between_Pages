@@ -3,7 +3,6 @@ package com.calonuria.backend.repository.journal;
 import com.calonuria.backend.model.catalog.Manga;
 import com.calonuria.backend.model.journal.MangaJournal;
 import com.calonuria.backend.model.user.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +14,7 @@ import java.util.Optional;
  * Repositorio para la gestión de diarios de lectura de manga.
  */
 @Repository
-public interface MangaJournalRepository extends JpaRepository<MangaJournal, Long> {
+public interface MangaJournalRepository extends BaseJournalRepository<MangaJournal> {
 
     /**
      * Busca todos los diarios de un usuario.
@@ -32,14 +31,6 @@ public interface MangaJournalRepository extends JpaRepository<MangaJournal, Long
      * @return Optional con el diario
      */
     Optional<MangaJournal> findByUserAndManga(User user, Manga manga);
-
-    /**
-     * Busca diarios por estado.
-     * @param user usuario
-     * @param status estado de lectura
-     * @return lista de diarios
-     */
-    List<MangaJournal> findByUserAndStatus(User user, String status);
 
     /**
      * Busca diarios por valoración exacta.
@@ -65,11 +56,4 @@ public interface MangaJournalRepository extends JpaRepository<MangaJournal, Long
      * @return lista de diarios
      */
     List<MangaJournal> findByUserAndEndDateBetween(User user, LocalDate start, LocalDate end);
-
-    /**
-     * Busca solo relecturas.
-     * @param user usuario
-     * @return lista de diarios
-     */
-    List<MangaJournal> findByUserAndRereadingTrue(User user);
 }

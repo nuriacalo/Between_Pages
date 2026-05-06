@@ -2,6 +2,7 @@ import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
 import 'package:between_pages/providers/journal/book_journal_provider.dart';
 import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
+import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
 import 'package:between_pages/providers/journal/manga_journal_provider.dart';
 import 'package:between_pages/widgets/common/empty_state.dart';
 import 'package:between_pages/widgets/journal/journal_item_card.dart';
@@ -105,7 +106,7 @@ class _MangaTab extends StatelessWidget {
           id: j.id,
           title: manga?.title ?? 'Sin título',
           coverUrl: manga?.coverUrl,
-          subtitle: j.currentChapter != null && j.currentChapter! > 0
+          subtitle: (j.currentChapter ?? 0) > 0
               ? 'Cap. ${j.currentChapter}'
               : null,
           ownership: j.ownership,
@@ -132,9 +133,9 @@ class _FanficsTab extends StatelessWidget {
         final fanfic = j.fanfic;
         return JournalItemData(
           id: j.id,
-          title: fanfic.title ?? 'Sin título',
-          coverUrl: fanfic.coverUrl,
-          subtitle: j.currentChapter != null && j.currentChapter! > 0
+          title: fanfic?.title ?? 'Sin título',
+          coverUrl: fanfic?.coverUrl,
+          subtitle: (j.currentChapter ?? 0) > 0
               ? 'Cap. ${j.currentChapter}'
               : null,
           ownership: null, // Fanfics don't have ownership

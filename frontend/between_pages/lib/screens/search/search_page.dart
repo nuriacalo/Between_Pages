@@ -1,5 +1,6 @@
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/providers/search/unified_search_provider.dart';
+import 'package:between_pages/widgets/catalog/catalog_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -147,8 +148,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       state.bookResults,
       colorScheme,
       textTheme,
-      // ignore: unnecessary_lambdas — named required param prevents tearoff
-      (book) => _BookCard(book: book),
+      (book) => CatalogItemCard(
+        title: book.title,
+        author: book.author ?? 'Autor desconocido',
+        coverUrl: book.coverUrl,
+        fallbackIcon: Icons.book,
+        onTap: () => context.push('/book/${book.idBook}', extra: book),
+      ),
     );
   }
 
@@ -194,7 +200,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       state.fanficResults,
       colorScheme,
       textTheme,
-      (fanfic) => _FanficCard(fanfic: fanfic),
+      (fanfic) => CatalogItemCard(
+        title: fanfic.title ?? 'Sin título',
+        author: fanfic.author ?? 'Autor desconocido',
+        coverUrl: fanfic.coverUrl,
+        fallbackIcon: Icons.favorite,
+        isFanfic: true,
+        onTap: () => context.push('/journal/fanfic/edit', extra: fanfic), // TODO ruta detalle
+      ),
     );
   }
 
@@ -240,7 +253,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       state.mangaResults,
       colorScheme,
       textTheme,
-      (manga) => _MangaCard(manga: manga),
+      (manga) {
+        final mangaId = (manga.idManga != null && manga.idManga! > 0)
+            ? manga.idManga.toString()
+            : manga.malId?.toString() ?? 'unknown';
+            
+        return CatalogItemCard(
+          title: manga.title,
+          author: manga.author ?? 'Autor desconocido',
+          coverUrl: manga.coverUrl,
+          fallbackIcon: Icons.auto_stories,
+          onTap: () => context.push('/manga/$mangaId', extra: manga),
+        );
+      }
     );
   }
 
@@ -283,216 +308,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       itemCount: items.length,
       itemBuilder: (context, index) => itemBuilder(items[index]),
-    );
-  }
-}
-
-// ============ CARDS ============
-
-class _BookCard extends StatelessWidget {
-  final dynamic book;
-  const _BookCard({required this.book});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return InkWell(
-      onTap: () => context.push('/book/${book.idBook}', extra: book),
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Builder(
-                builder: (context) {
-                  debugPrint(
-                    'Book: ${book.title}, coverUrl: "${book.coverUrl}"',
-                  );
-                  if (book.coverUrl != null && book.coverUrl!.isNotEmpty) {
-                    return Image.network(
-                      book.coverUrl!,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint(
-                          'Error cargando imagen: ${book.coverUrl} - $error',
-                        );
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.book, size: 40),
-                        );
-                      },
-                    );
-                  } else {
-                    debugPrint('URL vacía o null para: ${book.title}');
-                    return Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Icon(Icons.book, size: 40),
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            book.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FanficCard extends StatelessWidget {
-  final dynamic fanfic;
-  const _FanficCard({required this.fanfic});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return InkWell(
-      onTap: () {
-        // TODO: Navegar a detalle de fanfic
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: colorScheme.primaryContainer,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.menu_book,
-                  size: 40,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            fanfic.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MangaCard extends StatelessWidget {
-  final dynamic manga;
-  const _MangaCard({required this.manga});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    // Usar malId para mangas de búsqueda externa (sin ID local)
-    final mangaId = (manga.idManga != null && manga.idManga! > 0)
-        ? manga.idManga.toString()
-        : manga.malId?.toString() ?? 'unknown';
-
-    return InkWell(
-      onTap: () => context.push('/manga/$mangaId', extra: manga),
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: manga.coverUrl != null && manga.coverUrl!.isNotEmpty
-                  ? Image.network(
-                      manga.coverUrl!,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint(
-                          'Error cargando imagen manga: ${manga.coverUrl} - $error',
-                        );
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.auto_stories, size: 40),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Icon(Icons.auto_stories, size: 40),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            manga.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
     );
   }
 }

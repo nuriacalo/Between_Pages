@@ -6,15 +6,14 @@ package com.calonuria.backend.service.journal;
  * <p>
  * Estados soportados por la base de datos:
  * <ul>
- *   <li>PENDING - Pendiente</li>
- *   <li>READING - Leyendo</li>
- *   <li>FINISHED - Terminado</li>
- *   <li>DROPPED - Abandonado</li>
- *   <li>PAUSED - Pausado</li>
- *   <li>TBR - Por leer (To Be Read)</li>
  *   <li>WISHLIST - Lista de deseos</li>
- *   <li>BOUGHT - Comprado</li>
+ *   <li>TBR - Por leer (To Be Read)</li>
+ *   <li>READING - Leyendo</li>
+ *   <li>PAUSED - Pausado</li>
+ *   <li>DROPPED - Abandonado</li>
+ *   <li>FINISHED - Terminado</li>
  * </ul>
+ * <p>
  */
 public final class JournalStatusConverter {
 
@@ -26,21 +25,19 @@ public final class JournalStatusConverter {
      * Convierte un estado en español al formato inglés mayúsculas de la BD.
      *
      * @param status estado en español (ej: "Leyendo", "Terminado")
-     * @return estado en formato BD (ej: "READING", "FINISHED"). Si es null, retorna "PENDING".
+     * @return estado en formato BD (ej: "READING", "FINISHED"). Si es null, retorna "TBR".
      */
     public static String toDatabase(String status) {
         if (status == null || status.isBlank()) {
-            return "PENDING";
+            return "TBR";
         }
         return switch (status.trim()) {
-            case "Pendiente" -> "PENDING";
-            case "Leyendo" -> "READING";
-            case "Terminado" -> "FINISHED";
-            case "Abandonado" -> "DROPPED";
-            case "Pausado" -> "PAUSED";
-            case "Por leer" -> "TBR";
             case "Lista de deseos" -> "WISHLIST";
-            case "Comprado" -> "BOUGHT";
+            case "Por leer", "Pendiente" -> "TBR";
+            case "Leyendo" -> "READING";
+            case "Pausado" -> "PAUSED";
+            case "Abandonado" -> "DROPPED";
+            case "Terminado" -> "FINISHED";
             default -> status.toUpperCase();
         };
     }
@@ -49,21 +46,19 @@ public final class JournalStatusConverter {
      * Convierte un estado de la BD al formato UI en español.
      *
      * @param dbStatus estado en formato BD (ej: "READING", "FINISHED")
-     * @return estado en español. Si es null, retorna "Pendiente".
+     * @return estado en español. Si es null, retorna "Por leer".
      */
     public static String toUi(String dbStatus) {
         if (dbStatus == null || dbStatus.isBlank()) {
-            return "Pendiente";
+            return "Por leer";
         }
         return switch (dbStatus.trim()) {
-            case "PENDING" -> "Pendiente";
-            case "READING" -> "Leyendo";
-            case "FINISHED" -> "Terminado";
-            case "DROPPED" -> "Abandonado";
-            case "PAUSED" -> "Pausado";
-            case "TBR" -> "Por leer";
             case "WISHLIST" -> "Lista de deseos";
-            case "BOUGHT" -> "Comprado";
+            case "TBR" -> "Por leer";
+            case "READING" -> "Leyendo";
+            case "PAUSED" -> "Pausado";
+            case "DROPPED" -> "Abandonado";
+            case "FINISHED" -> "Terminado";
             default -> dbStatus;
         };
     }

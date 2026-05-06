@@ -13,18 +13,15 @@ import com.calonuria.backend.service.catalog.BookService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para la gestión del diario de lectura de libros.
  */
 @Service
-public class BookJournalService {
+public class BookJournalService extends BaseJournalService<BookJournal, BookJournalResponseDTO> {
 
     private final BookJournalRepository bookJournalRepository;
-    private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final BookService bookService;
 
@@ -32,8 +29,8 @@ public class BookJournalService {
                               UserRepository userRepository,
                               BookRepository bookRepository,
                               BookService bookService) {
+        super(bookJournalRepository, userRepository);
         this.bookJournalRepository = bookJournalRepository;
-        this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.bookService = bookService;
     }
@@ -43,6 +40,7 @@ public class BookJournalService {
      * @param dto datos del progreso
      * @return DTO con la información guardada
      */
+    @Transactional
     public BookJournalResponseDTO saveProgress(BookJournalRegistrationDTO dto) {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
@@ -112,65 +110,12 @@ public class BookJournalService {
     }
 
     /**
-     * Obtiene el journal de un usuario.
-     * @param userId ID del usuario
-     * @return lista de entradas del journal
-     */
-    @Transactional(readOnly = true)
-    public List<BookJournalResponseDTO> getUserJournal(Long userId) {
-        return bookJournalRepository.findByUserId(userId)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene entradas del journal filtradas por estado.
-     * @param userId ID del usuario
-     * @param status estado de lectura
-     * @return lista de entradas filtradas
-     */
-    @Transactional(readOnly = true)
-    public List<BookJournalResponseDTO> getByStatus(Long userId, String status) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        return bookJournalRepository.findByUserAndStatus(user, status)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene las relecturas de un usuario.
-     * @param userId ID del usuario
-     * @return lista de relecturas
-     */
-    @Transactional(readOnly = true)
-    public List<BookJournalResponseDTO> getRereadings(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        return bookJournalRepository.findByUserAndRereadingTrue(user)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Elimina una entrada del journal.
-     * @param journalId ID de la entrada
-     */
-    public void deleteJournal(Long journalId) {
-        bookJournalRepository.deleteById(journalId);
-    }
-
-    /**
      * Mapea una entrada del journal a su DTO de respuesta.
      * @param journal entrada del journal
      * @return DTO de respuesta
      */
-    // Conversión de estados centralizada en JournalStatusConverter
-
-    private BookJournalResponseDTO mapToDTO(BookJournal journal) {
+    @Override
+    protected BookJournalResponseDTO mapToDTO(BookJournal journal) {
         BookJournalResponseDTO dto = new BookJournalResponseDTO();
         dto.setId(journal.getId());
         dto.setUserId(journal.getUser().getId());

@@ -1,61 +1,36 @@
 package com.calonuria.backend.controller.auth;
 
-import com.calonuria.backend.dto.auth.AuthResponseDTO;
 import com.calonuria.backend.dto.auth.LoginDTO;
 import com.calonuria.backend.dto.auth.RefreshTokenRequestDTO;
-import com.calonuria.backend.dto.user.UserResponseDTO;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.security.JwtUtil;
+import com.calonuria.backend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * Controlador para la autenticación de usuarios.
+ * Delega la lógica de negocio a AuthService.
  */
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticación", description = "Login y gestión de tokens JWT")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil,
-                          UserRepository userRepository) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @Operation(summary = "Login — devuelve accessToken y refreshToken")
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginDTO.getEmail(), loginDTO.getPassword()
-                    )
-            );
-            User user = userRepository.findByEmail(loginDTO.getEmail())
-                    .orElseThrow();
-
-            return ResponseEntity.ok(new AuthResponseDTO(
-                    jwtUtil.generateAccessToken(user.getEmail()),
-                    jwtUtil.generateRefreshToken(user.getEmail()),
-                    user.getEmail(),
-                    user.getName(),
-                    user.getRole()
-            ));
+            return ResponseEntity.ok(authService.authenticate(loginDTO));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body("Email o contraseña incorrectos");
         }
@@ -66,19 +41,9 @@ public class AuthController {
     public ResponseEntity<?> refresh(
             @Valid @RequestBody RefreshTokenRequestDTO request) {
         try {
-            String email = jwtUtil.extractEmail(request.getRefreshToken());
-            if (!jwtUtil.isTokenValid(request.getRefreshToken())) {
-                return ResponseEntity.status(401).body("Token inválido o expirado");
-            }
-            User user = userRepository.findByEmail(email).orElseThrow();
-
-            return ResponseEntity.ok(new AuthResponseDTO(
-                    jwtUtil.generateAccessToken(email),
-                    jwtUtil.generateRefreshToken(email),
-                    user.getEmail(),
-                    user.getName(),
-                    user.getRole()
-            ));
+            return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Refresh token inválido");
         }
@@ -90,14 +55,10 @@ public class AuthController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow();
-
-        return ResponseEntity.ok(new UserResponseDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole()
-        ));
+        try {
+            return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
     }
 }

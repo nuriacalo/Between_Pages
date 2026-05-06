@@ -1,66 +1,41 @@
 package com.calonuria.backend.dto.journal;
 
+import com.calonuria.backend.dto.ValidationConstants;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import java.time.LocalDate;
+import lombok.EqualsAndHashCode;
 
 /**
  * DTO para el registro de entradas en el diario de lectura de fanfictions.
+ * Extiende de BaseJournalRegistrationDTO para campos comunes.
  */
 @Data
-public class FanficJournalRegistrationDTO {
-
-    @NotNull(message = "El usuario es obligatorio")
-    private Long userId;
+@EqualsAndHashCode(callSuper = true)
+public class FanficJournalRegistrationDTO extends BaseJournalRegistrationDTO {
 
     private Long fanfictionId;
 
-    // --- Datos del fanfic (Por si es la primera vez que se añade a la app) ---
+    // --- Datos específicos del fanfic ---
     private String ao3Id;
-    private String title;
-    private String author;
     private String sourceMaterial;
-    private String description;
-    private String coverUrl;
-    private String genre;
     private String theme;
     private Integer totalChapters;
     private String publicationStatus;
-    // ------------------------------------------------------------------------
-
-    @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "PENDING|READING|FINISHED|DROPPED|PAUSED|TBR|WISHLIST|BOUGHT",
-            message = "Estado no válido")
-    private String status;
+    // ------------------------------------
 
     @Min(value = 0, message = "El capítulo no puede ser negativo")
     private Integer currentChapter;
 
-    @Min(value = 1, message = "La valoración mínima es 1")
-    @Max(value = 10, message = "La valoración máxima es 10")
-    private Integer rating;
-
-    @Min(value = 0, message = "Mínimo 0 lágrimas")
-    @Max(value = 5, message = "Máximo 5 lágrimas")
-    private Integer tearDrops;
-
-    @Min(value = 0, message = "Mínimo 0 flames")
-    @Max(value = 5, message = "Máximo 5 flames")
-    private Integer spiceFlames;
-
     private String mainShip;
     private String secondaryShips;
-    
-    @Pattern(regexp = "NONE|LOW|MEDIUM|HIGH|EXTREME", message = "Nivel de angst no válido")
+
+    @Pattern(regexp = ValidationConstants.ANGST_LEVEL_PATTERN,
+            message = ValidationConstants.ANGST_LEVEL_MESSAGE)
     private String angstLevel;
-    
+
     private String shipLoyalty;
-    
-    @Pattern(regexp = "CANON|AU|CANON_DIVERGENT", message = "Valor no válido")
+
+    @Pattern(regexp = ValidationConstants.CANON_TYPE_PATTERN,
+            message = ValidationConstants.CANON_TYPE_MESSAGE)
     private String canonType;
-    
-    private Boolean rereading;
-    private String personalNotes;
-    private LocalDate startDate;
-    private LocalDate endDate;
 }

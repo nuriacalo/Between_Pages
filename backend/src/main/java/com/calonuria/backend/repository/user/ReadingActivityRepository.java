@@ -4,6 +4,7 @@ import com.calonuria.backend.model.user.ReadingActivity;
 import com.calonuria.backend.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -19,7 +20,22 @@ public interface ReadingActivityRepository extends JpaRepository<ReadingActivity
      * @return Lista de fechas de actividad
      */
     @Query("SELECT r.activityDate FROM ReadingActivity r WHERE r.user.id = :userId ORDER BY r.activityDate DESC")
-    List<LocalDate> findActivityDatesByUserId(Long userId);
+    List<LocalDate> findActivityDatesByUserId(@Param("userId") Long userId);
 
     Optional<ReadingActivity> findByUserAndActivityDate(User user, LocalDate activityDate);
+
+    /**
+     * Obtiene actividades de lectura dentro de un rango de fechas
+     */
+    List<ReadingActivity> findByUserIdAndActivityDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Cuenta actividades de lectura dentro de un rango de fechas
+     */
+    long countByUserIdAndActivityDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Verifica si existe actividad para un usuario en una fecha específica
+     */
+    boolean existsByUserIdAndActivityDate(Long userId, LocalDate activityDate);
 }

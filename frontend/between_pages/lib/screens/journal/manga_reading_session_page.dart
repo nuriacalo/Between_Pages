@@ -26,7 +26,6 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
   @override
   void initState() {
     super.initState();
-    // Iniciamos el cronómetro automáticamente al entrar si el manga tiene ID
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final mangaId = widget.journal.manga?.idManga;
       if (mangaId != null && mangaId > 0) {
@@ -85,7 +84,7 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                   keyboardType: TextInputType.number,
                   autofocus: true,
                   decoration: InputDecoration(
-                    labelText: '¿En qué capítulo te has quedado?',
+                    labelText: '¿En qué capítulo/volumen te has quedado?',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     filled: true,
                     prefixIcon: const Icon(Icons.bookmark_added_outlined),
@@ -98,7 +97,7 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                     onPressed: () async {
                       final val = int.tryParse(controller.text);
                       if (val != null && val >= currentChapter) {
-                        Navigator.pop(context); // Cerrar bottom sheet
+                        Navigator.pop(context);
                         await _saveProgress(val);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,28 +126,15 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
       final user = await auth.getUserProfile();
       final manga = widget.journal.manga;
 
-      // 1. Calcular métricas de la sesión
       final currentChapter = widget.journal.currentChapter ?? 0;
       final chaptersRead = newChapter - currentChapter;
       final timeInvestedSeconds = ref.read(readingTimerProvider).elapsedSeconds;
 
       final dto = MangaJournalRecordDTO(
         userId: user.idUser,
-        mangaId: manga?.idManga,
-        malId: manga?.malId,
-        source: manga?.source,
-        title: manga?.title,
-        mangaka: manga?.author,
-        demographic: manga?.demographic,
-        genre: manga?.genre,
-        description: manga?.description,
-        coverUrl: manga?.coverUrl,
-        totalChapters: manga?.totalChapters,
-        totalVolumes: manga?.totalVolumes,
-        publicationStatus: manga?.publicationStatus,
+        mangaId: manga?.idManga ?? 0,
         status: widget.journal.status ?? 'READING',
         currentChapter: newChapter,
-        currentVolume: widget.journal.currentVolume,
         rating: widget.journal.rating,
         readingFormat: widget.journal.readingFormat,
         favoriteCharacter: widget.journal.favoriteCharacter,
@@ -156,32 +142,23 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
         personalNotes: widget.journal.personalNotes,
         startDate: widget.journal.startDate,
         endDate: widget.journal.endDate,
-        ownership: widget.journal.ownership,
       );
 
       await repo.saveOrUpdate(dto);
       ref.invalidate(mangaJournalProvider);
-      if (manga?.idManga != null) {
-        ref.invalidate(mangaJournalEntryProvider(manga!.idManga!));
-      }
 
-      // 2. Guardar las métricas de la sesión (si se ha leído algo)
       if (chaptersRead > 0 || timeInvestedSeconds > 0) {
-        final sessionDto = ReadingSessionRecordDTO(
-          userId: user.idUser,
-          mangaId: manga?.idManga,
-          durationSeconds: timeInvestedSeconds,
-          pagesRead: chaptersRead, // 'pagesRead' en el DTO se usa para capítulos también
-        );
+      final sessionDto = ReadingSessionRecordDTO(
+        userId: user.idUser,
+        mangaId: manga?.idManga ?? 0,
+        durationSeconds: timeInvestedSeconds,
+        pagesRead: chaptersRead,
+      );
         ref.read(readingSessionRepositoryProvider).saveSession(sessionDto);
-        debugPrint(
-            'Enviando sesión: $chaptersRead capítulos en $timeInvestedSeconds segundos.');
       }
 
-      // 3. Limpiar y salir
       ref.read(readingTimerProvider.notifier).reset();
       if (mounted) context.pop();
-      
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
@@ -193,10 +170,10 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
   Widget build(BuildContext context) {
     final timerState = ref.watch(readingTimerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgAccent = const Color(0xFFE8A87C); // Color para manga
+    final bgAccent = const Color(0xFF6B7280); // Manga accent color
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFF8F2),
+      backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -229,7 +206,7 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
                       width: 140, height: 210,
-                      child: widget.journal.manga?.coverUrl != null
+                      child: (widget.journal.manga?.coverUrl ?? '').isNotEmpty
                           ? CachedNetworkImage(imageUrl: widget.journal.manga!.coverUrl!, fit: BoxFit.cover)
                           : Container(color: Colors.grey, child: const Icon(Icons.auto_stories, size: 40)),
                     ),
@@ -261,14 +238,14 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Play/Pause
                     FloatingActionButton.large(
                       heroTag: 'play_pause_manga',
                       backgroundColor: bgAccent,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       onPressed: () {
-                        final mangaId = widget.journal.manga?.idManga;
-                        if (mangaId == null) return;
+                        final mangaId = widget.journal.manga?.idManga ?? 0;
                         if (timerState.isRunning) {
                           ref.read(readingTimerProvider.notifier).pause();
                         } else {
@@ -278,14 +255,15 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                       child: Icon(timerState.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 40),
                     ),
                     const SizedBox(width: 24),
+                    // Stop
                     FloatingActionButton.large(
                       heroTag: 'stop_manga',
                       backgroundColor: timerState.elapsedSeconds > 0 
                           ? Theme.of(context).colorScheme.errorContainer 
-                          : Theme.of(context).disabledColor,
+                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
                       foregroundColor: timerState.elapsedSeconds > 0 
                           ? Theme.of(context).colorScheme.onErrorContainer 
-                          : Colors.white,
+                          : null,
                       elevation: 0,
                       onPressed: timerState.elapsedSeconds > 0 ? _finishSession : null,
                       child: const Icon(Icons.stop_rounded, size: 40),
@@ -294,8 +272,9 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  "Desliza hacia abajo para ocultar, el temporizador seguirá activo.",
+                  'Desliza hacia abajo para ocultar, el temporizador seguirá activo.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),

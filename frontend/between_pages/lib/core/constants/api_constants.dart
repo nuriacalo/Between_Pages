@@ -1,8 +1,7 @@
 class ApiConstants {
-  /// URL base del backend. Se puede sobreescribir mediante --dart-define=API_BASE_URL=http://...
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue:'http://192.168.0.17:8080/api',
+    defaultValue:'http://10.0.2.2:8080/api', // Usa 10.0.2.2 para emuladores Android, 127.0.0.1 para iOS
   );
 
   // JIKAN API (MyAnimeList - Unofficial)

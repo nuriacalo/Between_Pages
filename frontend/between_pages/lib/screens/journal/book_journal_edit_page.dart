@@ -2,9 +2,11 @@ import 'package:between_pages/models/journal/book_journal_record_dto.dart';
 import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/providers/journal/book_journal_provider.dart';
 import 'package:between_pages/repositories/book_journal_repository.dart';
+import 'package:between_pages/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/repositories/journal_status_helper.dart';
 
 class BookJournalEditPage extends ConsumerStatefulWidget {
   final BookJournalResponseDto journal;
@@ -12,7 +14,8 @@ class BookJournalEditPage extends ConsumerStatefulWidget {
   const BookJournalEditPage({super.key, required this.journal});
 
   @override
-  ConsumerState<BookJournalEditPage> createState() => _BookJournalEditPageState();
+  ConsumerState<BookJournalEditPage> createState() =>
+      _BookJournalEditPageState();
 }
 
 class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
@@ -29,20 +32,30 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
   late final TextEditingController _personalNotesController;
   late final TextEditingController _favoriteQuotesController;
   late String _status;
+  late int? _tearDrops;
+  late int? _spiceFlames;
 
   @override
   void initState() {
     super.initState();
     final journal = widget.journal;
     _seriesNameController = TextEditingController(text: journal.seriesName);
-    _seriesOrderController =
-        TextEditingController(text: journal.seriesOrder?.toString());
+    _seriesOrderController = TextEditingController(
+      text: journal.seriesOrder?.toString(),
+    );
     _loanedToController = TextEditingController(text: journal.loanedTo);
-    _currentPageController =
-        TextEditingController(text: journal.currentPage?.toString() ?? '0');
-    _personalNotesController = TextEditingController(text: journal.personalNotes);
-    _favoriteQuotesController = TextEditingController(text: journal.favoriteQuotes);
-    _status = journal.status ?? 'PENDING';
+    _currentPageController = TextEditingController(
+      text: journal.currentPage?.toString() ?? '0',
+    );
+    _personalNotesController = TextEditingController(
+      text: journal.personalNotes,
+    );
+    _favoriteQuotesController = TextEditingController(
+      text: journal.favoriteQuotes,
+    );
+    _status = JournalStatusHelper.mapStatusToUi(journal.status ?? 'TBR');
+    _tearDrops = journal.tearDrops;
+    _spiceFlames = journal.spiceFlames;
   }
 
   @override
@@ -67,28 +80,42 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
     try {
       final oldJournal = widget.journal;
       final book = oldJournal.book;
+      final auth = ref.read(authRepositoryProvider);
+      final user = await auth.getUserProfile();
+
+      final dbStatus = JournalStatusHelper.mapStatusToDb(_status);
+      final isFinishing =
+          dbStatus == 'FINISHED' && oldJournal.status != 'FINISHED';
 
       final dto = BookJournalRecordDTO(
-        userId: oldJournal.userId,
+        userId: user.idUser,
         bookId: book.idBook,
         // Copy all existing fields from the old journal
-        status: _status,
+        status: dbStatus,
         rating: oldJournal.rating,
-        tearDrops: oldJournal.tearDrops,
-        spiceFlames: oldJournal.spiceFlames,
+        tearDrops: _tearDrops,
+        spiceFlames: _spiceFlames,
         readingFormat: oldJournal.readingFormat,
         emotions: oldJournal.emotions,
         startDate: oldJournal.startDate,
-        endDate: oldJournal.endDate,
-        rereading: oldJournal.rereading,
+        endDate: isFinishing
+            ? DateTime.now().toIso8601String()
+            : oldJournal.endDate,
         ownership: oldJournal.ownership,
         // Update with new values from controllers
-        currentPage: int.tryParse(_currentPageController.text) ?? oldJournal.currentPage,
+        currentPage:
+            int.tryParse(_currentPageController.text) ?? oldJournal.currentPage,
         personalNotes: _personalNotesController.text,
         favoriteQuotes: _favoriteQuotesController.text,
-        seriesName: _seriesNameController.text.isNotEmpty ? _seriesNameController.text : null,
-        seriesOrder: _seriesOrderController.text.isNotEmpty ? double.tryParse(_seriesOrderController.text) : null,
-        loanedTo: _loanedToController.text.isNotEmpty ? _loanedToController.text : null,
+        seriesName: _seriesNameController.text.isNotEmpty
+            ? _seriesNameController.text
+            : null,
+        seriesOrder: _seriesOrderController.text.isNotEmpty
+            ? double.tryParse(_seriesOrderController.text)
+            : null,
+        loanedTo: _loanedToController.text.isNotEmpty
+            ? _loanedToController.text
+            : null,
       );
 
       await ref.read(bookJournalRepositoryProvider).saveOrUpdate(dto);
@@ -98,15 +125,21 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
       ref.invalidate(bookJournalEntryProvider(book.idBook));
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Journal actualizado con éxito')),
-      );
-      context.pop();
+
+      // Si se marcó como terminado, abrir la pantalla inmersiva del Diario
+      if (isFinishing) {
+        context.push('/journal/book/diary', extra: widget.journal);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Journal actualizado con éxito')),
+        );
+        context.pop();
+      }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -138,12 +171,106 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            Text(widget.journal.book.title, style: Theme.of(context).textTheme.headlineSmall),
-            Text(widget.journal.book.author, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[600])),
+            Text(
+              widget.journal.book.title,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Text(
+              widget.journal.book.author,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+
+            // --- Estado de lectura ---
+            Text(
+              'Estado de lectura',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+          children: JournalStatusHelper.statusOptions.map((status) {
+                final isSelected = _status == status;
+                return ChoiceChip(
+                  label: Text(status),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _status = status),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+
+            // --- Emociones ---
+            Text(
+              'Emociones',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lágrimas 💧',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Wrap(
+                        spacing: 4,
+                        children: List.generate(6, (index) {
+                          final isSelected = _tearDrops == index;
+                          return ChoiceChip(
+                            label: Text('$index'),
+                            selected: isSelected,
+                            onSelected: (_) =>
+                                setState(() => _tearDrops = index),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Spice 🔥',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Wrap(
+                        spacing: 4,
+                        children: List.generate(6, (index) {
+                          final isSelected = _spiceFlames == index;
+                          return ChoiceChip(
+                            label: Text('$index'),
+                            selected: isSelected,
+                            onSelected: (_) =>
+                                setState(() => _spiceFlames = index),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
 
             // --- Módulo 2: Organización ---
-            Text('Organización', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Organización',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const Divider(height: 20),
 
             TextFormField(
@@ -162,7 +289,9 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.format_list_numbered),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -180,12 +309,19 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('El Segundo Cerebro', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'El Segundo Cerebro',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 IconButton.filledTonal(
                   icon: const Icon(Icons.document_scanner_outlined),
                   tooltip: 'Escanear texto (OCR)',
                   onPressed: () async {
-                    final scannedText = await context.push<String>('/ocr-scanner');
+                    final scannedText = await context.push<String>(
+                      '/ocr-scanner',
+                    );
                     if (scannedText != null && scannedText.isNotEmpty) {
                       setState(() {
                         final current = _favoriteQuotesController.text.trim();
@@ -195,7 +331,9 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
                       });
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Texto extraído y añadido con éxito')),
+                        const SnackBar(
+                          content: Text('Texto extraído y añadido con éxito'),
+                        ),
                       );
                     }
                   },
@@ -213,7 +351,9 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
-                if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
+                if (value != null &&
+                    value.isNotEmpty &&
+                    int.tryParse(value) == null) {
                   return 'Introduce un número válido';
                 }
                 return null;

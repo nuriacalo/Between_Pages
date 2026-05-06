@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/repositories/journal_status_helper.dart';
 
 class MangaJournalEditPage extends ConsumerStatefulWidget {
   final MangaJournalResponseDTO journal;
@@ -22,6 +23,8 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
   late int? _currentChapter;
   late int? _currentVolume;
   late int? _rating;
+  late int? _tearDrops;
+  late int? _spiceFlames;
   late String? _readingFormat;
   late String? _personalNotes;
   late String? _favoriteCharacter;
@@ -29,13 +32,6 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
   late String? _ownership;
   bool _isLoading = false;
 
-  final List<String> _statusOptions = [
-    'Pendiente',
-    'Leyendo',
-    'Pausado',
-    'Terminado',
-    'Abandonado',
-  ];
   final List<String> _formatOptions = ['Físico', 'Digital', 'Online'];
   final List<String> _ownershipOptions = [
     'Digital',
@@ -48,37 +44,17 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
   void initState() {
     super.initState();
     final j = widget.journal;
-    _status = _mapStatusToUi(j.status ?? 'PENDING');
+    _status = JournalStatusHelper.mapStatusToUi(j.status ?? 'TBR');
     _currentChapter = j.currentChapter;
     _currentVolume = j.currentVolume;
     _rating = j.rating;
+    _tearDrops = j.tearDrops;
+    _spiceFlames = j.spiceFlames;
     _readingFormat = j.readingFormat;
     _personalNotes = j.personalNotes;
     _favoriteCharacter = j.favoriteCharacter;
     _favoriteArc = j.favoriteArc;
     _ownership = _mapOwnershipToUi(j.ownership);
-  }
-
-  String _mapStatusToUi(String status) {
-    return switch (status) {
-      'PENDING' => 'Pendiente',
-      'READING' => 'Leyendo',
-      'FINISHED' => 'Terminado',
-      'DROPPED' => 'Abandonado',
-      'PAUSED' => 'Pausado',
-      _ => status,
-    };
-  }
-
-  String _mapStatusToDb(String status) {
-    return switch (status) {
-      'Pendiente' => 'PENDING',
-      'Leyendo' => 'READING',
-      'Terminado' => 'FINISHED',
-      'Abandonado' => 'DROPPED',
-      'Pausado' => 'PAUSED',
-      _ => status,
-    };
   }
 
   String? _mapOwnershipToUi(String? ownership) {
@@ -109,6 +85,10 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       final user = await authRepository.getUserProfile();
 
       final manga = widget.journal.manga;
+      final dbStatus = JournalStatusHelper.mapStatusToDb(_status);
+      final isFinishing =
+          dbStatus == 'FINISHED' && widget.journal.status != 'FINISHED';
+
       final dto = MangaJournalRecordDTO(
         userId: user.idUser,
         mangaId: manga?.idManga,
@@ -123,16 +103,18 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
         totalChapters: manga?.totalChapters,
         totalVolumes: manga?.totalVolumes,
         publicationStatus: manga?.publicationStatus,
-        status: _mapStatusToDb(_status),
+        status: dbStatus,
         currentChapter: _currentChapter,
         currentVolume: _currentVolume,
         rating: _rating,
+        tearDrops: _tearDrops,
+        spiceFlames: _spiceFlames,
         readingFormat: _readingFormat,
         favoriteCharacter: _favoriteCharacter,
         favoriteArc: _favoriteArc,
         personalNotes: _personalNotes,
         startDate: widget.journal.startDate,
-        endDate: _status == 'Terminado'
+        endDate: isFinishing
             ? _formatDate(DateTime.now())
             : widget.journal.endDate,
         ownership: _mapOwnershipToDb(_ownership),
@@ -141,10 +123,15 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
       await journalRepository.saveOrUpdate(dto);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Journal actualizado correctamente')),
-        );
-        context.pop();
+        // Si se marcó como terminado, abrir la pantalla inmersiva del Diario
+        if (isFinishing) {
+          context.push('/journal/manga/diary', extra: widget.journal);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Journal actualizado correctamente')),
+          );
+          context.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -239,7 +226,10 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () {
-                    context.push('/journal/manga/session', extra: widget.journal);
+                    context.push(
+                      '/journal/manga/session',
+                      extra: widget.journal,
+                    );
                   },
                   icon: const Icon(Icons.timer_outlined),
                   label: const Text('Iniciar sesión de lectura'),
@@ -257,7 +247,7 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
             _buildSectionTitle('Estado de lectura'),
             Wrap(
               spacing: 8,
-              children: _statusOptions.map((status) {
+          children: JournalStatusHelper.statusOptions.map((status) {
                 final isSelected = _status == status;
                 return ChoiceChip(
                   label: Text(status),
@@ -299,6 +289,53 @@ class _MangaJournalEditPageState extends ConsumerState<MangaJournalEditPage> {
               value: _rating,
               onChanged: (v) => setState(() => _rating = v),
               max: 10,
+            ),
+            const SizedBox(height: 16),
+
+            // Tear Drops y Spice
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Lágrimas 💧'),
+                      Wrap(
+                        spacing: 4,
+                        children: List.generate(6, (index) {
+                          final isSelected = _tearDrops == index;
+                          return ChoiceChip(
+                            label: Text('$index'),
+                            selected: isSelected,
+                            onSelected: (_) =>
+                                setState(() => _tearDrops = index),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Spice 🔥'),
+                      Wrap(
+                        spacing: 4,
+                        children: List.generate(6, (index) {
+                          final isSelected = _spiceFlames == index;
+                          return ChoiceChip(
+                            label: Text('$index'),
+                            selected: isSelected,
+                            onSelected: (_) =>
+                                setState(() => _spiceFlames = index),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 

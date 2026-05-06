@@ -12,18 +12,15 @@ import com.calonuria.backend.repository.user.UserRepository;
 import com.calonuria.backend.service.catalog.FanfictionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para la gestión del diario de lectura de fanfictions.
  */
 @Service
-public class FanficJournalService {
+public class FanficJournalService extends BaseJournalService<FanficJournal, FanficJournalResponseDTO> {
 
     private final FanficJournalRepository fanficJournalRepository;
-    private final UserRepository userRepository;
     private final FanfictionRepository fanfictionRepository;
     private final FanfictionService fanfictionService;
 
@@ -31,8 +28,8 @@ public class FanficJournalService {
                                 UserRepository userRepository,
                                 FanfictionRepository fanfictionRepository,
                                 FanfictionService fanfictionService) {
+        super(fanficJournalRepository, userRepository);
         this.fanficJournalRepository = fanficJournalRepository;
-        this.userRepository = userRepository;
         this.fanfictionRepository = fanfictionRepository;
         this.fanfictionService = fanfictionService;
     }
@@ -109,66 +106,12 @@ public class FanficJournalService {
     }
 
     /**
-     * Obtiene el journal de un usuario.
-     * @param userId ID del usuario
-     * @return lista de entradas del journal
-     */
-    @Transactional(readOnly = true)
-    public List<FanficJournalResponseDTO> getUserJournal(Long userId) {
-        return fanficJournalRepository.findByUserId(userId)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene entradas del journal filtradas por estado.
-     * @param userId ID del usuario
-     * @param status estado de lectura
-     * @return lista de entradas filtradas
-     */
-    @Transactional(readOnly = true)
-    public List<FanficJournalResponseDTO> getByStatus(Long userId, String status) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        return fanficJournalRepository.findByUserAndStatus(user, status)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene las relecturas de un usuario.
-     * @param userId ID del usuario
-     * @return lista de relecturas
-     */
-    @Transactional(readOnly = true)
-    public List<FanficJournalResponseDTO> getRereadings(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        return fanficJournalRepository.findByUserAndRereadingTrue(user)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Elimina una entrada del journal.
-     * @param journalId ID de la entrada
-     */
-    @Transactional
-    public void deleteJournal(Long journalId) {
-        fanficJournalRepository.deleteById(journalId);
-    }
-
-    // Conversión de estados centralizada en JournalStatusConverter
-
-    /**
      * Mapea una entrada del journal a su DTO de respuesta.
      * @param journal entrada del journal
      * @return DTO de respuesta
      */
-    private FanficJournalResponseDTO mapToDTO(FanficJournal journal) {
+    @Override
+    protected FanficJournalResponseDTO mapToDTO(FanficJournal journal) {
         FanficJournalResponseDTO dto = new FanficJournalResponseDTO();
         dto.setId(journal.getId());
         dto.setUserId(journal.getUser().getId());

@@ -2,32 +2,22 @@ package com.calonuria.backend.dto.journal;
 
 import com.calonuria.backend.dto.catalog.MangaResponseDTO;
 import lombok.Data;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 /**
  * DTO para la respuesta con información de diario de lectura de mangas.
+ * Extiende de BaseJournalResponseDTO para campos comunes.
  */
 @Data
-public class MangaJournalResponseDTO {
+@EqualsAndHashCode(callSuper = true)
+public class MangaJournalResponseDTO extends BaseJournalResponseDTO {
 
-    private Long id;
-    private Long userId;
     private MangaResponseDTO manga;
-    private String status;
     private Integer currentChapter;
     private Integer currentVolume;
-    private Integer rating;
-    private Integer tearDrops;
-    private Integer spiceFlames;
     private String readingFormat;
     private String favoriteCharacter;
     private String favoriteArc;
-    private String personalNotes;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private LocalDateTime updatedAt;
-    private Boolean rereading;
     private String ownership;
 
     // Campos Módulo 2: Préstamos

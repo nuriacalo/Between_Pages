@@ -28,6 +28,15 @@ public class ReadingStatsController {
     private final UserRepository userRepository;
 
     /**
+     * Obtiene el usuario por email o lanza excepción.
+     * Método privado para evitar duplicación de código.
+     */
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    /**
      * Obtiene la meta de lectura del usuario para el año actual.
      * Si no existe, crea una meta por defecto de 12 libros.
      */
@@ -35,9 +44,8 @@ public class ReadingStatsController {
     @GetMapping("/goal")
     public ResponseEntity<ReadingGoalDTO> getReadingGoal(
             @AuthenticationPrincipal String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return ResponseEntity.ok(readingStatsService.getOrCreateReadingGoal(user.getId()));
+        return ResponseEntity.ok(readingStatsService.getOrCreateReadingGoal(
+                getUserByEmail(email).getId()));
     }
 
     /**
@@ -48,9 +56,8 @@ public class ReadingStatsController {
     public ResponseEntity<ReadingGoalDTO> updateReadingGoal(
             @AuthenticationPrincipal String email,
             @RequestParam Integer targetAmount) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return ResponseEntity.ok(readingStatsService.updateReadingGoal(user.getId(), targetAmount));
+        return ResponseEntity.ok(readingStatsService.updateReadingGoal(
+                getUserByEmail(email).getId(), targetAmount));
     }
 
     /**
@@ -60,9 +67,8 @@ public class ReadingStatsController {
     @GetMapping("/streak")
     public ResponseEntity<ReadingStreakDTO> getReadingStreak(
             @AuthenticationPrincipal String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return ResponseEntity.ok(readingStatsService.calculateReadingStreak(user.getId()));
+        return ResponseEntity.ok(readingStatsService.calculateReadingStreak(
+                getUserByEmail(email).getId()));
     }
 
     /**
@@ -72,9 +78,7 @@ public class ReadingStatsController {
     @PostMapping("/activity")
     public ResponseEntity<Void> recordActivity(
             @AuthenticationPrincipal String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        readingStatsService.recordActivity(user.getId());
+        readingStatsService.recordActivity(getUserByEmail(email).getId());
         return ResponseEntity.ok().build();
     }
 }
