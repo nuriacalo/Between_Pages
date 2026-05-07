@@ -44,9 +44,7 @@ class _BookJournalEditPageState extends ConsumerState<BookJournalEditPage> {
       text: journal.seriesOrder?.toString(),
     );
     _loanedToController = TextEditingController(text: journal.loanedTo);
-    _currentPageController = TextEditingController(
-      text: journal.currentPage?.toString() ?? '0',
-    );
+    _currentPageController = TextEditingController(text: '${journal.currentPage}');
     _personalNotesController = TextEditingController(
       text: journal.personalNotes,
     );

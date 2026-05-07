@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:between_pages/models/lists/list_response_dto.dart';
-import 'package:between_pages/core/router/app_router.dart';
-import 'package:between_pages/l10n/app_localizations.dart';
 
 class ListDetailPage extends ConsumerWidget {
   final ListResponseDTO list;
@@ -11,7 +9,6 @@ class ListDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -31,7 +28,7 @@ class ListDetailPage extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              color: colorScheme.surfaceVariant,
+              color: colorScheme.surfaceContainerHighest,
               child: Text(
                 list.description!,
                 style: textTheme.bodyLarge,

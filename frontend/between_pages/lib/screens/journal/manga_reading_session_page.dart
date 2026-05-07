@@ -199,7 +199,7 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                 Container(
                   decoration: BoxDecoration(
                     boxShadow: [
-                      BoxShadow(color: bgAccent.withOpacity(0.4), blurRadius: 30, offset: const Offset(0, 10))
+                      BoxShadow(color: bgAccent.withValues(alpha: 0.4), blurRadius: 30, offset: const Offset(0, 10))
                     ],
                   ),
                   child: ClipRRect(
@@ -260,7 +260,7 @@ class _MangaReadingSessionPageState extends ConsumerState<MangaReadingSessionPag
                       heroTag: 'stop_manga',
                       backgroundColor: timerState.elapsedSeconds > 0 
                           ? Theme.of(context).colorScheme.errorContainer 
-                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
                       foregroundColor: timerState.elapsedSeconds > 0 
                           ? Theme.of(context).colorScheme.onErrorContainer 
                           : null,

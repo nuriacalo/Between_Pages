@@ -1,6 +1,4 @@
 import 'package:between_pages/providers/lists/list_provider.dart';
-import 'package:between_pages/providers/user/user_provider.dart';
-import 'package:between_pages/repositories/reading_list_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'list_detail_page.dart';
@@ -16,9 +14,6 @@ class _ReadingListsPageState extends ConsumerState<ReadingListsPage> {
   final _formKey = GlobalKey<FormState>();
 
   void _showCreateListDialog(BuildContext context, WidgetRef ref) {
-    final repo = ref.read(readingListRepositoryProvider);
-    final userProfile = ref.read(userProfileProvider);
-    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

@@ -107,7 +107,7 @@ class _MangaTab extends StatelessWidget {
           title: manga?.title ?? 'Sin título',
           coverUrl: manga?.coverUrl,
           subtitle: (j.currentChapter ?? 0) > 0
-              ? 'Cap. ${j.currentChapter}'
+              ? 'Cap. ${j.currentChapter ?? 0}'
               : null,
           ownership: j.ownership,
           route: '/journal/manga/edit',
@@ -133,10 +133,10 @@ class _FanficsTab extends StatelessWidget {
         final fanfic = j.fanfic;
         return JournalItemData(
           id: j.id,
-          title: fanfic?.title ?? 'Sin título',
-          coverUrl: fanfic?.coverUrl,
+          title: fanfic.title ?? 'Sin título',
+          coverUrl: fanfic.coverUrl,
           subtitle: (j.currentChapter ?? 0) > 0
-              ? 'Cap. ${j.currentChapter}'
+              ? 'Cap. ${j.currentChapter ?? 0}'
               : null,
           ownership: null, // Fanfics don't have ownership
           route: '/journal/fanfic/edit',

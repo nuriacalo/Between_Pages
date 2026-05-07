@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:between_pages/models/journal/book_journal_record_dto.dart';
 import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/manga_journal_record_dto.dart';
@@ -247,17 +246,17 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           final repo = ref.read(fanficJournalRepositoryProvider);
           final dto = FanficJournalRecordDTO(
             userId: user.idUser,
-            fanfictionId: fanfic?.idFanfic ?? 0,
-            ao3Id: fanfic?.ao3Id,
-            title: fanfic?.title,
-            author: fanfic?.author,
-            sourceMaterial: fanfic?.sourceMaterial,
-            description: fanfic?.description,
-            coverUrl: fanfic?.coverUrl,
-            genre: fanfic?.genre,
-            theme: fanfic?.theme,
-            totalChapters: fanfic?.totalChapters,
-            publicationStatus: fanfic?.publicationStatus,
+            fanfictionId: fanfic.idFanfic,
+            ao3Id: fanfic.ao3Id,
+            title: fanfic.title,
+            author: fanfic.author,
+            sourceMaterial: fanfic.sourceMaterial,
+            description: fanfic.description,
+            coverUrl: fanfic.coverUrl,
+            genre: fanfic.genre,
+            theme: fanfic.theme,
+            totalChapters: fanfic.totalChapters,
+            publicationStatus: fanfic.publicationStatus,
             status: journal.status ?? 'READING',
             currentChapter: newProgress,
             rating: journal.rating,
@@ -273,7 +272,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           if (progressDelta > 0 || timeInvestedSeconds > 0) {
             ref.read(readingSessionRepositoryProvider).saveSession(ReadingSessionRecordDTO(
               userId: user.idUser,
-              fanficId: fanfic?.idFanfic ?? 0,
+              fanficId: fanfic.idFanfic,
               durationSeconds: timeInvestedSeconds,
               pagesRead: progressDelta,
             ));
@@ -398,7 +397,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  "Desliza hacia abajo para ocultar, el temporizador seguirá activo.",
+                  'Desliza hacia abajo para ocultar, el temporizador seguirá activo.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),

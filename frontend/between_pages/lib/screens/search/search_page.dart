@@ -1,6 +1,6 @@
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:between_pages/providers/search/unified_search_provider.dart';
-import 'package:between_pages/widgets/catalog/catalog_item_card.dart';
+import 'package:between_pages/screens/library/catalog_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -150,7 +150,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       textTheme,
       (book) => CatalogItemCard(
         title: book.title,
-        author: book.author ?? 'Autor desconocido',
+        author: book.author,
         coverUrl: book.coverUrl,
         fallbackIcon: Icons.book,
         onTap: () => context.push('/book/${book.idBook}', extra: book),
@@ -206,7 +206,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         coverUrl: fanfic.coverUrl,
         fallbackIcon: Icons.favorite,
         isFanfic: true,
-        onTap: () => context.push('/journal/fanfic/edit', extra: fanfic), // TODO ruta detalle
+        onTap: () => context.push('/fanfic/${fanfic.idFanfic}', extra: fanfic),
       ),
     );
   }
@@ -259,8 +259,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             : manga.malId?.toString() ?? 'unknown';
             
         return CatalogItemCard(
-          title: manga.title,
-          author: manga.author ?? 'Autor desconocido',
+          title: manga.title?.toString() ?? 'Sin título',
+          author: manga.author?.toString() ?? 'Autor desconocido',
           coverUrl: manga.coverUrl,
           fallbackIcon: Icons.auto_stories,
           onTap: () => context.push('/manga/$mangaId', extra: manga),

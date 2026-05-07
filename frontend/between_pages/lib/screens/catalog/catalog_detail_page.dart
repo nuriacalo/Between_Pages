@@ -99,15 +99,15 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       case CatalogItemType.book:
         final book = widget.item as BookResponseDTO;
         final asyncValue = ref.watch(bookJournalEntryProvider(book.idBook));
-        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (e, st) => null);
       case CatalogItemType.manga:
         final manga = widget.item as MangaResponseDTO;
         final asyncValue = ref.watch(mangaJournalEntryProvider(manga.idManga ?? 0));
-        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (e, st) => null);
       case CatalogItemType.fanfic:
         final fanfic = widget.item as FanfictionResponseDTO;
         final asyncValue = ref.watch(fanficJournalEntryProvider(fanfic.idFanfic?.toString() ?? ''));
-        return asyncValue.when(data: (data) => data, loading: () => null, error: (_, __) => null);
+        return asyncValue.when(data: (data) => data, loading: () => null, error: (e, st) => null);
     }
   }
 
@@ -256,7 +256,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
                 tooltip: 'Más estados',
-                onSelected: _isAdding ? null : (value) => _addToJournal(value),
+                onSelected: _isAdding ? null : _addToJournal,
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     value: 'WISHLIST',

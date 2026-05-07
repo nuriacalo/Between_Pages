@@ -5,7 +5,7 @@ import 'package:between_pages/providers/catalog/all_books_provider.dart';
 import 'package:between_pages/providers/catalog/all_manga_provider.dart';
 import 'package:between_pages/providers/catalog/all_fanfics_provider.dart';
 import 'package:between_pages/screens/catalog/catalog_detail_page.dart';
-import 'package:between_pages/widgets/catalog/catalog_item_card.dart';
+import 'package:between_pages/screens/library/catalog_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

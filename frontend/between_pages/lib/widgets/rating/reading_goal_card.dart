@@ -25,7 +25,7 @@ class ReadingGoalCard extends StatelessWidget {
     if (_progress >= 0.75) return '¡Casi lo tienes!';
     if (_progress >= 0.5) return '¡Vas por la mitad!';
     if (_progress >= 0.25) return '¡Buen progreso!';
-    return '${_booksLeft} libros para tu meta';
+    return '$_booksLeft libros para tu meta';
   }
 
   @override
@@ -37,7 +37,6 @@ class ReadingGoalCard extends StatelessWidget {
         ? const Color(0xFF3D2D30)
         : const Color(0xFFFDF5F2);
     final primaryColor = const Color(0xFFA87C80);
-    final accentColor = const Color(0xFFD4A0A4);
 
     return Container(
       padding: const EdgeInsets.all(16),

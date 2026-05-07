@@ -384,10 +384,10 @@ class _BookReadingProgressPageState
                       ? CachedNetworkImage(
                           imageUrl: coverUrl,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
+                          placeholder: (context, url) => Container(
                             color: Colors.white.withValues(alpha: 0.1),
                           ),
-                          errorWidget: (_, __, ___) => Container(
+                          errorWidget: (context, url, error) => Container(
                             color: Colors.white.withValues(alpha: 0.1),
                             child: const Icon(
                               Icons.book,

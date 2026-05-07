@@ -1,6 +1,7 @@
 import 'package:between_pages/controllers/auth_controller.dart';
 import 'package:between_pages/models/catalog/book_response_dto.dart';
 import 'package:between_pages/models/catalog/manga_response_dto.dart';
+import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
 import 'package:between_pages/models/journal/book_journal_response_dto.dart';
 import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
 import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
@@ -60,6 +61,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final manga = state.extra as MangaResponseDTO;
           return CatalogDetailPage(item: manga, type: CatalogItemType.manga);
+        },
+      ),
+      GoRoute(
+        path: '/fanfic/:id',
+        builder: (context, state) {
+          final fanfic = state.extra as FanfictionResponseDTO;
+          return CatalogDetailPage(item: fanfic, type: CatalogItemType.fanfic);
         },
       ),
       GoRoute(

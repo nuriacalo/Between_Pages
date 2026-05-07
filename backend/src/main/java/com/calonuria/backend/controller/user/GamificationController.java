@@ -1,0 +1,39 @@
+package com.calonuria.backend.controller.user;
+
+import com.calonuria.backend.dto.user.GamificationStatsDTO;
+import com.calonuria.backend.dto.user.GoalRequestDTO;
+import com.calonuria.backend.service.user.GamificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/gamification")
+@Tag(name = "Gamification", description = "Endpoints para la gamificación (metas y rachas)")
+public class GamificationController {
+
+    private final GamificationService gamificationService;
+
+    public GamificationController(GamificationService gamificationService) {
+        this.gamificationService = gamificationService;
+    }
+
+    @Operation(summary = "Obtener estadísticas de gamificación del usuario actual")
+    @GetMapping("/stats")
+    public ResponseEntity<GamificationStatsDTO> getStats(@AuthenticationPrincipal UserDetails userDetails) {
+        GamificationStatsDTO stats = gamificationService.getStats(userDetails.getUsername());
+        return ResponseEntity.ok(stats);
+    }
+
+    @Operation(summary = "Actualizar la meta anual del usuario actual")
+    @PostMapping("/goal")
+    public ResponseEntity<Void> updateGoal(@AuthenticationPrincipal UserDetails userDetails,
+                                           @Valid @RequestBody GoalRequestDTO dto) {
+        gamificationService.updateGoal(userDetails.getUsername(), dto);
+        return ResponseEntity.ok().build();
+    }
+}

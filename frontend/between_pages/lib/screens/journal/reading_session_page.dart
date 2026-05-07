@@ -294,7 +294,7 @@ class _ReadingSessionPageState extends ConsumerState<ReadingSessionPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  "Desliza hacia abajo para ocultar, el temporizador seguirá activo.",
+                  'Desliza hacia abajo para ocultar, el temporizador seguirá activo.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],

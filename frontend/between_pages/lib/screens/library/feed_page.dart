@@ -5,6 +5,7 @@ import 'package:between_pages/providers/journal/book_journal_provider.dart';
 import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
 import 'package:between_pages/providers/journal/manga_journal_provider.dart';
 import 'package:between_pages/screens/detail/ownership_badge.dart';
+import 'package:between_pages/providers/gamification_provider.dart';
 import 'package:between_pages/widgets/rating/reading_goal_card.dart';
 import 'package:between_pages/widgets/rating/reading_streak_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,10 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:between_pages/repositories/journal_status_extensions.dart';
 
-
-/// Provider temporal para la meta de lectura (persiste en memoria).
-/// TODO: Conectar a SharedPreferences o backend.
-final readingGoalProvider = StateProvider<int>((ref) => 12);
 
 class FeedPage extends ConsumerWidget {
   const FeedPage({super.key});
@@ -33,12 +30,16 @@ class FeedPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final booksAsync = ref.watch(bookJournalProvider);
     final mangasAsync = ref.watch(mangaJournalProvider);
     final fanficsAsync = ref.watch(fanficJournalProvider);
-    final goal = ref.watch(readingGoalProvider);
+    
+    final gamificationAsync = ref.watch(gamificationProvider);
+    final gamification = gamificationAsync.valueOrNull;
+    final goal = gamification?.annualGoal ?? 12;
+    final currentStreak = gamification?.currentStreak ?? 0;
+    final weekActivity = gamification?.weekActivity ?? List.filled(7, false);
 
     // Cuenta libros terminados para la meta
     final finishedBooks = booksAsync.whenOrNull(
@@ -62,13 +63,6 @@ class FeedPage extends ConsumerWidget {
     final totalReading = (readingBooks?.length ?? 0) +
         (readingMangas?.length ?? 0) +
         (readingFanfics?.length ?? 0);
-
-    // Racha de la semana (dummy - TODO conectar con backend)
-    final weekActivity = List.generate(
-      7,
-      (i) => i < DateTime.now().weekday - 1,
-    );
-    const currentStreak = 3; // TODO: obtener del backend
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -156,7 +150,7 @@ class FeedPage extends ConsumerWidget {
                             EditReadingGoalDialog(currentGoal: goal),
                       );
                       if (newGoal != null) {
-                        ref.read(readingGoalProvider.notifier).state = newGoal;
+                        ref.read(gamificationProvider.notifier).updateGoal(newGoal);
                       }
                     },
                   ),
@@ -251,10 +245,7 @@ class FeedPage extends ConsumerWidget {
                     icon: Icons.favorite_rounded,
                     color: const Color(0xFFD4A0A4),
                     asyncValue: fanficsAsync,
-                    onTap: (item) => context.push(
-                      '/fanfic/${item.fanfic.idFanfic}',
-                      extra: item.fanfic,
-                    ),
+                    onTap: (item) => context.push('/journal/fanfic/edit', extra: item),
                     getCoverUrl: (item) => item.fanfic.coverUrl,
                     getTitle: (item) =>
                         item.fanfic.title ?? 'Sin título',
@@ -349,10 +340,10 @@ class _CurrentlyReadingHero extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: coverUrl,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
+                            placeholder: (context, url) => Container(
                               color: colorScheme.surfaceContainerHighest,
                             ),
-                            errorWidget: (_, __, ___) => Container(
+                            errorWidget: (context, url, error) => Container(
                               color: colorScheme.surfaceContainerHighest,
                               child: const Icon(Icons.book),
                             ),
@@ -419,9 +410,9 @@ class _CurrentlyReadingHero extends StatelessWidget {
                             .titleSmall
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                      if (book.author != null)
+                      if ((book.author ?? '').isNotEmpty)
                         Text(
-                          book.author!,
+                          book.author ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context)
@@ -584,18 +575,17 @@ class _ProgressCard<T> extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(8),
                                     child: SizedBox(
                                       width: 100,
-                                      child: coverUrl != null &&
-                                              coverUrl.isNotEmpty
+                                      child: coverUrl != null && coverUrl.isNotEmpty
                                           ? CachedNetworkImage(
                                               imageUrl: coverUrl,
                                               fit: BoxFit.cover,
-                                              placeholder: (_, __) =>
+                                              placeholder: (context, url) =>
                                                   Container(
                                                 color: colorScheme
                                                     .surfaceContainerHighest,
                                               ),
                                               errorWidget:
-                                                  (_, __, ___) => Container(
+                                                  (context, url, error) => Container(
                                                 color: colorScheme
                                                     .surfaceContainerHighest,
                                                 child: Icon(icon),
@@ -666,7 +656,7 @@ class _ProgressCard<T> extends StatelessWidget {
               loading: () => const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              error: (_, __) => Center(
+              error: (error, stack) => Center(
                 child: Icon(Icons.error_outline,
                     color: colorScheme.error, size: 24),
               ),
