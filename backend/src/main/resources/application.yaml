@@ -11,8 +11,10 @@ spring:
   jpa:
     show-sql: ${JPA_SHOW_SQL:true}
     open-in-view: false
+
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:validate}
+
     properties:
       hibernate:
         format_sql: true
@@ -28,17 +30,17 @@ google:
     api-key: ${GOOGLE_BOOKS_API_KEY:}
 
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 logging:
   level:
     com.calonuria.backend: ${LOG_LEVEL:INFO}
-    org.springframework.security: TRACE
+    org.springframework.security: INFO
 
 server:
   port: ${SERVER_PORT:8080}
 
 cors:
-  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:8080,http://192.168.0.17,http://192.168.0.13}
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:8080}
