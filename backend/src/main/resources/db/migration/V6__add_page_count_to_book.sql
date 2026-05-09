@@ -1,0 +1,1 @@
+ALTER TABLE book ADD COLUMN IF NOT EXISTS page_count INT;
