@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto.user;
+package com.calonuria.backend.features.user.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

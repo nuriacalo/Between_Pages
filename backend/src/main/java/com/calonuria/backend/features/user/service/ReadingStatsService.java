@@ -1,20 +1,19 @@
-package com.calonuria.backend.service.user;
+package com.calonuria.backend.features.user.service;
 
-import com.calonuria.backend.dto.user.ReadingGoalDTO;
-import com.calonuria.backend.dto.user.ReadingStreakDTO;
-import com.calonuria.backend.model.user.ReadingActivity;
-import com.calonuria.backend.model.user.ReadingGoal;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.user.ReadingActivityRepository;
-import com.calonuria.backend.repository.user.ReadingGoalRepository;
-import com.calonuria.backend.repository.user.UserRepository;
+import com.calonuria.backend.features.user.dto.ReadingGoalDTO;
+import com.calonuria.backend.features.user.dto.ReadingStreakDTO;
+import com.calonuria.backend.features.user.model.ReadingActivity;
+import com.calonuria.backend.features.user.model.ReadingGoal;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.user.repository.ReadingActivityRepository;
+import com.calonuria.backend.features.user.repository.ReadingGoalRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

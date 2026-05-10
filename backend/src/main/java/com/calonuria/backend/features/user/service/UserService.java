@@ -1,9 +1,9 @@
-package com.calonuria.backend.service.user;
+package com.calonuria.backend.features.user.service;
 
-import com.calonuria.backend.dto.user.UserRegistrationDTO;
-import com.calonuria.backend.dto.user.UserResponseDTO;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.user.UserRepository;
+import com.calonuria.backend.features.user.dto.UserRegistrationDTO;
+import com.calonuria.backend.features.user.dto.UserResponseDTO;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;

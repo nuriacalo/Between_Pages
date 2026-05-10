@@ -1,10 +1,10 @@
-package com.calonuria.backend.controller.user;
+package com.calonuria.backend.features.user.controller;
 
-import com.calonuria.backend.dto.user.ReadingGoalDTO;
-import com.calonuria.backend.dto.user.ReadingStreakDTO;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.service.user.ReadingStatsService;
+import com.calonuria.backend.features.user.dto.ReadingGoalDTO;
+import com.calonuria.backend.features.user.dto.ReadingStreakDTO;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.features.user.service.ReadingStatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

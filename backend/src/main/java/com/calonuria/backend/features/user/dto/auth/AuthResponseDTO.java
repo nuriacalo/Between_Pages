@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto.auth;
+package com.calonuria.backend.features.user.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,15 +1,15 @@
-package com.calonuria.backend.service.user;
+package com.calonuria.backend.features.user.service;
 
-import com.calonuria.backend.dto.user.GamificationStatsDTO;
-import com.calonuria.backend.dto.user.GoalRequestDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.user.ReadingActivity;
-import com.calonuria.backend.model.user.ReadingGoal;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.user.ReadingActivityRepository;
-import com.calonuria.backend.repository.user.ReadingGoalRepository;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.service.user.event.ReadingActivityEvent;
+import com.calonuria.backend.features.user.dto.GamificationStatsDTO;
+import com.calonuria.backend.features.user.dto.GoalRequestDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.user.model.ReadingActivity;
+import com.calonuria.backend.features.user.model.ReadingGoal;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.user.repository.ReadingActivityRepository;
+import com.calonuria.backend.features.user.repository.ReadingGoalRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.features.user.application.events.ReadingActivityEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -88,7 +88,7 @@ public class GamificationService {
         readingGoalRepository.save(goal);
     }
     
-    private void recordActivity(String email) {
+    public void recordActivity(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
                 

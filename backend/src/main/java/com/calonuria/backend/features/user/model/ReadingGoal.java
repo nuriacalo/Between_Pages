@@ -1,4 +1,4 @@
-package com.calonuria.backend.model.user;
+package com.calonuria.backend.features.user.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

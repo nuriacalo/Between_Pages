@@ -1,8 +1,8 @@
-package com.calonuria.backend.controller.user;
+package com.calonuria.backend.features.user.controller;
 
-import com.calonuria.backend.dto.user.GamificationStatsDTO;
-import com.calonuria.backend.dto.user.GoalRequestDTO;
-import com.calonuria.backend.service.user.GamificationService;
+import com.calonuria.backend.features.user.dto.GamificationStatsDTO;
+import com.calonuria.backend.features.user.dto.GoalRequestDTO;
+import com.calonuria.backend.features.user.service.GamificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

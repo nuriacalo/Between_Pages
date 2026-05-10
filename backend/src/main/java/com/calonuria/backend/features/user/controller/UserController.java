@@ -1,8 +1,8 @@
-package com.calonuria.backend.controller.user;
+package com.calonuria.backend.features.user.controller;
 
-import com.calonuria.backend.dto.user.UserRegistrationDTO;
-import com.calonuria.backend.dto.user.UserResponseDTO;
-import com.calonuria.backend.service.user.UserService;
+import com.calonuria.backend.features.user.dto.UserRegistrationDTO;
+import com.calonuria.backend.features.user.dto.UserResponseDTO;
+import com.calonuria.backend.features.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
