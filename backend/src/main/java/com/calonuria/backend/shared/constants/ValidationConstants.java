@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto;
+package com.calonuria.backend.shared.constants;
 
 /**
  * Constantes para validaciones de DTOs.

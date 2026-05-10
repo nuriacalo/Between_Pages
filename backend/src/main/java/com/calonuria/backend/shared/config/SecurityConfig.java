@@ -1,7 +1,7 @@
-package com.calonuria.backend.config;
+package com.calonuria.backend.shared.config;
 
-import com.calonuria.backend.security.JwtAuthenticationFilter;
-import com.calonuria.backend.service.user.CustomUserDetailsService;
+import com.calonuria.backend.shared.security.JwtAuthenticationFilter;
+import com.calonuria.backend.shared.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
