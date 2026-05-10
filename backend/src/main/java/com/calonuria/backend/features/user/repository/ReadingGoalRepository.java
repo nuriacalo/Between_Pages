@@ -1,7 +1,7 @@
-package com.calonuria.backend.repository.user;
+package com.calonuria.backend.features.user.repository;
 
-import com.calonuria.backend.model.user.ReadingGoal;
-import com.calonuria.backend.model.user.User;
+import com.calonuria.backend.features.user.model.ReadingGoal;
+import com.calonuria.backend.features.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;

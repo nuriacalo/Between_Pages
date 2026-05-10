@@ -1,4 +1,4 @@
-package com.calonuria.backend.service.user.event;
+package com.calonuria.backend.features.user.application.events;
 
 import org.springframework.context.ApplicationEvent;
 
