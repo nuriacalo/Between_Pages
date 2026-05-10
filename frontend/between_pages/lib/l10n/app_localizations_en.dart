@@ -9,15 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get welcomeMessage =>
-      'Welcome to Between Pages! Your space to share and discover books.';
+  String get welcomeMessage => 'Welcome to Between Pages! Your space to share and discover books.';
 
   @override
   String get homeTitle => 'Home';
 
   @override
-  String get homeDescription =>
-      'Explore the latest book reviews and recommendations.';
+  String get homeDescription => 'Explore the latest book reviews and recommendations.';
 
   @override
   String get searchTitle => 'Search';
@@ -83,8 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginOr => 'Or log in with';
 
   @override
-  String get loginInvalidCredentials =>
-      'Invalid credentials. Please try again.';
+  String get loginInvalidCredentials => 'Invalid credentials. Please try again.';
 
   @override
   String get registerTitle => 'Create Account';
@@ -120,6 +117,224 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationEmail => 'Enter a valid email address';
 
   @override
-  String get validationPasswordLength =>
-      'Password must be at least 6 characters';
+  String get validationPasswordLength => 'Password must be at least 6 characters';
+
+  @override
+  String get secondBrainTooltip => 'Second Brain';
+
+  @override
+  String get tabBooks => 'Books';
+
+  @override
+  String get tabMangas => 'Manga';
+
+  @override
+  String get tabFanfics => 'Fanfics';
+
+  @override
+  String get emptyJournalBooksTitle => 'You have no books in your Journal';
+
+  @override
+  String get emptyJournalBooksSubtitle => 'Start adding books to see your progress.';
+
+  @override
+  String get emptyJournalMangasTitle => 'You have no manga in your Journal';
+
+  @override
+  String get emptyJournalMangasSubtitle => 'Start adding manga to see your progress.';
+
+  @override
+  String get emptyJournalFanficsTitle => 'You have no fanfics in your Journal';
+
+  @override
+  String get emptyJournalFanficsSubtitle => 'Start adding fanfics to see your progress.';
+
+  @override
+  String get statusReading => 'Reading';
+
+  @override
+  String get statusTBR => 'To Be Read';
+
+  @override
+  String get statusPaused => 'Paused';
+
+  @override
+  String get statusFinished => 'Finished';
+
+  @override
+  String get statusWishlist => 'Wishlist';
+
+  @override
+  String get statusDropped => 'Dropped';
+
+  @override
+  String get emptyCatalogBooks => 'No books in the catalog';
+
+  @override
+  String get emptyCatalogMangas => 'No manga in the catalog';
+
+  @override
+  String get emptyCatalogFanfics => 'No fanfics in the catalog';
+
+  @override
+  String get greetingNight => 'Good night';
+
+  @override
+  String get greetingMorning => 'Good morning';
+
+  @override
+  String get greetingAfternoon => 'Good afternoon';
+
+  @override
+  String get inProgressTitle => 'In Progress';
+
+  @override
+  String get nothingReading => 'You are not reading anything right now';
+
+  @override
+  String get searchBooksHint => 'Type something to search for books';
+
+  @override
+  String get searchBooksEmpty => 'No books found';
+
+  @override
+  String get searchFanficsHint => 'Type something to search for fanfics';
+
+  @override
+  String get searchFanficsEmpty => 'No fanfics found';
+
+  @override
+  String get searchMangasHint => 'Type something to search for manga';
+
+  @override
+  String get searchMangasEmpty => 'No manga found';
+
+  @override
+  String get createNewListButton => 'Create new list';
+
+  @override
+  String get listNameLabel => 'List Name';
+
+  @override
+  String get listDescLabel => 'Description (Optional)';
+
+  @override
+  String get cancelButton => 'Cancel';
+
+  @override
+  String get listCreatedSuccess => 'List created successfully';
+
+  @override
+  String get listCreateError => 'Error creating list';
+
+  @override
+  String get createButton => 'Create';
+
+  @override
+  String get emptyListsTitle => 'You don\'t have any lists yet';
+
+  @override
+  String get emptyListsSubtitle => 'Create a list to organize your books, manga, and fanfics.';
+
+  @override
+  String get createListButton => 'Create List';
+
+  @override
+  String get listNoDescription => 'No description';
+
+  @override
+  String get errorLoadingLists => 'Error loading lists';
+
+  @override
+  String get retryButton => 'Retry';
+
+  @override
+  String get myListsTitle => 'My Lists';
+
+  @override
+  String get noTitle => 'No title';
+
+  @override
+  String get unknownAuthor => 'Unknown author';
+
+  @override
+  String get errorPrefix => 'Error';
+
+  @override
+  String get startedReading => 'Started reading';
+
+  @override
+  String get addedToWishlist => 'Added to wishlist';
+
+  @override
+  String get addedToList => 'added to your list';
+
+  @override
+  String get startReading => 'Start reading';
+
+  @override
+  String get toRead => 'To read';
+
+  @override
+  String get reading => 'Reading';
+
+  @override
+  String get addToWishlist => 'Add to Wishlist';
+
+  @override
+  String get viewReadingProgress => 'View reading progress';
+
+  @override
+  String get startReadingSession => 'Start reading session';
+
+  @override
+  String get pauseOrAbandonReading => 'Pause or abandon reading';
+
+  @override
+  String get viewInJournal => 'View in journal';
+
+  @override
+  String get statusLabel => 'Status';
+
+  @override
+  String get editJournal => 'Edit journal';
+
+  @override
+  String get genres => 'Genres';
+
+  @override
+  String get chapters => 'Chapters';
+
+  @override
+  String get pages => 'Pages';
+
+  @override
+  String get publishYear => 'Publish year';
+
+  @override
+  String get publisher => 'Publisher';
+
+  @override
+  String get malScore => 'MAL Score';
+
+  @override
+  String get demographic => 'Demographic';
+
+  @override
+  String get mainShip => 'Main Ship';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get synopsis => 'Synopsis';
+
+  @override
+  String get physical => 'Physical';
+
+  @override
+  String get digital => 'Digital';
+
+  @override
+  String get borrowed => 'Borrowed';
 }
