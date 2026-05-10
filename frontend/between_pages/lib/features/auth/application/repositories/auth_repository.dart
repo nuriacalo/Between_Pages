@@ -1,10 +1,11 @@
-import 'package:between_pages/api/api_client.dart';
-import 'package:between_pages/api/auth_token_storage.dart';
+import 'package:between_pages/core/api/api_client.dart';
+import 'package:between_pages/core/api/auth_token_storage.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
-import 'package:between_pages/providers/auth/api_provider.dart';
+import 'package:between_pages/features/auth/application/providers/api_provider.dart';
+import 'package:between_pages/features/profile/domain/user_response_dto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:between_pages/models/user/user_response_dto.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repositorio encargado de toda la lógica de autenticación:
 /// login, registro, logout, refresh de tokens y verificación de sesión.
@@ -36,7 +37,7 @@ class AuthRepository {
         await _authTokenStorage.saveRefreshToken(refreshToken);
       }
     } on DioException catch (e) {
-      print('⚠️ Error 400 Body: ${e.response?.data}');
+      debugPrint('⚠️ Error 400 Body: ${e.response?.data}');
       throw Exception(
         e.response?.data['message'] ?? 'Error al iniciar sesión: ${e.message}',
       );
