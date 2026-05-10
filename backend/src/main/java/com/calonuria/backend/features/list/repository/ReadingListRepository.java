@@ -1,4 +1,4 @@
-package com.calonuria.backend.repository.list;
+package com.calonuria.backend.features.list.repository;
 
 import com.calonuria.backend.features.list.model.ReadingList;
 import org.springframework.data.jpa.repository.JpaRepository;

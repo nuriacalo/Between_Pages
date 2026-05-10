@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto.list;
+package com.calonuria.backend.features.list.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

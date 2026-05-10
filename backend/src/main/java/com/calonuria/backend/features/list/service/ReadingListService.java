@@ -1,10 +1,10 @@
-package com.calonuria.backend.service.list;
+package com.calonuria.backend.features.list.service;
 
-import com.calonuria.backend.dto.list.ReadingListDTO;
-import com.calonuria.backend.dto.list.ReadingListRequestDTO;
+import com.calonuria.backend.features.list.dto.ReadingListDTO;
+import com.calonuria.backend.features.list.dto.ReadingListRequestDTO;
 import com.calonuria.backend.features.list.model.ReadingList;
 import com.calonuria.backend.features.user.model.User;
-import com.calonuria.backend.repository.list.ReadingListRepository;
+import com.calonuria.backend.features.list.repository.ReadingListRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

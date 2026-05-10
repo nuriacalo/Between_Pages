@@ -1,8 +1,8 @@
-package com.calonuria.backend.model.list;
+package com.calonuria.backend.features.list.model;
 
-import com.calonuria.backend.model.catalog.Book;
-import com.calonuria.backend.model.catalog.Fanfiction;
-import com.calonuria.backend.model.catalog.Manga;
+import com.calonuria.backend.features.catalog.model.Book;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
+import com.calonuria.backend.features.catalog.model.Manga;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

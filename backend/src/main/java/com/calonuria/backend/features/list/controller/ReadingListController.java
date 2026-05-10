@@ -1,8 +1,8 @@
-package com.calonuria.backend.controller.list;
+package com.calonuria.backend.features.list.controller;
 
-import com.calonuria.backend.dto.list.ReadingListDTO;
-import com.calonuria.backend.dto.list.ReadingListRequestDTO;
-import com.calonuria.backend.service.list.ReadingListService;
+import com.calonuria.backend.features.list.dto.ReadingListDTO;
+import com.calonuria.backend.features.list.dto.ReadingListRequestDTO;
+import com.calonuria.backend.features.list.service.ReadingListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
