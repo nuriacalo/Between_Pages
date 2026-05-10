@@ -1,6 +1,6 @@
-package com.calonuria.backend.model.journal;
+package com.calonuria.backend.features.journal.model;
 
-import com.calonuria.backend.model.user.User;
+import com.calonuria.backend.features.user.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -83,6 +83,18 @@ public abstract class BaseJournal {
      */
     @Column(name = "personal_notes", columnDefinition = "TEXT")
     private String personalNotes;
+
+    /**
+     * Formato de lectura: PHYSICAL, DIGITAL, AUDIOBOOK.
+     */
+    @Column(name = "reading_format", length = 50)
+    private String readingFormat;
+
+    /**
+     * Tipo de propiedad del libro: DIGITAL, PHYSICAL, NONE, BORROWED.
+     */
+    @Column(length = 20)
+    private String ownership;
 
     /**
      * Método que se ejecuta antes de persistir o actualizar.

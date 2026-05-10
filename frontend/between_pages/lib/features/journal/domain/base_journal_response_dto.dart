@@ -1,16 +1,39 @@
 abstract class BaseJournalResponseDTO {
-  int? get id;
-  int get userId;
-  String? get status;
-  String? get personalNotes;
-  String? get startDate;
-  String? get endDate;
-  int? get rating;
-  int? get tearDrops;
-  int? get spiceFlames;
-  bool? get rereading;
-  String? get ownership;
-  String? get coverUrl;
-  String? get title;
-  String? get author;
+  final int id;
+  final int userId;
+  final String status;
+  final String? personalNotes;
+  final String? startDate;
+  final String? endDate;
+  final int? rating;
+  final int? tearDrops;
+  final int? spiceFlames;
+  final bool? rereading;
+  final String? ownership;
+  final String? readingFormat;
+  final String? loanedTo;
+
+  // Campos que las clases hijas deben implementar
+  final String? coverUrl;
+  final String? title;
+  final String? author;
+
+  const BaseJournalResponseDTO({
+    required this.id,
+    required this.userId,
+    required this.status,
+    this.personalNotes,
+    this.startDate,
+    this.endDate,
+    this.rating,
+    this.tearDrops,
+    this.spiceFlames,
+    this.rereading,
+    this.ownership,
+    this.readingFormat,
+    this.loanedTo,
+    this.coverUrl,
+    this.title,
+    this.author,
+  });
 }

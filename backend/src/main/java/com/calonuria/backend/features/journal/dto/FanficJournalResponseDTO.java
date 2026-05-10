@@ -1,6 +1,6 @@
-package com.calonuria.backend.dto.journal;
+package com.calonuria.backend.features.journal.dto;
 
-import com.calonuria.backend.dto.catalog.FanfictionResponseDTO;
+import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

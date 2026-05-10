@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.journal.service;
+package com.calonuria.backend.shared.util;
 
 /**
  * Utilidad para la normalización de formatos de lectura entre

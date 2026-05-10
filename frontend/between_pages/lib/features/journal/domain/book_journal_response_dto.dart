@@ -1,109 +1,91 @@
-import 'package:between_pages/screens/journal/diary_page.dart';
-import 'package:between_pages/screens/journal/universal_session_page.dart';
-import 'package:between_pages/providers/journal/reading_timer_provider.dart';
+import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/journal/application/providers/reading_timer_provider.dart';
+import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
+import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:flutter/material.dart';
-import '../catalog/book_response_dto.dart';
 import 'base_journal_response_dto.dart';
 
-class BookJournalResponseDto implements BaseJournalResponseDTO {
-  final int id;
-  final int userId;
+class BookJournalResponseDto extends BaseJournalResponseDTO {
   final BookResponseDTO book;
-  final String status;
   final int? currentPage;
-  final int? rating;
-  final int? tearDrops;
-  final int? spiceFlames;
-  final String? readingFormat;
   final List<String>? emotions;
   final String? favoriteQuotes;
-  final String? personalNotes;
-  final String? startDate;
-  final String? endDate;
-  final bool? rereading;
-  final String? ownership;
   final String? seriesName;
   final double? seriesOrder;
-  final String? loanedTo;
 
   BookJournalResponseDto({
-    required this.id,
-    required this.userId,
+    required super.id,
+    required super.userId,
     required this.book,
-    required this.status,
+    required super.status,
     this.currentPage,
-    this.rating,
-    this.tearDrops,
-    this.spiceFlames,
-    this.readingFormat,
+    super.rating,
+    super.tearDrops,
+    super.spiceFlames,
+    super.readingFormat,
     this.emotions,
     this.favoriteQuotes,
-    this.personalNotes,
-    this.startDate,
-    this.endDate,
-    this.rereading,
-    this.ownership,
+    super.personalNotes,
+    super.startDate,
+    super.endDate,
+    super.rereading,
+    super.ownership,
     this.seriesName,
     this.seriesOrder,
-    this.loanedTo,
-  });
+    super.loanedTo,
+  }) : super(
+          coverUrl: book.coverUrl,
+          title: book.title,
+          author: book.author,
+        );
 
   factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) {
     return BookJournalResponseDto(
       id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      userId: int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
+      userId: int.tryParse(json['userId']?.toString() ?? '0') ?? 0,
       book: BookResponseDTO.fromJson(json['book'] as Map<String, dynamic>),
       status: json['status'] as String,
-      currentPage: json['current_page'] as int?,
+      currentPage: json['currentPage'] as int?,
       rating: json['rating'] as int?,
-      tearDrops: json['tear_drops'] as int?,
-      spiceFlames: json['spice_flames'] as int?,
-      readingFormat: json['reading_format'] as String?,
+      tearDrops: json['tearDrops'] as int?,
+      spiceFlames: json['spiceFlames'] as int?,
+      readingFormat: json['readingFormat'] as String?,
       emotions: (json['emotions'] as List?)?.cast<String>(),
-      favoriteQuotes: json['favorite_quotes'] as String?,
-      personalNotes: json['personal_notes'] as String?,
-      startDate: json['start_date'] as String?,
-      endDate: json['end_date'] as String?,
+      favoriteQuotes: json['favoriteQuotes'] as String?,
+      personalNotes: json['personalNotes'] as String?,
+      startDate: json['startDate'] as String?,
+      endDate: json['endDate'] as String?,
       rereading: json['rereading'] as bool?,
       ownership: json['ownership'] as String?,
-      seriesName: json['series_name'] as String?,
-      seriesOrder: (json['series_order'] as num?)?.toDouble(),
-      loanedTo: json['loaned_to'] as String?,
+      seriesName: json['seriesName'] as String?,
+      seriesOrder: (json['seriesOrder'] as num?)?.toDouble(),
+      loanedTo: json['loanedTo'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'user_id': userId,
+      'userId': userId,
       'book': book.toJson(),
       'status': status,
-      'current_page': currentPage,
+      'currentPage': currentPage,
       'rating': rating,
-      'tear_drops': tearDrops,
-      'spice_flames': spiceFlames,
-      'reading_format': readingFormat,
+      'tearDrops': tearDrops,
+      'spiceFlames': spiceFlames,
+      'readingFormat': readingFormat,
       'emotions': emotions,
-      'favorite_quotes': favoriteQuotes,
-      'personal_notes': personalNotes,
-      'start_date': startDate,
-      'end_date': endDate,
+      'favoriteQuotes': favoriteQuotes,
+      'personalNotes': personalNotes,
+      'startDate': startDate,
+      'endDate': endDate,
       'rereading': rereading,
       'ownership': ownership,
-      'series_name': seriesName,
-      'series_order': seriesOrder,
-      'loaned_to': loanedTo,
+      'seriesName': seriesName,
+      'seriesOrder': seriesOrder,
+      'loanedTo': loanedTo,
     };
   }
-
-  @override
-  String? get coverUrl => book.coverUrl;
-
-  @override
-  String? get title => book.title;
-
-  @override
-  String? get author => book.author;
 
   DiaryJournalData toDiaryData() {
     return DiaryJournalData(
@@ -118,38 +100,6 @@ class BookJournalResponseDto implements BaseJournalResponseDTO {
       progressLabel: 'Páginas leídas',
       icon: Icons.book,
       accentColor: Colors.blue,
-    );
-  }
-
-  UniversalSessionData toSessionData() {
-    return UniversalSessionData(
-      mediaType: SessionMediaType.book,
-      itemId: book.idBook,
-      timerItemType: ReadingItemType.book,
-      title: book.title,
-      coverUrl: book.coverUrl,
-      currentProgress: currentPage ?? 0,
-      progressPrompt: '¿En qué página te has quedado?',
-      accentColor: const Color(0xFFA87C80),
-      rawJournal: this,
-    );
-  }
-}
-
-extension BookJournalMapper on BookJournalResponseDto {
-  DiaryJournalData toDiaryData() {
-    return DiaryJournalData(
-      title: book.title,
-      author: book.author,
-      coverUrl: book.coverUrl,
-      rating: rating,
-      tearDrops: tearDrops,
-      spiceFlames: spiceFlames,
-      currentProgress: currentPage,
-      personalNotes: personalNotes,
-      progressLabel: 'Páginas leídas',
-      icon: Icons.book,
-      accentColor: Colors.blue, // Puedes usar Theme.of(context) en la vista si prefieres
     );
   }
 

@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:between_pages/screens/detail/ownership_badge.dart';
 
 /// Modelo de datos normalizado para cualquier item de journal (libro, manga, fanfic).
 class JournalItemData {
@@ -42,57 +41,80 @@ class JournalItemCard extends StatelessWidget {
       padding: const EdgeInsets.only(right: 12),
       child: InkWell(
         onTap: () => context.push(item.route, extra: item.extra),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: SizedBox(
           width: 110,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+          child: Container(
+            height: 150,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // ── Portada ─────────────────────────────────────────────
+                _buildCover(context),
+
+                // ── Gradiente + título dentro de la portada ──────────────
+                Positioned(
+                  left: 0, right: 0, bottom: 0,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Color(0xCC000000), Colors.transparent],
+                        stops: [0.0, 1.0],
                       ),
-                    ],
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _buildCover(context),
-                      if (item.ownership != null)
-                        Positioned(
-                          top: 4,
-                          left: 4,
-                          child: OwnershipBadge(ownership: item.ownership),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          item.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            height: 1.25,
+                            shadows: [Shadow(blurRadius: 3, color: Colors.black54)],
+                          ),
                         ),
-                    ],
+                        if (item.subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            item.subtitle!,
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                item.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (item.subtitle != null)
-                Text(
-                  item.subtitle!,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 10,
+
+                // ── Badge de propiedad ────────────────────────────────────
+                if (item.ownership != null)
+                  Positioned(
+                    top: 6, left: 6,
+                    child: _OwnershipBadge(ownership: item.ownership!),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -100,20 +122,13 @@ class JournalItemCard extends StatelessWidget {
   }
 
   Widget _buildCover(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     if (item.coverUrl != null && item.coverUrl!.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: item.coverUrl!,
         fit: BoxFit.cover,
         width: double.infinity,
-        placeholder: (context, url) => Container(
-          color: colorScheme.surfaceContainerHighest,
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-        errorWidget: (context, url, error) => _buildFallback(context),
+        placeholder: (_, __) => _buildFallback(context),
+        errorWidget: (_, __, ___) => _buildFallback(context),
       );
     }
     return _buildFallback(context);
@@ -122,8 +137,49 @@ class JournalItemCard extends StatelessWidget {
   Widget _buildFallback(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Icon(fallbackIcon, size: 32),
+      child: Center(child: Icon(fallbackIcon, size: 32, color: Colors.white38)),
     );
   }
 }
 
+// Badge semitransparente sobre la portada
+class _OwnershipBadge extends StatelessWidget {
+  final String ownership;
+  const _OwnershipBadge({required this.ownership});
+
+  IconData get _icon => switch (ownership.toUpperCase()) {
+    'DIGITAL'  => Icons.phone_android_rounded,
+    'PHYSICAL' => Icons.storefront_rounded,
+    'BORROWED' => Icons.person_pin_rounded,
+    _          => Icons.help_outline_rounded,
+  };
+
+  String get _label => switch (ownership.toUpperCase()) {
+    'DIGITAL'  => 'Digital',
+    'PHYSICAL' => 'Físico',
+    'BORROWED' => 'Prestado',
+    _          => ownership,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_icon, size: 10, color: Colors.white),
+          const SizedBox(width: 3),
+          Text(
+            _label,
+            style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+}

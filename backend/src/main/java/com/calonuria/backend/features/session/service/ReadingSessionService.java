@@ -1,11 +1,11 @@
-package com.calonuria.backend.service.session;
+package com.calonuria.backend.features.session.service;
 
-import com.calonuria.backend.dto.session.ReadingSessionRecordDTO;
-import com.calonuria.backend.dto.session.ReadingSessionStatsDTO;
-import com.calonuria.backend.model.session.ReadingSession;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.session.ReadingSessionRepository;
-import com.calonuria.backend.repository.user.UserRepository;
+import com.calonuria.backend.features.session.dto.ReadingSessionRecordDTO;
+import com.calonuria.backend.features.session.dto.ReadingSessionStatsDTO;
+import com.calonuria.backend.features.session.model.ReadingSession;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.session.repository.ReadingSessionRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +35,14 @@ public class ReadingSessionService {
         session.setPagesRead(dto.getPagesRead());
 
         if (dto.getBookId() != null) {
-            session.setBookId(dto.getBookId());
+            session.setItemType(ReadingSession.ItemType.BOOK);
+            session.setItemId(dto.getBookId());
         } else if (dto.getMangaId() != null) {
-            session.setMangaId(dto.getMangaId());
+            session.setItemType(ReadingSession.ItemType.MANGA);
+            session.setItemId(dto.getMangaId());
         } else if (dto.getFanficId() != null) {
-            session.setFanficId(dto.getFanficId());
+            session.setItemType(ReadingSession.ItemType.FANFIC);
+            session.setItemId(dto.getFanficId());
         } else {
             throw new IllegalArgumentException("Debe especificar al menos un ID de item (book/manga/fanfic)");
         }

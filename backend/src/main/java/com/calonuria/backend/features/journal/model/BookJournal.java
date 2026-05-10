@@ -1,6 +1,6 @@
-package com.calonuria.backend.model.journal;
+package com.calonuria.backend.features.journal.model;
 
-import com.calonuria.backend.model.catalog.Book;
+import com.calonuria.backend.features.catalog.model.Book;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -33,12 +33,6 @@ public class BookJournal extends BaseJournal {
     private Integer currentPage;
 
     /**
-     * Formato de lectura: PHYSICAL, DIGITAL, AUDIOBOOK.
-     */
-    @Column(name = "reading_format", length = 50)
-    private String readingFormat;
-
-    /**
      * Emociones experimentadas durante la lectura (JSON).
      */
     @Type(JsonType.class)
@@ -50,12 +44,6 @@ public class BookJournal extends BaseJournal {
      */
     @Column(name = "favorite_quotes", columnDefinition = "TEXT")
     private String favoriteQuotes;
-
-    /**
-     * Tipo de propiedad del libro: DIGITAL, PHYSICAL, NONE, BORROWED.
-     */
-    @Column(length = 20)
-    private String ownership;
 
     /**
      * Nombre de la serie o saga a la que pertenece el libro.

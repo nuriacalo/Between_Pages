@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto.journal;
+package com.calonuria.backend.features.journal.dto;
 
 import lombok.Data;
 import java.time.LocalDate;
@@ -22,4 +22,7 @@ public abstract class BaseJournalResponseDTO {
     private LocalDate endDate;
     private LocalDateTime updatedAt;
     private Boolean rereading;
+    private String readingFormat;
+    private String ownership;
+    private String loanedTo;
 }

@@ -1,15 +1,16 @@
-import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
-import 'package:between_pages/providers/journal/book_journal_provider.dart';
-import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
-import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
-import 'package:between_pages/providers/journal/manga_journal_provider.dart';
-import 'package:between_pages/widgets/common/empty_state.dart';
-import 'package:between_pages/widgets/journal/journal_item_card.dart';
+import 'package:between_pages/core/widgets/empty_state.dart';
+import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/presentation/widgets/journal_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 /// Página principal del Journal con tabs para Libros, Mangas y Fanfics.
 /// Usa widgets genéricos para eliminar duplicación entre tipos de contenido.
@@ -18,6 +19,7 @@ class JournalPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -26,14 +28,14 @@ class JournalPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Journal',
+            l10n.journalTitle,
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           backgroundColor: colorScheme.surface,
           actions: [
             IconButton(
               icon: const Icon(Icons.psychology_outlined),
-              tooltip: 'Segundo Cerebro',
+              tooltip: l10n.secondBrainTooltip,
               onPressed: () => context.push('/second-brain'),
             ),
           ],
@@ -41,14 +43,14 @@ class JournalPage extends StatelessWidget {
             labelColor: colorScheme.primary,
             unselectedLabelColor: colorScheme.onSurfaceVariant,
             indicatorColor: colorScheme.primary,
-            tabs: const [
-              Tab(text: 'Libros'),
-              Tab(text: 'Mangas'),
-              Tab(text: 'Fanfics'),
+            tabs: [
+              Tab(text: l10n.tabBooks),
+              Tab(text: l10n.tabMangas),
+              Tab(text: l10n.tabFanfics),
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             _BooksTab(),
             _MangaTab(),
@@ -69,25 +71,29 @@ class _BooksTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JournalTab<BookJournalResponseDto>(
-      provider: bookJournalProvider,
+    final l10n = AppLocalizations.of(context)!;
+    return JournalTab<BaseJournalResponseDTO>(
+      provider: journalProvider(JournalType.book),
       extractStatus: (j) => j.status,
-      toItemData: (j) => JournalItemData(
-        id: j.id,
-        title: j.book.title,
-        coverUrl: j.book.coverUrl,
-        subtitle: j.currentPage != null && j.currentPage! > 0
-            ? 'Pág. ${j.currentPage}'
-            : null,
-        ownership: j.ownership,
-        route: j.status == 'READING'
-            ? '/journal/book/progress'
-            : '/journal/book/edit',
-        extra: j,
-      ),
+      toItemData: (j) {
+        final journal = j as BookJournalResponseDto;
+        return JournalItemData(
+          id: journal.id,
+          title: journal.book.title,
+          coverUrl: journal.book.coverUrl,
+          subtitle: journal.currentPage != null && journal.currentPage! > 0
+              ? 'Pág. ${journal.currentPage}'
+              : null,
+          ownership: journal.ownership,
+          route: journal.status == 'READING'
+              ? '/journal/book/progress'
+              : '/journal/book/edit',
+          extra: journal,
+        );
+      },
       fallbackIcon: Icons.book,
-      emptyTitle: 'No hay libros en tu Journal',
-      emptySubtitle: 'Busca libros y añádelos para empezar a leer',
+      emptyTitle: l10n.emptyJournalBooksTitle,
+      emptySubtitle: l10n.emptyJournalBooksSubtitle,
     );
   }
 }
@@ -97,26 +103,31 @@ class _MangaTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JournalTab<MangaJournalResponseDTO>(
-      provider: mangaJournalProvider,
-      extractStatus: (j) => j.status ?? 'PENDING',
+    final l10n = AppLocalizations.of(context)!;
+    return JournalTab<BaseJournalResponseDTO>(
+      provider: journalProvider(JournalType.manga),
+      extractStatus: (j) => j.status,
       toItemData: (j) {
-        final manga = j.manga;
+        final journal = j as MangaJournalResponseDTO;
+        final manga = journal.manga;
+        // Debug: rastrear por qué se está yendo a rutas distintas
+        // (verifica espacios/valores del status real)
+        // debugPrint('[JournalPage][MANGA] id=${journal.id} title=${manga?.title} status="${journal.status}" currentChapter=${journal.currentChapter}');
         return JournalItemData(
-          id: j.id,
+          id: journal.id,
           title: manga?.title ?? 'Sin título',
           coverUrl: manga?.coverUrl,
-          subtitle: (j.currentChapter ?? 0) > 0
-              ? 'Cap. ${j.currentChapter ?? 0}'
+          subtitle: (journal.currentChapter ?? 0) > 0
+              ? 'Cap. ${journal.currentChapter ?? 0}'
               : null,
-          ownership: j.ownership,
-          route: '/journal/manga/edit',
-          extra: j,
+          ownership: journal.ownership,
+          route: (journal.status.trim().toUpperCase() == 'READING') ? '/journal/manga/session' : '/journal/manga/edit',
+          extra: journal,
         );
       },
       fallbackIcon: Icons.auto_stories,
-      emptyTitle: 'No hay mangas en tu Journal',
-      emptySubtitle: 'Busca manga y añádelos para empezar a leer',
+      emptyTitle: l10n.emptyJournalMangasTitle,
+      emptySubtitle: l10n.emptyJournalMangasSubtitle,
     );
   }
 }
@@ -126,26 +137,28 @@ class _FanficsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JournalTab<FanficJournalResponseDTO>(
-      provider: fanficJournalProvider,
-      extractStatus: (j) => j.status ?? 'PENDING',
+    final l10n = AppLocalizations.of(context)!;
+    return JournalTab<BaseJournalResponseDTO>(
+      provider: journalProvider(JournalType.fanfic),
+      extractStatus: (j) => j.status,
       toItemData: (j) {
-        final fanfic = j.fanfic;
+        final journal = j as FanficJournalResponseDTO;
+        final fanfic = journal.fanfic;
         return JournalItemData(
-          id: j.id,
+          id: journal.id,
           title: fanfic.title ?? 'Sin título',
           coverUrl: fanfic.coverUrl,
-          subtitle: (j.currentChapter ?? 0) > 0
-              ? 'Cap. ${j.currentChapter ?? 0}'
+          subtitle: (journal.currentChapter ?? 0) > 0
+              ? 'Cap. ${journal.currentChapter ?? 0}'
               : null,
           ownership: null, // Fanfics don't have ownership
           route: '/journal/fanfic/edit',
-          extra: j,
+          extra: journal,
         );
       },
       fallbackIcon: Icons.favorite,
-      emptyTitle: 'No hay fanfics en tu Journal',
-      emptySubtitle: 'Busca fanfics y añádelos para empezar a leer',
+      emptyTitle: l10n.emptyJournalFanficsTitle,
+      emptySubtitle: l10n.emptyJournalFanficsSubtitle,
     );
   }
 }
@@ -173,18 +186,20 @@ class JournalTab<T> extends ConsumerWidget {
     this.emptySubtitle,
   });
 
-  static const _statusConfig = <String, ({String label, Color color})>{
-    'READING': (label: 'Leyendo', color: Colors.green),
-    'PENDING': (label: 'Pendientes', color: Colors.orange),
-    'PAUSED': (label: 'Pausados', color: Colors.purple),
-    'FINISHED': (label: 'Terminados', color: Colors.blue),
-    'DROPPED': (label: 'Abandonados', color: Colors.red),
-    'TBR': (label: 'Por leer', color: Colors.teal),
-  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final asyncValue = ref.watch(provider);
+
+    final statusConfig = <String, ({String label, Color color})>{
+      'READING': (label: l10n.statusReading, color: Colors.green),
+      'TBR': (label: l10n.statusTBR, color: Colors.teal),
+      'PAUSED': (label: l10n.statusPaused, color: Colors.orange),
+      'FINISHED': (label: l10n.statusFinished, color: Colors.blue),
+      'WISHLIST': (label: l10n.statusWishlist, color: Colors.purple),
+      'DROPPED': (label: l10n.statusDropped, color: Colors.red),
+    };
 
     return asyncValue.when(
       data: (journals) {
@@ -197,7 +212,7 @@ class JournalTab<T> extends ConsumerWidget {
         }
 
         final grouped = _groupByStatus(journals);
-        final orderedStatuses = _statusConfig.keys
+        final orderedStatuses = statusConfig.keys
             .where((s) => grouped.containsKey(s) && grouped[s]!.isNotEmpty)
             .toList();
 
@@ -206,7 +221,7 @@ class JournalTab<T> extends ConsumerWidget {
           itemCount: orderedStatuses.length,
           itemBuilder: (context, index) {
             final status = orderedStatuses[index];
-            final config = _statusConfig[status]!;
+            final config = statusConfig[status]!;
             final items = grouped[status]!;
             return _StatusSection(
               title: config.label,

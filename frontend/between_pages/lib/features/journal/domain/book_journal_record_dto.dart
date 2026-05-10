@@ -2,24 +2,34 @@ import 'base_journal_record_dto.dart';
 
 class BookJournalRecordDTO implements BaseJournalRecordDTO {
   final int? id;
+  @override
   final int userId;
   final int? bookId;
   final String? googleBooksId;
+  @override
   final String status;
   final int? currentPage;
+  @override
   final int? rating;
+  @override
   final int? tearDrops;
+  @override
   final int? spiceFlames;
   final String? readingFormat;
   final List<String>? emotions;
   final String? favoriteQuotes;
+  @override
   final String? personalNotes;
+  @override
   final String? startDate;
+  @override
   final String? endDate;
+  @override
   final String? ownership;
   final String? seriesName;
   final double? seriesOrder;
   final String? loanedTo;
+  @override
   final bool? rereading; // Added rereading
 
   BookJournalRecordDTO({

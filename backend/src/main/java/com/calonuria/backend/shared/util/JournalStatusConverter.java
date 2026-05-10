@@ -1,4 +1,4 @@
-package com.calonuria.backend.service.journal;
+package com.calonuria.backend.shared.util;
 
 /**
  * Utilidad para la conversión de estados de lectura entre el formato UI (español)

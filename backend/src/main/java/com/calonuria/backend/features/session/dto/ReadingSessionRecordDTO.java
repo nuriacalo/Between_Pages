@@ -1,4 +1,4 @@
-package com.calonuria.backend.dto.session;
+package com.calonuria.backend.features.session.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;

@@ -1,14 +1,15 @@
-package com.calonuria.backend.service.journal;
+package com.calonuria.backend.features.journal.service;
 
-import com.calonuria.backend.dto.journal.BookJournalRegistrationDTO;
-import com.calonuria.backend.dto.journal.BookJournalResponseDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.catalog.Book;
-import com.calonuria.backend.model.journal.BookJournal;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.journal.BookJournalRepository;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.service.catalog.BookService;
+import com.calonuria.backend.features.journal.dto.BookJournalRegistrationDTO;
+import com.calonuria.backend.features.journal.dto.BookJournalResponseDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.catalog.model.Book;
+import com.calonuria.backend.features.journal.model.BookJournal;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.journal.repository.BookJournalRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.features.catalog.service.BookService;
+import com.calonuria.backend.shared.util.JournalStatusConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

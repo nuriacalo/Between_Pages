@@ -1,4 +1,4 @@
-import 'package:between_pages/repositories/reading_session_repository.dart';
+import 'package:between_pages/features/journal/application/repositories/reading_session_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Immutable parameters for reading stats provider.

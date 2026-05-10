@@ -1,7 +1,7 @@
-package com.calonuria.backend.repository.journal;
+package com.calonuria.backend.features.journal.repository;
 
-import com.calonuria.backend.model.journal.BaseJournal;
-import com.calonuria.backend.model.user.User;
+import com.calonuria.backend.features.journal.model.BaseJournal;
+import com.calonuria.backend.features.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 

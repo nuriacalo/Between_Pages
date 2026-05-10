@@ -1,6 +1,6 @@
-package com.calonuria.backend.model.journal;
+package com.calonuria.backend.features.journal.model;
 
-import com.calonuria.backend.model.catalog.Fanfiction;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -64,4 +64,10 @@ public class FanficJournal extends BaseJournal {
      */
     @Column(name = "canon_type", length = 50)
     private String canonType;
+
+    /**
+     * Persona a la que se ha prestado el libro.
+     */
+    @Column(name = "loaned_to", length = 100)
+    private String loanedTo;
 }

@@ -1,6 +1,6 @@
-package com.calonuria.backend.dto.journal;
+package com.calonuria.backend.features.journal.dto;
 
-import com.calonuria.backend.dto.ValidationConstants;
+import com.calonuria.backend.shared.constants.ValidationConstants;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

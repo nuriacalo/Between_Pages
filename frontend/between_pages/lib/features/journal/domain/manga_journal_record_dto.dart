@@ -1,23 +1,33 @@
 import 'base_journal_record_dto.dart';
 
 class MangaJournalRecordDTO implements BaseJournalRecordDTO {
+  @override
   final int userId;
   final int? mangaId;
   final int? malId;
+  @override
   final String status;
   final int? currentChapter;
   final int? currentVolume;
+  @override
   final int? rating;
+  @override
   final int? tearDrops;
+  @override
   final int? spiceFlames;
   final String? readingFormat;
   final String? favoriteCharacter;
   final String? favoriteArc;
+  @override
   final String? personalNotes;
+  @override
   final String? startDate;
+  @override
   final String? endDate;
+  @override
   final String? ownership;
   final String? loanedTo;
+  @override
   final bool? rereading; // Added rereading
 
   MangaJournalRecordDTO({

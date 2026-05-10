@@ -1,6 +1,6 @@
-package com.calonuria.backend.dto.journal;
+package com.calonuria.backend.features.journal.dto;
 
-import com.calonuria.backend.dto.catalog.BookResponseDTO;
+import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.util.List;
@@ -15,13 +15,10 @@ public class BookJournalResponseDTO extends BaseJournalResponseDTO {
 
     private BookResponseDTO book;
     private Integer currentPage;
-    private String readingFormat;
     private List<String> emotions;
     private String favoriteQuotes;
-    private String ownership;
 
-    // Campos Módulo 2: Series y Préstamos
+    // Campos Módulo 2: Series
     private String seriesName;
     private Double seriesOrder;
-    private String loanedTo;
 }

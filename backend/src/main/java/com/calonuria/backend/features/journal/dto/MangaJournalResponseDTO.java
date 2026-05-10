@@ -1,6 +1,6 @@
-package com.calonuria.backend.dto.journal;
+package com.calonuria.backend.features.journal.dto;
 
-import com.calonuria.backend.dto.catalog.MangaResponseDTO;
+import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,11 +15,6 @@ public class MangaJournalResponseDTO extends BaseJournalResponseDTO {
     private MangaResponseDTO manga;
     private Integer currentChapter;
     private Integer currentVolume;
-    private String readingFormat;
     private String favoriteCharacter;
     private String favoriteArc;
-    private String ownership;
-
-    // Campos Módulo 2: Préstamos
-    private String loanedTo;
 }

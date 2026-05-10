@@ -1,6 +1,6 @@
-package com.calonuria.backend.model.journal;
+package com.calonuria.backend.features.journal.model;
 
-import com.calonuria.backend.model.catalog.Manga;
+import com.calonuria.backend.features.catalog.model.Manga;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,12 +36,6 @@ public class MangaJournal extends BaseJournal {
     private Integer currentVolume;
 
     /**
-     * Formato de lectura: PHYSICAL, DIGITAL.
-     */
-    @Column(name = "reading_format", length = 50)
-    private String readingFormat;
-
-    /**
      * Personaje favorito del manga.
      */
     @Column(name = "favorite_character", length = 150)
@@ -54,13 +48,7 @@ public class MangaJournal extends BaseJournal {
     private String favoriteArc;
 
     /**
-     * Tipo de propiedad: DIGITAL, PHYSICAL, NONE, BORROWED.
-     */
-    @Column(length = 20)
-    private String ownership;
-
-    /**
-     * Persona a la que se ha prestado el manga.
+     * Persona a la que se ha prestado el libro.
      */
     @Column(name = "loaned_to", length = 100)
     private String loanedTo;

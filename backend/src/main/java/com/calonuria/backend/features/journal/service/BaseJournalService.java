@@ -1,17 +1,18 @@
-package com.calonuria.backend.service.journal;
+package com.calonuria.backend.features.journal.service;
 
-import com.calonuria.backend.dto.journal.BaseJournalRegistrationDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.journal.BaseJournal;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.journal.BaseJournalRepository;
-import com.calonuria.backend.repository.user.UserRepository;
+import com.calonuria.backend.features.journal.dto.BaseJournalRegistrationDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.journal.model.BaseJournal;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.journal.repository.BaseJournalRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class BaseJournalService<T extends BaseJournal, D, R extends BaseJournalRegistrationDTO> {
+public abstract class BaseJournalService<T extends BaseJournal, D, R extends BaseJournalRegistrationDTO>
+        implements JournalService<D, R> {
 
     protected final BaseJournalRepository<T> journalRepository;
     protected final UserRepository userRepository;
@@ -25,6 +26,7 @@ public abstract class BaseJournalService<T extends BaseJournal, D, R extends Bas
 
     protected abstract D mapToDTO(T journal);
 
+    @Override
     @Transactional(readOnly = true)
     public List<D> getUserJournal(Long userId) {
         return journalRepository.findByUserId(userId)
@@ -33,6 +35,7 @@ public abstract class BaseJournalService<T extends BaseJournal, D, R extends Bas
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<D> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
@@ -43,6 +46,7 @@ public abstract class BaseJournalService<T extends BaseJournal, D, R extends Bas
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<D> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
@@ -53,6 +57,7 @@ public abstract class BaseJournalService<T extends BaseJournal, D, R extends Bas
                 .collect(Collectors.toList());
     }
 
+    @Override
     public void deleteJournal(Long journalId) {
         journalRepository.deleteById(journalId);
     }

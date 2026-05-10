@@ -1,14 +1,15 @@
-package com.calonuria.backend.service.journal;
+package com.calonuria.backend.features.journal.service;
 
-import com.calonuria.backend.dto.journal.MangaJournalRegistrationDTO;
-import com.calonuria.backend.dto.journal.MangaJournalResponseDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.catalog.Manga;
-import com.calonuria.backend.model.journal.MangaJournal;
-import com.calonuria.backend.model.user.User;
-import com.calonuria.backend.repository.journal.MangaJournalRepository;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.service.catalog.MangaService;
+import com.calonuria.backend.features.journal.dto.MangaJournalRegistrationDTO;
+import com.calonuria.backend.features.journal.dto.MangaJournalResponseDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.catalog.model.Manga;
+import com.calonuria.backend.features.journal.model.MangaJournal;
+import com.calonuria.backend.features.user.model.User;
+import com.calonuria.backend.features.journal.repository.MangaJournalRepository;
+import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.features.catalog.service.MangaService;
+import com.calonuria.backend.shared.util.JournalStatusConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

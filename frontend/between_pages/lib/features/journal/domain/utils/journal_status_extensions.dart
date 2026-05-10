@@ -1,4 +1,6 @@
-import 'package:between_pages/repositories/journal_status_helper.dart';
+
+
+import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 
 /// Helpers para reducir duplicación de comparaciones por strings.
 ///

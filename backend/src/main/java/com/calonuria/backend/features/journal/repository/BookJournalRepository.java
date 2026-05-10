@@ -1,10 +1,8 @@
-package com.calonuria.backend.repository.journal;
+package com.calonuria.backend.features.journal.repository;
 
-import com.calonuria.backend.model.catalog.Book;
-import com.calonuria.backend.model.journal.BookJournal;
-import com.calonuria.backend.model.user.User;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.calonuria.backend.features.catalog.model.Book;
+import com.calonuria.backend.features.journal.model.BookJournal;
+import com.calonuria.backend.features.user.model.User;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,14 +13,6 @@ import java.util.Optional;
  */
 @Repository
 public interface BookJournalRepository extends BaseJournalRepository<BookJournal> {
-
-    /**
-     * Busca todos los diarios de un usuario.
-     * @param userId ID del usuario
-     * @return lista de diarios
-     */
-    @Query("SELECT b FROM BookJournal b WHERE b.user.id = :userId")
-    List<BookJournal> findByUserId(@Param("userId") Long userId);
 
     /**
      * Busca una entrada específica de un usuario para un libro.

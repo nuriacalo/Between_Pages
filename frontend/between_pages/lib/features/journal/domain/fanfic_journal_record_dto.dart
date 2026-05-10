@@ -1,22 +1,31 @@
 import 'base_journal_record_dto.dart';
 
 class FanficJournalRecordDTO implements BaseJournalRecordDTO {
+  @override
   final int userId;
   final int? fanfictionId;
   final String? ao3Id;
+  @override
   final String status;
   final int? currentChapter;
+  @override
   final int? rating;
+  @override
   final int? tearDrops;
+  @override
   final int? spiceFlames;
   final String? mainShip;
   final String? secondaryShips;
   final String? angstLevel;
   final String? shipLoyalty;
   final String? canonType;
+  @override
   final bool? rereading;
+  @override
   final String? personalNotes;
+  @override
   final String? startDate;
+  @override
   final String? endDate;
 
   FanficJournalRecordDTO({

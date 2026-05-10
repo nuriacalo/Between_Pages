@@ -1,10 +1,10 @@
-package com.calonuria.backend.controller.session;
+package com.calonuria.backend.features.session.controller;
 
-import com.calonuria.backend.dto.session.ReadingSessionRecordDTO;
-import com.calonuria.backend.dto.session.ReadingSessionStatsDTO;
-import com.calonuria.backend.repository.user.UserRepository;
-import com.calonuria.backend.service.session.ReadingSessionService;
-import com.calonuria.backend.service.user.GamificationService;
+import com.calonuria.backend.features.session.dto.ReadingSessionRecordDTO;
+import com.calonuria.backend.features.session.dto.ReadingSessionStatsDTO;
+import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.features.session.service.ReadingSessionService;
+import com.calonuria.backend.features.user.service.GamificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

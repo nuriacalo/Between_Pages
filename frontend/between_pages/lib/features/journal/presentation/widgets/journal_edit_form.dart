@@ -1,40 +1,41 @@
-import 'package:between_pages/models/journal/base_journal_record_dto.dart';
-import 'package:between_pages/models/journal/base_journal_response_dto.dart';
-import 'package:between_pages/repositories/journal_repository.dart';
-import 'package:between_pages/repositories/journal_status_helper.dart';
+import 'package:between_pages/core/repositories/journal_repository.dart';
+import 'package:between_pages/features/journal/domain/base_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
+import 'package:between_pages/features/journal/presentation/widgets/emoji_rating_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class JournalEditForm<
     T extends BaseJournalResponseDTO,
-    R extends BaseJournalRecordDTO,
-    S extends JournalRepository> extends ConsumerStatefulWidget {
+    R extends BaseJournalRecordDTO> extends ConsumerStatefulWidget {
   final T journal;
-  final Provider<S> repositoryProvider;
+  final JournalRepository repository;
   final R Function(T, Map<String, dynamic>) recordDtoBuilder;
   final Widget Function(T, Map<String, TextEditingController>)
       specificFieldsBuilder;
   final Function(WidgetRef) onSave;
+  final Color? accentColor;
 
   const JournalEditForm({
     super.key,
     required this.journal,
-    required this.repositoryProvider,
+    required this.repository,
     required this.recordDtoBuilder,
     required this.specificFieldsBuilder,
     required this.onSave,
+    this.accentColor,
   });
 
   @override
-  ConsumerState<JournalEditForm<T, R, S>> createState() =>
-      _JournalEditFormState<T, R, S>();
+  ConsumerState<JournalEditForm<T, R>> createState() =>
+      _JournalEditFormState<T, R>();
 }
 
 class _JournalEditFormState<
     T extends BaseJournalResponseDTO,
-    R extends BaseJournalRecordDTO,
-    S extends JournalRepository> extends ConsumerState<JournalEditForm<T, R, S>> {
+    R extends BaseJournalRecordDTO> extends ConsumerState<JournalEditForm<T, R>> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
 
@@ -46,15 +47,29 @@ class _JournalEditFormState<
   late final TextEditingController _personalNotesController;
   late final Map<String, TextEditingController> _specificControllers;
 
+  static const _ownershipDbToUi = {
+    'DIGITAL': 'Digital',
+    'PHYSICAL': 'Físico',
+    'NONE': 'Ninguno',
+    'BORROWED': 'Prestado',
+  };
+
+  static const _ownershipUiToDb = {
+    'Digital': 'DIGITAL',
+    'Físico': 'PHYSICAL',
+    'Ninguno': 'NONE',
+    'Prestado': 'BORROWED',
+  };
+
   @override
   void initState() {
     super.initState();
     final journal = widget.journal;
-    _status = JournalStatusHelper.mapStatusToUi(journal.status ?? 'TBR');
+    _status = JournalStatusHelper.mapStatusToUi(journal.status);
     _tearDrops = journal.tearDrops;
     _spiceFlames = journal.spiceFlames;
     _rating = journal.rating;
-    _ownership = journal.ownership;
+    _ownership = _ownershipDbToUi[journal.ownership] ?? journal.ownership;
     _personalNotesController = TextEditingController(text: journal.personalNotes);
     _specificControllers = {};
   }
@@ -92,7 +107,7 @@ class _JournalEditFormState<
           'tearDrops': _tearDrops,
           'spiceFlames': _spiceFlames,
           'rating': _rating,
-          'ownership': _ownership,
+          'ownership': _ownership != null ? _ownershipUiToDb[_ownership] : null,
           'personalNotes': _personalNotesController.text,
           'endDate': isFinishing
               ? DateTime.now().toIso8601String()
@@ -101,8 +116,7 @@ class _JournalEditFormState<
         },
       );
 
-      final repo = ref.read(widget.repositoryProvider);
-      await repo.updateRaw(dto.toJson());
+      await widget.repository.saveRaw(dto.toJson());
 
       widget.onSave(ref);
 
@@ -137,6 +151,7 @@ class _JournalEditFormState<
             )
           else
             IconButton(
+          color: widget.accentColor,
               icon: const Icon(Icons.save_alt_outlined),
               onPressed: _saveJournal,
               tooltip: 'Guardar',
@@ -179,6 +194,10 @@ class _JournalEditFormState<
             return ChoiceChip(
               label: Text(status),
               selected: isSelected,
+              selectedColor: widget.accentColor?.withValues(alpha: 0.2),
+              side: isSelected && widget.accentColor != null
+                  ? BorderSide(color: widget.accentColor!)
+                  : null,
               onSelected: (_) => setState(() => _status = status),
             );
           }).toList(),
@@ -188,58 +207,36 @@ class _JournalEditFormState<
     );
   }
 
-  Widget _buildEmotionSelectors() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Emociones', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildEmotionChipGroup(
-                label: 'Lágrimas 💧',
-                value: _tearDrops,
-                onSelected: (val) => setState(() => _tearDrops = val),
-              ),
-            ),
-            Expanded(
-              child: _buildEmotionChipGroup(
-                label: 'Spice 🔥',
-                value: _spiceFlames,
-                onSelected: (val) => setState(() => _spiceFlames = val),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildEmotionChipGroup({
-    required String label,
-    required int? value,
-    required ValueChanged<int> onSelected,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-        Wrap(
-          spacing: 4,
-          children: List.generate(6, (index) {
-            return ChoiceChip(
-              label: Text('$index'),
-              selected: value == index,
-              onSelected: (_) => onSelected(index),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-
+Widget _buildEmotionSelectors() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text('Emociones', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 16),
+      EmojiRatingSelector(
+        emoji: '💧',
+        label: 'Lágrimas',
+        value: _tearDrops,
+        activeColor: const Color(0xFF5BA4C4),
+        activeBg: const Color(0xFFE8F4F8),
+        activeBorder: const Color(0xFF5BA4C4),
+        onChanged: (v) => setState(() => _tearDrops = v),
+      ),
+      const SizedBox(height: 16),
+      EmojiRatingSelector(
+        emoji: '🔥',
+        label: 'Spice',
+        value: _spiceFlames,
+        activeColor: const Color(0xFFE07A30),
+        activeBg: const Color(0xFFFFF0E0),
+        activeBorder: const Color(0xFFE07A30),
+        onChanged: (v) => setState(() => _spiceFlames = v),
+      ),
+      const SizedBox(height: 24),
+    ],
+  );
+}
+ 
   Widget _buildRatingSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,6 +251,10 @@ class _JournalEditFormState<
             return ChoiceChip(
               label: Text('$rating'),
               selected: _rating == rating,
+              selectedColor: widget.accentColor?.withValues(alpha: 0.2),
+              side: _rating == rating && widget.accentColor != null
+                  ? BorderSide(color: widget.accentColor!)
+                  : null,
               onSelected: (_) => setState(() => _rating = rating),
             );
           }),
@@ -276,6 +277,10 @@ class _JournalEditFormState<
             return ChoiceChip(
               label: Text(ownership),
               selected: _ownership == ownership,
+              selectedColor: widget.accentColor?.withValues(alpha: 0.2),
+              side: _ownership == ownership && widget.accentColor != null
+                  ? BorderSide(color: widget.accentColor!)
+                  : null,
               onSelected: (_) => setState(() => _ownership = ownership),
             );
           }).toList(),
