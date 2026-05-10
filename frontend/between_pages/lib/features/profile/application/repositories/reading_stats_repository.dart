@@ -1,9 +1,9 @@
-// lib/repositories/reading_stats_repository.dart
-import 'package:between_pages/api/api_client.dart';
+// lib/features/profile/application/repositories/reading_stats_repository.dart
+import 'package:between_pages/core/api/api_client.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
-import 'package:between_pages/models/user/reading_goal_dto.dart';
-import 'package:between_pages/models/user/reading_streak_dto.dart';
-import 'package:between_pages/providers/auth/api_provider.dart';
+import 'package:between_pages/features/auth/application/providers/api_provider.dart';
+import 'package:between_pages/features/profile/domain/reading_goal_dto.dart';
+import 'package:between_pages/features/profile/domain/reading_streak_dto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

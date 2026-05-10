@@ -1,5 +1,5 @@
-import 'package:between_pages/models/user/reading_goal_dto.dart';
-import 'package:between_pages/repositories/reading_stats_repository.dart';
+import 'package:between_pages/features/profile/domain/reading_goal_dto.dart';
+import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final readingGoalProvider = FutureProvider.family<ReadingGoalDTO?, int>((ref, year) async {

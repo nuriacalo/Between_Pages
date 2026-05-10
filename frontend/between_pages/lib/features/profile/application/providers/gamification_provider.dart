@@ -1,5 +1,5 @@
-import 'package:between_pages/screens/library/gamification_stats_dto.dart';
-import 'package:between_pages/repositories/gamification_repository.dart';
+import 'package:between_pages/features/profile/domain/gamification_stats_dto.dart';
+import 'package:between_pages/features/profile/application/repositories/gamification_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GamificationNotifier extends AsyncNotifier<GamificationStatsDTO> {

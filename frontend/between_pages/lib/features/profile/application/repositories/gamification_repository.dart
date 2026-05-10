@@ -1,6 +1,6 @@
-import 'package:between_pages/api/api_client.dart';
-import 'package:between_pages/screens/library/gamification_stats_dto.dart';
-import 'package:between_pages/providers/auth/api_provider.dart';
+import 'package:between_pages/core/api/api_client.dart';
+import 'package:between_pages/features/auth/application/providers/api_provider.dart';
+import 'package:between_pages/features/profile/domain/gamification_stats_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GamificationRepository {

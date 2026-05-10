@@ -1,7 +1,7 @@
-import 'package:between_pages/controllers/auth_controller.dart';
+import 'package:between_pages/core/providers/locale_provider.dart';
+import 'package:between_pages/features/auth/application/controllers/auth_controller.dart';
+import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
-import 'package:between_pages/providers/core/locale_provider.dart';
-import 'package:between_pages/providers/user/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -124,7 +124,7 @@ class ProfilePage extends ConsumerWidget {
             subtitle: const Text('Ver y gestionar tus listas de lectura'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              context.go('/lists');
+            context.push('/lists');
             },
           ),
 
