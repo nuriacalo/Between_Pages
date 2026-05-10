@@ -1,22 +1,19 @@
-import 'package:between_pages/models/journal/book_journal_record_dto.dart';
-import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_record_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
-import 'package:between_pages/models/journal/fanfic_journal_record_dto.dart';
-import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
-import 'package:between_pages/models/journal/reading_session_record_dto.dart';
-import 'package:between_pages/providers/journal/book_journal_provider.dart';
-import 'package:between_pages/providers/journal/manga_journal_provider.dart';
-import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
-import 'package:between_pages/providers/journal/reading_timer_provider.dart';
-import 'package:between_pages/repositories/auth_repository.dart';
-import 'package:between_pages/repositories/book_journal_repository.dart';
-import 'package:between_pages/repositories/manga_journal_repository.dart';
-import 'package:between_pages/repositories/fanfic_journal_repository.dart';
-import 'package:between_pages/repositories/reading_session_repository.dart';
-import 'package:between_pages/providers/gamification_provider.dart';
+import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/journal/application/providers/reading_timer_provider.dart';
+import 'package:between_pages/features/journal/application/repositories/reading_session_repository.dart';
+import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/domain/reading_session_record_dto.dart';
+import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -52,7 +49,8 @@ class UniversalSessionPage extends ConsumerStatefulWidget {
   const UniversalSessionPage({super.key, required this.data});
 
   @override
-  ConsumerState<UniversalSessionPage> createState() => _UniversalSessionPageState();
+  ConsumerState<UniversalSessionPage> createState() =>
+      _UniversalSessionPageState();
 }
 
 class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
@@ -63,7 +61,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.data.itemId > 0) {
-        ref.read(readingTimerProvider.notifier).start(widget.data.itemId, widget.data.timerItemType);
+        ref
+            .read(readingTimerProvider.notifier)
+            .start(widget.data.itemId, widget.data.timerItemType);
       }
     });
   }
@@ -95,7 +95,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 24, right: 24, top: 24,
+            left: 24,
+            right: 24,
+            top: 24,
           ),
           child: SafeArea(
             child: Column(
@@ -103,15 +105,30 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: Container(width: 40, height: 4, decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  )),
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Text('¡Sesión finalizada!', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  '¡Sesión finalizada!',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
-                Text('Tiempo invertido: ${_formatTime(timerState.elapsedSeconds)}', style: TextStyle(color: widget.data.accentColor, fontWeight: FontWeight.bold)),
+                Text(
+                  'Tiempo invertido: ${_formatTime(timerState.elapsedSeconds)}',
+                  style: TextStyle(
+                    color: widget.data.accentColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: controller,
@@ -119,7 +136,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                   autofocus: true,
                   decoration: InputDecoration(
                     labelText: widget.data.progressPrompt,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
                     prefixIcon: const Icon(Icons.bookmark_added_outlined),
                   ),
@@ -135,13 +154,17 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                         await _saveProgress(val);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Por favor, introduce un número válido.')),
+                          const SnackBar(
+                            content: Text(
+                              'Por favor, introduce un número válido.',
+                            ),
+                          ),
                         );
                       }
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: widget.data.accentColor,
-                      padding: const EdgeInsets.symmetric(vertical: 14)
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Text('Guardar y salir'),
                   ),
@@ -185,17 +208,21 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
             endDate: journal.endDate,
             ownership: journal.ownership,
           );
-          await repo.saveOrUpdate(dto);
-          ref.invalidate(bookJournalProvider);
-          ref.invalidate(bookJournalEntryProvider(book.idBook));
+          await repo.saveRaw(dto.toJson());
+          ref.invalidate(journalProvider(JournalType.book));
+          ref.invalidate(journalEntryProvider((JournalType.book, book.idBook)));
 
           if (progressDelta > 0 || timeInvestedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(ReadingSessionRecordDTO(
-              userId: user.idUser,
-              bookId: book.idBook,
-              durationSeconds: timeInvestedSeconds,
-              pagesRead: progressDelta,
-            ));
+            ref
+                .read(readingSessionRepositoryProvider)
+                .saveSession(
+                  ReadingSessionRecordDTO(
+                    userId: user.idUser,
+                    bookId: book.idBook,
+                    durationSeconds: timeInvestedSeconds,
+                    pagesRead: progressDelta,
+                  ),
+                );
             ref.invalidate(gamificationProvider);
           }
           break;
@@ -207,7 +234,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           final dto = MangaJournalRecordDTO(
             userId: user.idUser,
             mangaId: manga?.idManga,
-            status: journal.status ?? 'READING',
+            status: journal.status,
             currentChapter: newProgress,
             rating: journal.rating,
             readingFormat: journal.readingFormat,
@@ -217,16 +244,23 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
             startDate: journal.startDate,
             endDate: journal.endDate,
           );
-          await repo.saveOrUpdate(dto);
-          ref.invalidate(mangaJournalProvider);
+          await repo.saveRaw(dto.toJson());
+          ref.invalidate(journalProvider(JournalType.manga));
+          ref.invalidate(
+            journalEntryProvider((JournalType.manga, manga?.idManga ?? 0)),
+          );
 
           if (progressDelta > 0 || timeInvestedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(ReadingSessionRecordDTO(
-              userId: user.idUser,
-              mangaId: manga?.idManga,
-              durationSeconds: timeInvestedSeconds,
-              pagesRead: progressDelta,
-            ));
+            ref
+                .read(readingSessionRepositoryProvider)
+                .saveSession(
+                  ReadingSessionRecordDTO(
+                    userId: user.idUser,
+                    mangaId: manga?.idManga,
+                    durationSeconds: timeInvestedSeconds,
+                    pagesRead: progressDelta,
+                  ),
+                );
             ref.invalidate(gamificationProvider);
           }
           break;
@@ -239,7 +273,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
             userId: user.idUser,
             fanfictionId: fanfic.idFanfic,
             ao3Id: fanfic.ao3Id,
-            status: journal.status ?? 'READING',
+            status: journal.status,
             currentChapter: newProgress,
             rating: journal.rating,
             tearDrops: journal.tearDrops,
@@ -248,16 +282,23 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
             startDate: journal.startDate,
             endDate: journal.endDate,
           );
-          await repo.saveOrUpdate(dto);
-          ref.invalidate(fanficJournalProvider);
+          await repo.saveRaw(dto.toJson());
+          ref.invalidate(journalProvider(JournalType.fanfic));
+          ref.invalidate(
+            journalEntryProvider((JournalType.fanfic, fanfic.idFanfic ?? 0)),
+          );
 
           if (progressDelta > 0 || timeInvestedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(ReadingSessionRecordDTO(
-              userId: user.idUser,
-              fanficId: fanfic.idFanfic,
-              durationSeconds: timeInvestedSeconds,
-              pagesRead: progressDelta,
-            ));
+            ref
+                .read(readingSessionRepositoryProvider)
+                .saveSession(
+                  ReadingSessionRecordDTO(
+                    userId: user.idUser,
+                    fanficId: fanfic.idFanfic,
+                    durationSeconds: timeInvestedSeconds,
+                    pagesRead: progressDelta,
+                  ),
+                );
             ref.invalidate(gamificationProvider);
           }
           break;
@@ -265,9 +306,11 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
 
       ref.read(readingTimerProvider.notifier).reset();
       if (mounted) context.pop();
-      
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -277,9 +320,11 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
   Widget build(BuildContext context) {
     final timerState = ref.watch(readingTimerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final accent = widget.data.accentColor;
-    final bgContainer = isDark ? const Color(0xFF1E1E1E) : accent.withOpacity(0.05);
+    final bgContainer = isDark
+        ? const Color(0xFF1E1E1E)
+        : accent.withValues(alpha: 0.05);
 
     return Scaffold(
       backgroundColor: bgContainer,
@@ -294,8 +339,14 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           if (_isSaving)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-            )
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
         ],
       ),
       body: SafeArea(
@@ -307,21 +358,34 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                 Container(
                   decoration: BoxDecoration(
                     boxShadow: [
-                      BoxShadow(color: accent.withOpacity(0.4), blurRadius: 30, offset: const Offset(0, 10))
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.4),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
-                      width: 140, height: 210,
-                      child: widget.data.coverUrl != null && widget.data.coverUrl!.isNotEmpty
-                          ? CachedNetworkImage(imageUrl: widget.data.coverUrl!, fit: BoxFit.cover)
-                          : Container(color: Colors.grey, child: const Icon(Icons.menu_book, size: 40)),
+                      width: 140,
+                      height: 210,
+                      child:
+                          widget.data.coverUrl != null &&
+                              widget.data.coverUrl!.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: widget.data.coverUrl!,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              color: Colors.grey,
+                              child: const Icon(Icons.menu_book, size: 40),
+                            ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 30),
-                
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
@@ -329,14 +393,20 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
 
                 Text(
                   _formatTime(timerState.elapsedSeconds),
-                  style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w300, fontFeatures: [FontFeature.tabularFigures()]),
+                  style: const TextStyle(
+                    fontSize: 72,
+                    fontWeight: FontWeight.w300,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
                 const SizedBox(height: 40),
 
@@ -352,36 +422,76 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                         if (timerState.isRunning) {
                           ref.read(readingTimerProvider.notifier).pause();
                         } else {
-                          ref.read(readingTimerProvider.notifier).start(widget.data.itemId, widget.data.timerItemType);
+                          ref
+                              .read(readingTimerProvider.notifier)
+                              .start(
+                                widget.data.itemId,
+                                widget.data.timerItemType,
+                              );
                         }
                       },
-                      child: Icon(timerState.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 40),
+                      child: Icon(
+                        timerState.isRunning
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(width: 24),
                     FloatingActionButton.large(
                       heroTag: 'stop',
-                      backgroundColor: timerState.elapsedSeconds > 0 
-                          ? Theme.of(context).colorScheme.errorContainer 
+                      backgroundColor: timerState.elapsedSeconds > 0
+                          ? Theme.of(context).colorScheme.errorContainer
                           : Theme.of(context).disabledColor,
-                      foregroundColor: timerState.elapsedSeconds > 0 
-                          ? Theme.of(context).colorScheme.onErrorContainer 
+                      foregroundColor: timerState.elapsedSeconds > 0
+                          ? Theme.of(context).colorScheme.onErrorContainer
                           : Colors.white,
                       elevation: 0,
-                      onPressed: timerState.elapsedSeconds > 0 ? _finishSession : null,
+                      onPressed: timerState.elapsedSeconds > 0
+                          ? _finishSession
+                          : null,
                       child: const Icon(Icons.stop_rounded, size: 40),
+                    ),
+                    const SizedBox(width: 24),
+                    FloatingActionButton(
+                      heroTag: 'brain',
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.secondaryContainer,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSecondaryContainer,
+                      elevation: 0,
+                      onPressed: () =>
+                          _showAddBrainEntryFromSession(context, ref),
+                      child: const Icon(Icons.psychology_outlined),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Text(
                   'Desliza hacia abajo para ocultar, el temporizador seguirá activo.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showAddBrainEntryFromSession(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddEntrySheet(
+        ref: ref,
+        bookId: widget.data.itemId,
       ),
     );
   }

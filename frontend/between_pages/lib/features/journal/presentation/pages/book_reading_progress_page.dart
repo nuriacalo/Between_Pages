@@ -1,14 +1,15 @@
-import 'package:between_pages/models/catalog/book_response_dto.dart';
-import 'package:between_pages/models/journal/book_journal_record_dto.dart';
-import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/providers/journal/book_journal_provider.dart';
-import 'package:between_pages/repositories/auth_repository.dart';
-import 'package:between_pages/providers/journal/reading_stats_provider.dart';
-import 'package:between_pages/repositories/book_journal_repository.dart';
-import 'package:between_pages/screens/journal/book_edit_page.dart';
-import 'package:between_pages/repositories/book_search_repository.dart';
-import 'package:between_pages/screens/journal/book_journal_edit_page.dart';
-import 'package:between_pages/repositories/journal_status_helper.dart';
+import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
+import 'package:between_pages/features/journal/application/providers/reading_stats_provider.dart';
+import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
+import 'package:between_pages/features/catalog/presentation/pages/book_edit_page.dart';
+import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
+import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
+import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
+import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,21 +54,10 @@ class _BookReadingProgressPageState
       final user = await auth.getUserProfile();
 
       final dto = BookJournalRecordDTO(
-        id: _journal.id,
         userId: user.idUser,
         bookId: _book.idBook > 0 ? _book.idBook : null,
-        googleBooksId: (_book.googleBooksId != null && _book.googleBooksId!.isNotEmpty)
-            ? _book.googleBooksId
-            : null,
-        title: _book.title,
-        author: _book.author,
-        isbn: _book.isbn,
-        publisher: _book.publisher,
-        description: _book.description,
-        coverUrl: _book.coverUrl,
-        genre: _book.genre,
-        publicationYear: _book.publishYear,
-        status: JournalStatusHelper.mapStatusToDb(_journal.status ?? 'READING'),
+        googleBooksId: _book.googleBooksId.isNotEmpty ? _book.googleBooksId : null,
+        status: JournalStatusHelper.mapStatusToDb(_journal.status),
         currentPage: newPage,
         rating: _journal.rating,
         tearDrops: _journal.tearDrops,
@@ -81,11 +71,11 @@ class _BookReadingProgressPageState
         ownership: _journal.ownership,
       );
 
-      await repo.saveOrUpdate(dto);
+      await repo.saveRaw(dto.toJson());
 
       // Refrescar providers en background
-      ref.invalidate(bookJournalProvider);
-      ref.invalidate(bookJournalEntryProvider(_book.idBook));
+      ref.invalidate(journalProvider(JournalType.book));
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -144,14 +134,14 @@ class _BookReadingProgressPageState
         publisher: _book.publisher,
         publishYear: _book.publishYear,
         description: _book.description,
-        genre: _book.genre,
+        genres: _book.genres,
         bookType: _book.bookType,
       );
 
       await repo.saveOrUpdateBook(bookToSave);
       
-      ref.invalidate(bookJournalProvider);
-      ref.invalidate(bookJournalEntryProvider(_book.idBook));
+      ref.invalidate(journalProvider(JournalType.book));
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -302,9 +292,7 @@ class _BookReadingProgressPageState
                     keyboardType: TextInputType.number,
                     autofocus: true,
                     decoration: InputDecoration(
-                      labelText: total != null
-                          ? 'Página actual (de $total)'
-                          : 'Página actual',
+                      labelText: 'Página actual (de $total)',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -353,7 +341,7 @@ class _BookReadingProgressPageState
   void _goToEditJournal() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => BookJournalEditPage(journal: _journal)),
+      MaterialPageRoute(builder: (_) => JournalItemEditPage(journal: _journal, type: JournalType.book)),
     );
   }
 
@@ -368,8 +356,8 @@ class _BookReadingProgressPageState
     // Si el libro fue editado y guardado, invalidamos el provider para
     // que la UI se refresque con los nuevos datos.
     if (result != null && mounted) {
-      ref.invalidate(bookJournalEntryProvider(_book.idBook));
-      ref.invalidate(bookJournalProvider);
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
+      ref.invalidate(journalProvider(JournalType.book));
     }
   }
 
@@ -380,26 +368,23 @@ class _BookReadingProgressPageState
     final accent = const Color(0xFFA87C80);
 
     // Escuchar el provider para actualizaciones en tiempo real
-    final journalAsync = ref.watch(bookJournalEntryProvider(_book.idBook));
+    final updatedJournal = ref.watch(journalEntryProvider((JournalType.book, _book.idBook)));
+    final journal = (updatedJournal as BookJournalResponseDto?) ?? _journal;
+    final book = journal.book;
 
-    return journalAsync.when(
-      data: (updatedJournal) {
-        // Usar el journal actualizado del provider si está disponible
-        final journal = updatedJournal ?? _journal;
-        final book = journal.book;
+    // Prioriza el estado local para una actualización visual inmediata (optimistic UI),
+    // luego el valor del provider.
+    final currentPage = _currentPageLocal ?? journal.currentPage ?? 0;
+    final totalPages = _totalPagesLocal ?? book.pageCount;
+    final progress = ((totalPages ?? 0) > 0)
+        ? (currentPage / totalPages!).clamp(0.0, 1.0) : 0.0;
 
-        // Prioriza el estado local para una actualización visual inmediata (optimistic UI),
-        // luego el valor del provider.
-        final currentPage = _currentPageLocal ?? journal.currentPage ?? 0;
-        final totalPages = _totalPagesLocal ?? book.pageCount;
-        final progress = (totalPages != null && totalPages > 0)
-            ? (currentPage / totalPages).clamp(0.0, 1.0) : 0.0;
-
-        return Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              // ─── AppBar colapsable con portada ────────────────────────────
-              SliverAppBar(
+   return DefaultTabController(
+  length: 3,
+  child: Scaffold(
+    body: NestedScrollView(
+      headerSliverBuilder: (context, innerScrolled) => [
+        SliverAppBar(
                 expandedHeight: 320,
                 pinned: true,
                 backgroundColor: accent,
@@ -424,99 +409,95 @@ class _BookReadingProgressPageState
                   ),
                   background: _buildHeader(accent, book.coverUrl),
                 ),
+                bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(text: 'Progreso'),
+              Tab(text: 'Segundo Cerebro'),
+              Tab(text: 'Editar'),
+            ],
+          ),
+        ),
+      ],
+      body: TabBarView(
+        children: [
+          _buildProgressTab(accent, currentPage, totalPages, progress, journal, colorScheme, textTheme),
+          SecondBrainTab(bookId: _book.idBook),
+          JournalItemEditPage(journal: journal, type: JournalType.book),
+        ],
+      ),
+    ),
+  ),
+);
+  }
+
+  Widget _buildProgressTab(Color accent, int currentPage, int? totalPages, double progress, BookJournalResponseDto journal, ColorScheme colorScheme, TextTheme textTheme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildProgressIndicator(accent, currentPage, totalPages, progress),
+          const SizedBox(height: 24),
+          _buildStatsGrid(colorScheme, textTheme, journal, currentPage, totalPages),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _showUpdatePageSheet,
+              icon: const Icon(Icons.edit_note),
+              label: const Text('Actualizar página'),
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-
-              // ─── Contenido principal ──────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Indicador circular de progreso
-                      _buildProgressIndicator(accent, currentPage, totalPages, progress),
-                      const SizedBox(height: 24),
-
-                      // Stats grid
-                      _buildStatsGrid(colorScheme, textTheme, journal, currentPage, totalPages),
-                  const SizedBox(height: 32),
-
-                  // Botón actualizar progreso
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _showUpdatePageSheet,
-                      icon: const Icon(Icons.edit_note),
-                      label: const Text('Actualizar página'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: accent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Botón Iniciar cronómetro de lectura (Módulo 1)
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        context.push('/journal/book/session', extra: _journal);
-                      },
-                      icon: const Icon(Icons.timer_outlined),
-                      label: const Text('Iniciar sesión de lectura'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.secondary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onSecondary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Botón editar journal completo
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _goToEditJournal,
-                      icon: const Icon(Icons.settings),
-                      label: const Text('Editar journal completo'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: accent,
-                        side: BorderSide(color: accent.withValues(alpha: 0.4)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () {
+                context.push('/journal/book/session', extra: _journal);
+              },
+              icon: const Icon(Icons.timer_outlined),
+              label: const Text('Iniciar sesión de lectura'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _goToEditJournal,
+              icon: const Icon(Icons.settings),
+              label: const Text('Editar journal completo'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: accent,
+                side: BorderSide(color: accent.withValues(alpha: 0.4)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
-        },
-        loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-        error: (error, stack) => Scaffold(
-          body: Center(child: Text('Error al cargar progreso')),
-        ),
-      );
   }
 
   Widget _buildHeader(Color accent, String? coverUrl) {
@@ -626,7 +607,7 @@ class _BookReadingProgressPageState
                             color: accent,
                           ),
                     ),
-                    if (total != null)
+                    if (total != null && total > 0)
                       Text(
                         '$currentPage / $total',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
