@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:between_pages/api/auth_token_storage.dart';
+import 'package:between_pages/core/api/auth_token_storage.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
