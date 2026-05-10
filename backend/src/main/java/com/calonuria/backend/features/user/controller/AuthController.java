@@ -1,8 +1,8 @@
-package com.calonuria.backend.controller.auth;
+package com.calonuria.backend.features.user.controller;
 
-import com.calonuria.backend.dto.auth.LoginDTO;
-import com.calonuria.backend.dto.auth.RefreshTokenRequestDTO;
-import com.calonuria.backend.service.auth.AuthService;
+import com.calonuria.backend.features.user.dto.auth.LoginDTO;
+import com.calonuria.backend.features.user.dto.auth.RefreshTokenRequestDTO;
+import com.calonuria.backend.features.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

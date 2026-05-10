@@ -1,4 +1,4 @@
-package com.calonuria.backend.security;
+package com.calonuria.backend.shared.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

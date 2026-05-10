@@ -1,6 +1,5 @@
-package com.calonuria.backend.security;
+package com.calonuria.backend.shared.security;
 
-import com.calonuria.backend.service.user.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

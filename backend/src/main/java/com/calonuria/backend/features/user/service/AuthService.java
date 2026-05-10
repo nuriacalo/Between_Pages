@@ -1,7 +1,7 @@
-package com.calonuria.backend.service.auth;
+package com.calonuria.backend.features.user.service;
 
-import com.calonuria.backend.dto.auth.AuthResponseDTO;
-import com.calonuria.backend.dto.auth.LoginDTO;
+import com.calonuria.backend.features.user.dto.auth.AuthResponseDTO;
+import com.calonuria.backend.features.user.dto.auth.LoginDTO;
 import com.calonuria.backend.features.user.dto.UserResponseDTO;
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.UserRepository;

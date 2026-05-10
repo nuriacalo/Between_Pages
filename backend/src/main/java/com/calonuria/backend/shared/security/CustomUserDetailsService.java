@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.user.service;
+package com.calonuria.backend.shared.security;
 
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.UserRepository;
