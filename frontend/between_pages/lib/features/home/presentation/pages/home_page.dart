@@ -1,11 +1,11 @@
-import 'package:between_pages/screens/library/feed_page.dart';
+import 'package:between_pages/features/catalog/presentation/pages/catalog_page.dart';
+import 'package:between_pages/features/journal/presentation/pages/journal_page.dart';
+import 'package:between_pages/features/library/presentation/pages/feed_page.dart';
+import 'package:between_pages/features/profile/presentation/pages/profile_page.dart';
+import 'package:between_pages/features/search/presentation/pages/search_page.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
-import 'package:between_pages/screens/journal/journal_page.dart';
-import 'package:between_pages/screens/search/search_page.dart';
-import 'package:between_pages/screens/catalog/catalog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:between_pages/screens/profile/profile_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
