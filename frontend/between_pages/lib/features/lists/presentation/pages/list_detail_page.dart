@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:between_pages/models/lists/list_response_dto.dart';
+import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 
 class ListDetailPage extends ConsumerWidget {
   final ListResponseDTO list;
@@ -18,7 +18,11 @@ class ListDetailPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () {}, // TODO: Edit list
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Función de editar lista próximamente')),
+              );
+            }, // TODO: Edit list
           ),
         ],
       ),
@@ -38,16 +42,29 @@ class ListDetailPage extends ConsumerWidget {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: 0, // MVP: lista vacía hasta add items impl
-              itemBuilder: (context, index) => const Card(
-                child: ListTile(title: Text('Item de lista (placeholder)')),
+              itemCount: 1, // MVP: Mostrar texto explicativo
+              itemBuilder: (context, index) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 32.0),
+                  child: Text(
+                    'Tu lista está vacía.\nAñade contenido desde el catálogo.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {}, // TODO: Add item to list
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Añadir contenido a la lista próximamente')),
+          );
+        }, // TODO: Add item to list
         child: const Icon(Icons.add),
       ),
     );

@@ -1,6 +1,6 @@
-import 'package:between_pages/models/catalog/book_response_dto.dart';
-import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
-import 'package:between_pages/models/catalog/manga_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 
 class ListItemDTO {
   final int id;

@@ -1,4 +1,4 @@
-import 'package:between_pages/models/lists/list_item_dto.dart';
+import 'package:between_pages/features/lists/domain/list_item_dto.dart';
 
 class CustomListDTO {
   final int id;

@@ -1,7 +1,11 @@
-import 'package:between_pages/providers/lists/list_provider.dart';
+import 'package:between_pages/features/lists/application/providers/list_provider.dart';
+import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
+import 'package:between_pages/features/lists/domain/reading_list_request_dto.dart';
+import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'list_detail_page.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 class ReadingListsPage extends ConsumerStatefulWidget {
   const ReadingListsPage({super.key});
@@ -14,25 +18,30 @@ class _ReadingListsPageState extends ConsumerState<ReadingListsPage> {
   final _formKey = GlobalKey<FormState>();
 
   void _showCreateListDialog(BuildContext context, WidgetRef ref) {
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+    bool isSaving = false;
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Crear nueva lista'),
+        title: Text(l10n.createNewListButton),
         content: StatefulBuilder(
-          builder: (context, setState) => Form(
+          builder: (context, setDialogState) => Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Nombre'),
-                  validator: (value) => value?.isEmpty ?? true ? 'Requerido' : null,
-                  onSaved: (value) {},
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: l10n.listNameLabel),
+                  validator: (value) => value?.isEmpty ?? true ? l10n.validationRequired : null,
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Descripción (opcional)'),
+                  controller: descController,
+                  decoration: InputDecoration(labelText: l10n.listDescLabel),
                   maxLines: 2,
-                  onSaved: (value) {},
                 ),
               ],
             ),
@@ -40,23 +49,48 @@ class _ReadingListsPageState extends ConsumerState<ReadingListsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            onPressed: isSaving ? null : () => Navigator.pop(context),
+            child: Text(l10n.cancelButton),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                _formKey.currentState!.save();
-                Navigator.pop(context);
-                // Placeholder - full impl with TextEditingController needed
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lista creada (demo)')),
-                );
-                ref.invalidate(listProvider);
-              }
-            },
-            child: const Text('Crear'),
-
+          StatefulBuilder(
+            builder: (context, setBtnState) => ElevatedButton(
+              onPressed: isSaving ? null : () async {
+                if (_formKey.currentState!.validate()) {
+                  setBtnState(() => isSaving = true);
+                  try {
+                    final user = await ref.read(userProfileProvider.future);
+                    final repo = ref.read(readingListRepositoryProvider);
+                    
+                    await repo.createList(
+                      user.idUser,
+                      ReadingListRequestDTO(
+                        name: nameController.text.trim(),
+                        description: descController.text.trim(),
+                      ),
+                    );
+                    
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.listCreatedSuccess)),
+                      );
+                      ref.invalidate(listProvider);
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${l10n.listCreateError}: $e')),
+                      );
+                    }
+                  } finally {
+                    if (context.mounted) setBtnState(() => isSaving = false);
+                  }
+                }
+              },
+              child: isSaving 
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(l10n.createButton),
+            ),
           ),
         ],
       ),
@@ -66,15 +100,15 @@ class _ReadingListsPageState extends ConsumerState<ReadingListsPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     final textTheme = Theme.of(context).textTheme;
-final listsAsync = ref.watch(listProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final listsAsync = ref.watch(listProvider);
 
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Mis Listas',
+          l10n.myListsTitle,
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         backgroundColor: colorScheme.surface,
@@ -93,14 +127,14 @@ final listsAsync = ref.watch(listProvider);
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No tienes listas creadas',
+                    l10n.emptyListsTitle,
                     style: textTheme.titleMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Crea tu primera lista de lectura',
+                    l10n.emptyListsSubtitle,
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -109,7 +143,7 @@ final listsAsync = ref.watch(listProvider);
                   ElevatedButton.icon(
                     onPressed: () => _showCreateListDialog(context, ref),
                     icon: const Icon(Icons.add),
-                    label: const Text('Crear lista'),
+                    label: Text(l10n.createListButton),
                   ),
                 ],
               ),
@@ -127,7 +161,7 @@ final listsAsync = ref.watch(listProvider);
                   child: OutlinedButton.icon(
                     onPressed: () => _showCreateListDialog(context, ref),
                     icon: const Icon(Icons.add),
-                    label: const Text('Crear nueva lista'),
+                    label: Text(l10n.createNewListButton),
                   ),
                 );
               }
@@ -157,7 +191,7 @@ final listsAsync = ref.watch(listProvider);
                           ),
                         )
                       : Text(
-                          'Sin descripción',
+                          l10n.listNoDescription,
                           style: textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -187,7 +221,7 @@ final listsAsync = ref.watch(listProvider);
               ),
               const SizedBox(height: 16),
               Text(
-                'Error al cargar listas',
+                l10n.errorLoadingLists,
                 style: textTheme.titleMedium?.copyWith(
                   color: colorScheme.error,
                 ),
@@ -203,7 +237,7 @@ final listsAsync = ref.watch(listProvider);
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(listProvider),
-                child: const Text('Reintentar'),
+                child: Text(l10n.retryButton),
               ),
             ],
           ),
