@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 /// Etiqueta visual para indicar si un libro/manga es Físico, Digital o Prestado
 class OwnershipBadge extends StatelessWidget {
@@ -8,6 +9,7 @@ class OwnershipBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Si no hay propiedad o es NONE, no mostramos nada
     if (ownership == null || ownership == 'NONE') {
       return const SizedBox.shrink();
@@ -21,17 +23,17 @@ class OwnershipBadge extends StatelessWidget {
       case 'PHYSICAL':
         icon = Icons.book;
         color = Colors.brown.shade700;
-        label = 'Físico';
+        label = l10n.physical;
         break;
       case 'DIGITAL':
         icon = Icons.tablet_mac;
         color = Colors.blue.shade700;
-        label = 'Digital';
+        label = l10n.digital;
         break;
       case 'BORROWED':
         icon = Icons.people_alt;
         color = Colors.orange.shade700;
-        label = 'Prestado';
+        label = l10n.borrowed;
         break;
       default:
         return const SizedBox.shrink();

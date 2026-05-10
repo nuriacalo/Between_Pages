@@ -1,39 +1,41 @@
-import 'package:between_pages/models/journal/book_journal_response_dto.dart';
-import 'package:between_pages/models/journal/fanfic_journal_response_dto.dart';
-import 'package:between_pages/models/journal/manga_journal_response_dto.dart';
-import 'package:between_pages/providers/journal/book_journal_provider.dart';
-import 'package:between_pages/providers/journal/fanfic_journal_provider.dart';
-import 'package:between_pages/providers/journal/manga_journal_provider.dart';
-import 'package:between_pages/screens/detail/ownership_badge.dart';
-import 'package:between_pages/providers/gamification_provider.dart';
-import 'package:between_pages/widgets/rating/reading_goal_card.dart';
-import 'package:between_pages/widgets/rating/reading_streak_card.dart';
+import 'package:between_pages/features/catalog/presentation/widgets/ownership_badge.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/utils/journal_status_extensions.dart';
+import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
+import 'package:between_pages/features/profile/presentation/widgets/reading_goal_card.dart';
+import 'package:between_pages/features/profile/presentation/widgets/reading_streak_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:between_pages/repositories/journal_status_extensions.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 
 class FeedPage extends ConsumerWidget {
   const FeedPage({super.key});
 
-  String _greeting() {
+  String _greeting(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
-    if (hour < 6) return '🌙 Buenas noches';
-    if (hour < 12) return '☀️ Buenos días';
-    if (hour < 19) return '📖 Buenas tardes';
-    return '🌙 Buenas noches';
+    if (hour < 6) return l10n.greetingNight;
+    if (hour < 12) return l10n.greetingMorning;
+    if (hour < 19) return l10n.greetingAfternoon;
+    return l10n.greetingNight;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final booksAsync = ref.watch(bookJournalProvider);
-    final mangasAsync = ref.watch(mangaJournalProvider);
-    final fanficsAsync = ref.watch(fanficJournalProvider);
+    final booksAsync = ref.watch(journalProvider(JournalType.book));
+    final mangasAsync = ref.watch(journalProvider(JournalType.manga));
+    final fanficsAsync = ref.watch(journalProvider(JournalType.fanfic));
 
     final gamificationAsync = ref.watch(gamificationProvider);
     final gamification = gamificationAsync.valueOrNull;
@@ -43,21 +45,21 @@ class FeedPage extends ConsumerWidget {
 
     // Libros terminados para la meta anual
     final finishedBooks = booksAsync.whenOrNull(
-          data: (books) => books.where((b) => b.status == 'FINISHED').length,
+          data: (books) => books.where((b) => b.status.isFinished).length,
         ) ??
         0;
 
     // Conteo total de items en lectura para el badge del AppBar
     final readingBooksCount = booksAsync.whenOrNull(
-          data: (books) => books.where((b) => b.status == 'READING').length,
+          data: (books) => books.where((b) => b.status.isReading).length,
         ) ??
         0;
     final readingMangasCount = mangasAsync.whenOrNull(
-          data: (ms) => ms.where((m) => m.status == 'READING').length,
+          data: (ms) => ms.where((m) => m.status.isReading).length,
         ) ??
         0;
     final readingFanficsCount = fanficsAsync.whenOrNull(
-          data: (fs) => fs.where((f) => f.status == 'READING').length,
+          data: (fs) => fs.where((f) => f.status.isReading).length,
         ) ??
         0;
 
@@ -68,11 +70,15 @@ class FeedPage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           // Refresca todos los datos al deslizar hacia abajo
-          ref.invalidate(bookJournalProvider);
-          ref.invalidate(mangaJournalProvider);
-          ref.invalidate(fanficJournalProvider);
-          ref.invalidate(gamificationProvider);
-          await Future.delayed(const Duration(milliseconds: 500));
+          final p1 = ref.refresh(journalProvider(JournalType.book).future);
+          final p2 = ref.refresh(journalProvider(JournalType.manga).future);
+          final p3 = ref.refresh(journalProvider(JournalType.fanfic).future);
+          final p4 = ref.refresh(gamificationProvider.future);
+
+          // Esperar a que todas las peticiones terminen sincronizadamente
+          await Future.wait<dynamic>([p1, p2, p3, p4]).catchError((_) {
+            return []; // Evitar crasheo visual del refresh si alguno falla
+          });
         },
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(), // Necesario para que funcione el RefreshIndicator
@@ -86,7 +92,7 @@ class FeedPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _greeting(),
+                  _greeting(l10n),
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -120,7 +126,7 @@ class FeedPage extends ConsumerWidget {
                               size: 14, color: Color(0xFFA87C80)),
                           const SizedBox(width: 4),
                           Text(
-                            'Leyendo $totalReading',
+                        '${l10n.statusReading} $totalReading',
                             style: textTheme.labelSmall?.copyWith(
                               color: const Color(0xFFA87C80),
                               fontWeight: FontWeight.bold,
@@ -181,7 +187,7 @@ class FeedPage extends ConsumerWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'En progreso',
+                  l10n.inProgressTitle,
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -197,74 +203,89 @@ class FeedPage extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    _ProgressCard<BookJournalResponseDto>(
-                      title: 'Libros',
+                    _ProgressCard<BaseJournalResponseDTO>(
+                  title: l10n.tabBooks,
                       icon: Icons.book_rounded,
                       color: const Color(0xFF7F8C95),
                       asyncValue: booksAsync,
+                  emptyText: l10n.nothingReading,
                       onTap: (item) async {
-                        final route = item.status.isReading
+                        final journal = item as BookJournalResponseDto;
+                        final route = journal.status.isReading
                             ? '/journal/book/progress'
                             : '/journal/book/edit';
                         // Esperamos a que vuelvas de la pantalla de progreso
-                        await context.push(route, extra: item);
+                        await context.push(route, extra: journal);
                         // Justo al volver, forzamos que se recargue con los datos nuevos
-                        ref.invalidate(bookJournalProvider);
+                        ref.invalidate(journalProvider(JournalType.book));
                         ref.invalidate(gamificationProvider);
                       },
-                      getCoverUrl: (item) => item.book.coverUrl,
-                    getTitle: (item) => item.book.title,
-                    getOwnership: (item) => item.ownership,
+                      getCoverUrl: (item) => (item as BookJournalResponseDto).book.coverUrl,
+                    getTitle: (item) => (item as BookJournalResponseDto).book.title,
+                    getOwnership: (item) => (item as BookJournalResponseDto).ownership,
                     getProgress: (item) {
-                      final pages = item.book.pageCount ?? 1;
-                      final cur = item.currentPage ?? 0;
+                      final journal = item as BookJournalResponseDto;
+                      final pages = journal.book.pageCount ?? 1;
+                      final cur = journal.currentPage ?? 0;
                       return (cur / (pages > 0 ? pages : 1)).clamp(0.0, 1.0);
                     },
-                    getProgressText: (item) => 'Pág. ${item.currentPage ?? 0}',
+                    getProgressText: (item) => 'Pág. ${(item as BookJournalResponseDto).currentPage ?? 0}',
                   ),
                   const SizedBox(height: 12),
-                  _ProgressCard<MangaJournalResponseDTO>(
-                    title: 'Manga',
+                  _ProgressCard<BaseJournalResponseDTO>(
+                  title: l10n.tabMangas,
                     icon: Icons.menu_book_rounded,
                     color: const Color(0xFFE8A87C),
                     asyncValue: mangasAsync,
+                  emptyText: l10n.nothingReading,
                     onTap: (item) async {
-                        await context.push('/journal/manga/edit', extra: item);
-                        ref.invalidate(mangaJournalProvider);
+                        final journal = item as MangaJournalResponseDTO;
+                        final route = journal.status.isReading
+                            ? '/journal/manga/session'
+                            : '/journal/manga/edit';
+                        await context.push(route, extra: journal);
+                        ref.invalidate(journalProvider(JournalType.manga));
                         ref.invalidate(gamificationProvider);
                     },
-                    getCoverUrl: (item) => item.manga?.coverUrl,
-                    getTitle: (item) => item.manga?.title ?? 'Sin título',
-                    getOwnership: (item) => item.ownership,
+                    getCoverUrl: (item) => (item as MangaJournalResponseDTO).manga?.coverUrl,
+                    getTitle: (item) => (item as MangaJournalResponseDTO).manga?.title ?? 'Sin título',
+                    getOwnership: (item) => (item as MangaJournalResponseDTO).ownership,
                     getProgress: (item) {
-                      final chaps = item.manga?.totalChapters ?? 1;
-                      final cur = item.currentChapter ?? 0;
+                      final journal = item as MangaJournalResponseDTO;
+                      final chaps = journal.manga?.totalChapters ?? 1;
+                      final cur = journal.currentChapter ?? 0;
                       return (cur / (chaps > 0 ? chaps : 1)).clamp(0.0, 1.0);
                     },
                     getProgressText: (item) =>
-                        'Cap. ${item.currentChapter ?? 0}',
+                        'Cap. ${(item as MangaJournalResponseDTO).currentChapter ?? 0}',
                   ),
                   const SizedBox(height: 12),
-                  _ProgressCard<FanficJournalResponseDTO>(
-                    title: 'Fanfics',
+                  _ProgressCard<BaseJournalResponseDTO>(
+                  title: l10n.tabFanfics,
                     icon: Icons.favorite_rounded,
                     color: const Color(0xFFD4A0A4),
                     asyncValue: fanficsAsync,
+                  emptyText: l10n.nothingReading,
                     onTap: (item) async {
-                        await context.push('/journal/fanfic/edit', extra: item);
-                        ref.invalidate(fanficJournalProvider);
+                        final journal = item as FanficJournalResponseDTO;
+                        final route = journal.status.isReading
+                            ? '/journal/fanfic/session'
+                            : '/journal/fanfic/edit';
+                        await context.push(route, extra: journal);
+                        ref.invalidate(journalProvider(JournalType.fanfic));
                         ref.invalidate(gamificationProvider);
                     },
-                    getCoverUrl: (item) => item.fanfic.coverUrl,
-                    getTitle: (item) => item.fanfic.title ?? 'Sin título',
+                    getCoverUrl: (item) => (item as FanficJournalResponseDTO).fanfic.coverUrl,
+                    getTitle: (item) => (item as FanficJournalResponseDTO).fanfic.title ?? 'Sin título',
                     getOwnership: (_) => null,
                     getProgress: (item) {
-                      final chaps = item.fanfic.totalChapters ?? 1;
-                      final cur = item.currentChapter ?? 0;
+                      final journal = item as FanficJournalResponseDTO;
+                      final chaps = journal.fanfic.totalChapters ?? 1;
+                      final cur = journal.currentChapter ?? 0;
                       return (cur / (chaps > 0 ? chaps : 1)).clamp(0.0, 1.0);
                     },
                     getProgressText: (item) =>
-                        'Cap. ${item.currentChapter ?? 0}',
+                        'Cap. ${(item as FanficJournalResponseDTO).currentChapter ?? 0}',
                   ),
                 ],
               ),
@@ -292,6 +313,7 @@ class _ProgressCard<T> extends StatelessWidget {
   final String? Function(T)? getOwnership;
   final double Function(T) getProgress;
   final String Function(T) getProgressText;
+  final String emptyText;
 
   const _ProgressCard({
     required this.title,
@@ -303,6 +325,7 @@ class _ProgressCard<T> extends StatelessWidget {
     required this.getTitle,
     required this.getProgress,
     required this.getProgressText,
+    required this.emptyText,
     this.getOwnership,
   });
 
@@ -355,17 +378,17 @@ class _ProgressCard<T> extends StatelessWidget {
               data: (items) {
                 final reading = items.where((item) {
                   if (item is BookJournalResponseDto) {
-                    return item.status == 'READING';
+                    return item.status.isReading;
                   } else if (item is MangaJournalResponseDTO) {
-                    return item.status == 'READING';
+                    return item.status.isReading;
                   } else if (item is FanficJournalResponseDTO) {
-                    return item.status == 'READING';
+                    return item.status.isReading;
                   }
                   return true;
                 }).toList();
 
                 if (reading.isEmpty) {
-                  return _EmptyState(icon: icon, color: color);
+                return _EmptyState(icon: icon, color: color, message: emptyText);
                 }
 
                 return ListView.builder(
@@ -495,8 +518,9 @@ class _ProgressCard<T> extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   final IconData icon;
   final Color color;
+  final String message;
 
-  const _EmptyState({required this.icon, required this.color});
+  const _EmptyState({required this.icon, required this.color, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -507,7 +531,7 @@ class _EmptyState extends StatelessWidget {
           Icon(icon, size: 28, color: color.withValues(alpha: 0.3)),
           const SizedBox(height: 6),
           Text(
-            'Nada leyendo',
+            message,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                   fontStyle: FontStyle.italic,

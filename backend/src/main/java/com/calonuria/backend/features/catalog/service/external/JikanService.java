@@ -1,4 +1,4 @@
-package com.calonuria.backend.service.external;
+package com.calonuria.backend.features.catalog.service.external;
 
 import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,12 +124,12 @@ public class JikanService {
         
         // Demografía
         JsonNode demographics = manga.path("demographics");
-        if (demographics.isArray() && demographics.size() > 0) {
+        if (demographics.isArray() && !demographics.isEmpty()) {
             dto.setDemographic(demographics.get(0).path("name").asText());
         }
         
         // Géneros
-        dto.setGenre(extractGenres(manga.path("genres")));
+        dto.setGenres(extractGenres(manga.path("genres")));
         
         // Descripción
         String synopsis = manga.has("synopsis") ? manga.get("synopsis").asText() : null;
@@ -160,7 +160,7 @@ public class JikanService {
     }
 
     private String extractAuthors(JsonNode authors) {
-        if (!authors.isArray() || authors.size() == 0) {
+        if (!authors.isArray() || authors.isEmpty()) {
             return "Autor desconocido";
         }
         
@@ -169,30 +169,29 @@ public class JikanService {
             JsonNode author = authors.get(i);
             String name = author.has("name") ? author.get("name").asText() : "";
             if (!name.isEmpty()) {
-                if (sb.length() > 0) sb.append(", ");
+                if (!sb.isEmpty()) sb.append(", ");
                 sb.append(name);
             }
         }
         
-        return sb.length() > 0 ? sb.toString() : "Autor desconocido";
+        return !sb.isEmpty() ? sb.toString() : "Autor desconocido";
     }
 
-    private String extractGenres(JsonNode genres) {
-        if (!genres.isArray() || genres.size() == 0) {
-            return "";
+    private List<String> extractGenres(JsonNode genres) {
+        List<String> genreList = new ArrayList<>();
+        if (!genres.isArray() || genres.isEmpty()) {
+            return genreList;
         }
         
-        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < genres.size(); i++) {
             JsonNode genre = genres.get(i);
             String name = genre.has("name") ? genre.get("name").asText() : "";
             if (!name.isEmpty()) {
-                if (sb.length() > 0) sb.append(", ");
-                sb.append(name);
+                genreList.add(name);
             }
         }
         
-        return sb.toString();
+        return genreList;
     }
 
     private String mapStatus(String jikanStatus) {

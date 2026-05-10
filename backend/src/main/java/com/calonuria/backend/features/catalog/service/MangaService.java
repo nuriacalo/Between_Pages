@@ -1,14 +1,14 @@
-package com.calonuria.backend.service.catalog;
+package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.dto.catalog.MangaResponseDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.catalog.Genre;
-import com.calonuria.backend.model.catalog.Manga;
-import com.calonuria.backend.repository.catalog.GenreRepository;
-import com.calonuria.backend.repository.catalog.MangaRepository;
+import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.catalog.model.Genre;
+import com.calonuria.backend.features.catalog.model.Manga;
+import com.calonuria.backend.features.catalog.repository.GenreRepository;
+import com.calonuria.backend.features.catalog.repository.MangaRepository;
+import com.calonuria.backend.shared.service.BaseCatalogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +36,10 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
         }
 
         if (malId != null) {
+            // Intenta buscar por malId. Si no existe, lanza una excepción.
+            // La creación a partir de un malId debe ser manejada por JikanService y ExternalMangaController.
             return mangaRepository.findByMalId(malId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Manga no encontrado con malId: " + malId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Manga con malId " + malId + " no encontrado en la base de datos local."));
         }
 
         throw new IllegalArgumentException("Se debe proporcionar un mangaId o un malId para encontrar un manga.");
@@ -62,6 +64,38 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
         dto.setPublicationStatus(manga.getPublicationStatus());
         dto.setMalScore(manga.getMalScore());
         return dto;
+    }
+
+    @Transactional
+    public MangaResponseDTO createManga(MangaResponseDTO dto) {
+        Manga manga = new Manga();
+        manga.setTitle(dto.getTitle());
+        manga.setAuthor(dto.getAuthor());
+        manga.setDemographic(dto.getDemographic());
+        manga.setDescription(dto.getDescription());
+        manga.setCoverUrl(dto.getCoverUrl());
+        manga.setTotalChapters(dto.getTotalChapters());
+        manga.setTotalVolumes(dto.getTotalVolumes());
+        manga.setPublicationStatus(dto.getPublicationStatus());
+        manga.setMalScore(dto.getMalScore());
+        manga.setSource("MANUAL");
+
+        if (dto.getGenres() != null) {
+            Set<Genre> genres = new HashSet<>();
+            for (String genreName : dto.getGenres()) {
+                Genre genre = genreRepository.findByNameIgnoreCase(genreName)
+                        .orElseGet(() -> {
+                            Genre newGenre = new Genre();
+                            newGenre.setName(genreName);
+                            return genreRepository.save(newGenre);
+                        });
+                genres.add(genre);
+            }
+            manga.setGenres(genres);
+        }
+        
+        Manga savedManga = mangaRepository.save(manga);
+        return mapToDTO(savedManga);
     }
 
     public Optional<MangaResponseDTO> updateManga(Long id, MangaResponseDTO dto) {

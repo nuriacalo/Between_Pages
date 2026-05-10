@@ -1,6 +1,6 @@
-package com.calonuria.backend.repository.catalog;
+package com.calonuria.backend.features.catalog.repository;
 
-import com.calonuria.backend.model.catalog.FanficTag;
+import com.calonuria.backend.features.catalog.model.FanficTag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

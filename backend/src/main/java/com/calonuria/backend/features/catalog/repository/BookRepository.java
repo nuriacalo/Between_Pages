@@ -1,6 +1,6 @@
-package com.calonuria.backend.repository.catalog;
+package com.calonuria.backend.features.catalog.repository;
 
-import com.calonuria.backend.model.catalog.Book;
+import com.calonuria.backend.features.catalog.model.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -34,24 +34,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByAuthorContainingIgnoreCase(String author);
 
     /**
-     * Busca libros por género (ignorando mayúsculas).
-     * @param genre género a buscar
-     * @return lista de libros coincidentes
-     */
-    List<Book> findByGenreIgnoreCase(String genre);
-
-    /**
      * Busca libros por tipo (Saga, Serie, Standalone...).
      * @param bookType tipo de libro
      * @return lista de libros coincidentes
      */
     List<Book> findByBookTypeIgnoreCase(String bookType);
-
-    /**
-     * Busca libros por título y género.
-     * @param title título a buscar
-     * @param genre género a buscar
-     * @return lista de libros coincidentes
-     */
-    List<Book> findByTitleContainingIgnoreCaseAndGenreIgnoreCase(String title, String genre);
 }

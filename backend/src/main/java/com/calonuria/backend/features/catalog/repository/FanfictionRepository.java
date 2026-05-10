@@ -1,6 +1,6 @@
-package com.calonuria.backend.repository.catalog;
+package com.calonuria.backend.features.catalog.repository;
 
-import com.calonuria.backend.model.catalog.Fanfiction;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -32,13 +32,6 @@ public interface FanfictionRepository extends JpaRepository<Fanfiction, Long> {
      * @return lista de fanfictions
      */
     List<Fanfiction> findByAuthorContainingIgnoreCase(String author);
-
-    /**
-     * Busca fanfictions por género.
-     * @param genre género a buscar
-     * @return lista de fanfictions
-     */
-    List<Fanfiction> findByGenreIgnoreCase(String genre);
 
     /**
      * Busca fanfictions por estado de publicación.

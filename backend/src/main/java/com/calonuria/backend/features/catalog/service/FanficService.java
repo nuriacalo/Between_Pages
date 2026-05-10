@@ -1,11 +1,12 @@
-package com.calonuria.backend.service.catalog;
+package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.dto.catalog.FanficResponseDTO;
-import com.calonuria.backend.exception.ResourceNotFoundException;
-import com.calonuria.backend.model.catalog.Fanfiction;
-import com.calonuria.backend.model.catalog.Genre;
-import com.calonuria.backend.repository.catalog.FanfictionRepository;
-import com.calonuria.backend.repository.catalog.GenreRepository;
+import com.calonuria.backend.features.catalog.dto.FanficResponseDTO;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
+import com.calonuria.backend.features.catalog.model.Genre;
+import com.calonuria.backend.features.catalog.repository.FanfictionRepository;
+import com.calonuria.backend.features.catalog.repository.GenreRepository;
+import com.calonuria.backend.shared.service.BaseCatalogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,7 +1,8 @@
-package com.calonuria.backend.controller.catalog;
+package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.dto.catalog.MangaResponseDTO;
-import com.calonuria.backend.service.catalog.MangaService;
+import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
+import com.calonuria.backend.features.catalog.model.Manga;
+import com.calonuria.backend.features.catalog.service.MangaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -9,49 +10,36 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador para la gestión del catálogo de mangas.
- */
 @RestController
 @RequestMapping("/api/manga")
-@Tag(name = "Catálogo de Manga", description = "Endpoints para búsqueda en MyAnimeList (Jikan) y base de datos local")
-public class MangaController {
-
-    private final MangaService mangaService;
+@Tag(name = "Catálogo de Manga", description = "Endpoints para búsqueda y gestión de mangas en la base de datos local")
+public class MangaController extends BaseCatalogController<Manga, MangaResponseDTO, Long, MangaService> {
 
     public MangaController(MangaService mangaService) {
-        this.mangaService = mangaService;
+        super(mangaService);
     }
 
-    @Operation(summary = "Buscar mangas en MyAnimeList (Jikan)")
+    @Operation(summary = "Buscar mangas en la base de datos local")
     @GetMapping("/search")
-    public ResponseEntity<List<MangaResponseDTO>> searchInJikan(@RequestParam("q") String title) {
-        return ResponseEntity.ok(mangaService.searchInJikan(title));
+    @Override
+    public ResponseEntity<List<MangaResponseDTO>> searchByTitle(@RequestParam(value = "q") String title) {
+        if (title.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(service.searchByTitle(title));
     }
 
-    @Operation(summary = "Buscar mangas en base de datos local")
-    @GetMapping("/search/local")
-    public ResponseEntity<List<MangaResponseDTO>> searchInDatabase(@RequestParam("q") String title) {
-        return ResponseEntity.ok(mangaService.searchInDatabase(title));
-    }
-
-    @Operation(summary = "Obtener manga por ID")
-    @GetMapping("/{id}")
-    public ResponseEntity<MangaResponseDTO> getById(@PathVariable Long id) {
-        return mangaService.getMangaById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Operation(summary = "Obtener todos los mangas de la base de datos")
-    @GetMapping
-    public ResponseEntity<List<MangaResponseDTO>> getAll() {
-        return ResponseEntity.ok(mangaService.getAllMangas());
-    }
-
-    @Operation(summary = "Guardar manga en base de datos local")
+    @Operation(summary = "Guardar un nuevo manga en el catálogo")
     @PostMapping
     public ResponseEntity<MangaResponseDTO> saveManga(@RequestBody MangaResponseDTO dto) {
-        return ResponseEntity.ok(mangaService.saveFromDTO(dto));
+        return ResponseEntity.ok(service.createManga(dto));
+    }
+
+    @Operation(summary = "Actualizar un manga existente")
+    @PutMapping("/{id}")
+    public ResponseEntity<MangaResponseDTO> updateManga(@PathVariable Long id, @RequestBody MangaResponseDTO dto) {
+        return service.updateManga(id, dto)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

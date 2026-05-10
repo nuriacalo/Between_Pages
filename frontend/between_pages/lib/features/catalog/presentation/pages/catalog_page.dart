@@ -1,20 +1,21 @@
-import 'package:between_pages/models/catalog/book_response_dto.dart';
-import 'package:between_pages/models/catalog/manga_response_dto.dart';
-import 'package:between_pages/models/catalog/fanfiction_response_dto.dart';
-import 'package:between_pages/providers/catalog/all_books_provider.dart';
-import 'package:between_pages/providers/catalog/all_manga_provider.dart';
-import 'package:between_pages/providers/catalog/all_fanfics_provider.dart';
-import 'package:between_pages/screens/catalog/catalog_detail_page.dart';
-import 'package:between_pages/screens/library/catalog_item_card.dart';
+import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
+import 'package:between_pages/features/catalog/application/providers/all_manga_provider.dart';
+import 'package:between_pages/features/catalog/application/providers/all_fanfics_provider.dart';
+import 'package:between_pages/features/library/presentation/widgets/catalog_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 class CatalogPage extends ConsumerWidget {
   const CatalogPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -23,7 +24,7 @@ class CatalogPage extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Catálogo',
+            l10n.catalogTitle,
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           backgroundColor: colorScheme.surface,
@@ -31,14 +32,14 @@ class CatalogPage extends ConsumerWidget {
             labelColor: colorScheme.primary,
             unselectedLabelColor: colorScheme.onSurfaceVariant,
             indicatorColor: colorScheme.primary,
-            tabs: const [
-              Tab(text: 'Libros'),
-              Tab(text: 'Mangas'),
-              Tab(text: 'Fanfics'),
+            tabs: [
+              Tab(text: l10n.tabBooks),
+              Tab(text: l10n.tabMangas),
+              Tab(text: l10n.tabFanfics),
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             _BooksCatalogTab(),
             _MangaCatalogTab(),
@@ -55,12 +56,13 @@ class _BooksCatalogTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final booksAsync = ref.watch(allBooksProvider);
 
     return booksAsync.when(
       data: (books) {
         if (books.isEmpty) {
-          return const Center(child: Text('No hay libros en el catálogo.'));
+          return Center(child: Text(l10n.emptyCatalogBooks));
         }
         return _buildGrid(
           books.cast<BookResponseDTO>(),
@@ -84,12 +86,13 @@ class _MangaCatalogTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final mangaAsync = ref.watch(allMangaProvider);
 
     return mangaAsync.when(
       data: (mangas) {
         if (mangas.isEmpty) {
-          return const Center(child: Text('No hay mangas en el catálogo.'));
+          return Center(child: Text(l10n.emptyCatalogMangas));
         }
         return _buildGrid(
           mangas.cast<MangaResponseDTO>(),
@@ -113,12 +116,13 @@ class _FanficsCatalogTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final fanficsAsync = ref.watch(allFanficsProvider);
 
     return fanficsAsync.when(
       data: (fanfics) {
         if (fanfics.isEmpty) {
-          return const Center(child: Text('No hay fanfics en el catálogo.'));
+          return Center(child: Text(l10n.emptyCatalogFanfics));
         }
         return _buildGrid(
           fanfics.cast<FanfictionResponseDTO>(),

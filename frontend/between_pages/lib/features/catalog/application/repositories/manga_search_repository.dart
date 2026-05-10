@@ -1,7 +1,7 @@
-import 'package:between_pages/api/api_client.dart';
+import 'package:between_pages/core/api/api_client.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
-import 'package:between_pages/models/catalog/manga_response_dto.dart';
-import 'package:between_pages/providers/auth/api_provider.dart';
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/auth/application/providers/api_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repositorio para buscar mangas en el catálogo.

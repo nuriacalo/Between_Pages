@@ -6,7 +6,7 @@ class FanfictionResponseDTO {
   final String? sourceMaterial;
   final String? description;
   final String? coverUrl;
-  final String? genre;
+  final List<String> genres;
   final String? mainShip;
   final String? theme;
   final int? currentChapter;
@@ -22,7 +22,7 @@ class FanfictionResponseDTO {
     this.sourceMaterial,
     this.description,
     this.coverUrl,
-    this.genre,
+    this.genres = const [],
     this.mainShip,
     this.theme,
     this.currentChapter,
@@ -40,7 +40,7 @@ class FanfictionResponseDTO {
       sourceMaterial: json['source_material'] as String?,
       description: json['description'] as String?,
       coverUrl: json['cover_url'] as String?,
-      genre: json['genre'] as String?,
+      genres: (json['genres'] as List<dynamic>?)?.cast<String>() ?? [],
       mainShip: json['main_ship'] as String?,
       theme: json['theme'] as String?,
       currentChapter: json['current_chapter'] as int?,
@@ -59,7 +59,7 @@ class FanfictionResponseDTO {
       'source_material': sourceMaterial,
       'description': description,
       'cover_url': coverUrl,
-      'genre': genre,
+      'genres': genres,
       'main_ship': mainShip,
       'theme': theme,
       'current_chapter': currentChapter,

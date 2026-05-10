@@ -1,6 +1,6 @@
-package com.calonuria.backend.controller.catalog;
+package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.service.catalog.FanficTagService;
+import com.calonuria.backend.features.catalog.service.FanficTagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

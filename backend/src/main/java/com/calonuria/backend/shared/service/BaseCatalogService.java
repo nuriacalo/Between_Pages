@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.catalog.service;
+package com.calonuria.backend.shared.service;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;

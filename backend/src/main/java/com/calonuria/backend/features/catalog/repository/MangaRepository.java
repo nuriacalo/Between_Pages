@@ -1,6 +1,6 @@
-package com.calonuria.backend.repository.catalog;
+package com.calonuria.backend.features.catalog.repository;
 
-import com.calonuria.backend.model.catalog.Manga;
+import com.calonuria.backend.features.catalog.model.Manga;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -32,13 +32,6 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
      * @return lista de mangas
      */
     List<Manga> findByAuthorContainingIgnoreCase(String author);
-
-    /**
-     * Busca mangas por género.
-     * @param genre género a buscar
-     * @return lista de mangas
-     */
-    List<Manga> findByGenreIgnoreCase(String genre);
 
     /**
      * Busca mangas por demografía.

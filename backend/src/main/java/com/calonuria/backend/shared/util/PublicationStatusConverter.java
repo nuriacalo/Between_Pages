@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.catalog.service;
+package com.calonuria.backend.shared.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

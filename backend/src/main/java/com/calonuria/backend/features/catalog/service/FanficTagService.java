@@ -1,9 +1,9 @@
-package com.calonuria.backend.service.catalog;
+package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.model.catalog.Fanfiction;
-import com.calonuria.backend.model.catalog.FanficTag;
-import com.calonuria.backend.repository.catalog.FanficTagRepository;
-import com.calonuria.backend.repository.catalog.FanfictionRepository;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
+import com.calonuria.backend.features.catalog.model.FanficTag;
+import com.calonuria.backend.features.catalog.repository.FanficTagRepository;
+import com.calonuria.backend.features.catalog.repository.FanfictionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,6 +1,6 @@
+import 'package:between_pages/features/library/presentation/widgets/catalog_item_card.dart';
+import 'package:between_pages/features/search/application/providers/unified_search_provider.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
-import 'package:between_pages/providers/search/unified_search_provider.dart';
-import 'package:between_pages/screens/library/catalog_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -79,10 +79,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   labelColor: colorScheme.primary,
                   unselectedLabelColor: colorScheme.onSurfaceVariant,
                   indicatorColor: colorScheme.primary,
-                  tabs: const [
-                    Tab(icon: Icon(Icons.book), text: 'Libros'),
-                    Tab(icon: Icon(Icons.menu_book), text: 'Fanfics'),
-                    Tab(icon: Icon(Icons.auto_stories), text: 'Manga'),
+                  tabs: [
+                    Tab(icon: const Icon(Icons.book), text: l10n.tabBooks),
+                    Tab(icon: const Icon(Icons.menu_book), text: l10n.tabFanfics),
+                    Tab(icon: const Icon(Icons.auto_stories), text: l10n.tabMangas),
                   ],
                   // ignore: unnecessary_lambdas — readability
                   onTap: (index) {
@@ -97,9 +97,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         body: TabBarView(
           children: [
-            _buildBookResults(searchState, colorScheme, textTheme),
-            _buildFanficResults(searchState, colorScheme, textTheme),
-            _buildMangaResults(searchState, colorScheme, textTheme),
+            _buildBookResults(searchState, colorScheme, textTheme, l10n),
+            _buildFanficResults(searchState, colorScheme, textTheme, l10n),
+            _buildMangaResults(searchState, colorScheme, textTheme, l10n),
           ],
         ),
       ),
@@ -110,6 +110,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     UnifiedSearchState state,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    AppLocalizations l10n,
   ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -122,7 +123,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           children: [
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
-            Text('Error: ${state.error}'),
+            Text('${l10n.errorPrefix}: ${state.error}'),
+            Text('${l10n.errorPrefix}: ${state.error}'),
           ],
         ),
       );
@@ -130,7 +132,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.query.isEmpty) {
       return _buildEmptyState(
-        'Busca libros por título o autor',
+        l10n.searchBooksHint,
         colorScheme,
         textTheme,
       );
@@ -138,7 +140,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.bookResults.isEmpty) {
       return _buildEmptyState(
-        'No se encontraron libros',
+        l10n.searchBooksEmpty,
         colorScheme,
         textTheme,
       );
@@ -153,7 +155,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         author: book.author,
         coverUrl: book.coverUrl,
         fallbackIcon: Icons.book,
-        onTap: () => context.push('/book/${book.idBook}', extra: book),
+        onTap: () => context.push('/item/book/${book.idBook}', extra: book),
       ),
     );
   }
@@ -162,6 +164,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     UnifiedSearchState state,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    AppLocalizations l10n,
   ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -182,7 +185,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.query.isEmpty) {
       return _buildEmptyState(
-        'Busca fanfics por título o autor',
+        l10n.searchFanficsHint,
         colorScheme,
         textTheme,
       );
@@ -190,7 +193,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.fanficResults.isEmpty) {
       return _buildEmptyState(
-        'No se encontraron fanfics',
+        l10n.searchFanficsEmpty,
         colorScheme,
         textTheme,
       );
@@ -201,12 +204,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       colorScheme,
       textTheme,
       (fanfic) => CatalogItemCard(
-        title: fanfic.title ?? 'Sin título',
-        author: fanfic.author ?? 'Autor desconocido',
+        title: fanfic.title ?? l10n.noTitle,
+        author: fanfic.author ?? l10n.unknownAuthor,
         coverUrl: fanfic.coverUrl,
         fallbackIcon: Icons.favorite,
         isFanfic: true,
-        onTap: () => context.push('/fanfic/${fanfic.idFanfic}', extra: fanfic),
+        onTap: () => context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
       ),
     );
   }
@@ -215,6 +218,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     UnifiedSearchState state,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    AppLocalizations l10n,
   ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -227,7 +231,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           children: [
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
-            Text('Error: ${state.error}'),
+            Text('${l10n.errorPrefix}: ${state.error}'),
           ],
         ),
       );
@@ -235,7 +239,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.query.isEmpty) {
       return _buildEmptyState(
-        'Busca manga por título o autor',
+        l10n.searchMangasHint,
         colorScheme,
         textTheme,
       );
@@ -243,7 +247,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     if (state.mangaResults.isEmpty) {
       return _buildEmptyState(
-        'No se encontraron manga',
+        l10n.searchMangasEmpty,
         colorScheme,
         textTheme,
       );
@@ -254,16 +258,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       colorScheme,
       textTheme,
       (manga) {
-        final mangaId = (manga.idManga != null && manga.idManga! > 0)
-            ? manga.idManga.toString()
+        final int? mId = manga.idManga;
+        final mangaId = (mId != null && mId > 0)
+            ? mId.toString()
             : manga.malId?.toString() ?? 'unknown';
             
         return CatalogItemCard(
-          title: manga.title?.toString() ?? 'Sin título',
-          author: manga.author?.toString() ?? 'Autor desconocido',
+          title: manga.title?.toString() ?? l10n.noTitle,
+          author: manga.author?.toString() ?? l10n.unknownAuthor,
           coverUrl: manga.coverUrl,
           fallbackIcon: Icons.auto_stories,
-          onTap: () => context.push('/manga/$mangaId', extra: manga),
+          onTap: () => context.push('/item/manga/$mangaId', extra: manga),
         );
       }
     );

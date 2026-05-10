@@ -1,6 +1,6 @@
-package com.calonuria.backend.repository.catalog;
+package com.calonuria.backend.features.catalog.repository;
 
-import com.calonuria.backend.model.catalog.Genre;
+import com.calonuria.backend.features.catalog.model.Genre;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

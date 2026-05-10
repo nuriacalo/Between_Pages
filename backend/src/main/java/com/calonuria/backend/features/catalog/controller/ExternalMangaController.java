@@ -1,4 +1,4 @@
-package com.calonuria.backend.controller.external;
+package com.calonuria.backend.features.catalog.controller;
 
 import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.catalog.service.external.JikanService;
