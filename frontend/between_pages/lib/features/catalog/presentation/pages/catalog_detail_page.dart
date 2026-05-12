@@ -5,10 +5,10 @@ import 'package:between_pages/features/journal/domain/book_journal_record_dto.da
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/journal_type.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_extensions.dart';
 import 'package:cached_network_image/cached_network_image.dart';

@@ -4,16 +4,16 @@ import 'package:between_pages/features/journal/application/providers/reading_tim
 import 'package:between_pages/features/journal/application/repositories/reading_session_repository.dart';
 import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/journal_type.dart';
 import 'package:between_pages/features/journal/domain/reading_session_record_dto.dart';
+import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 

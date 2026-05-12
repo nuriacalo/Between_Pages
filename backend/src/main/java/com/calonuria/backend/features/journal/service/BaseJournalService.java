@@ -9,9 +9,8 @@ import com.calonuria.backend.features.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-public abstract class BaseJournalService<T extends BaseJournal, D, R extends BaseJournalRegistrationDTO>
+public abstract class BaseJournalService<T extends BaseJournal, R, D extends BaseJournalRegistrationDTO>
         implements JournalService<D, R> {
 
     protected final BaseJournalRepository<T> journalRepository;
@@ -22,39 +21,39 @@ public abstract class BaseJournalService<T extends BaseJournal, D, R extends Bas
         this.userRepository = userRepository;
     }
 
-    public abstract D saveProgress(R dto);
+    public abstract R saveProgress(D dto);
 
-    protected abstract D mapToDTO(T journal);
+    protected abstract R mapToDTO(T journal);
 
     @Override
     @Transactional(readOnly = true)
-    public List<D> getUserJournal(Long userId) {
+    public List<R> getUserJournal(Long userId) {
         return journalRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<D> getByStatus(Long userId, String status) {
+    public List<R> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return journalRepository.findByUserAndStatus(user, status)
                 .stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<D> getRereadings(Long userId) {
+    public List<R> getRereadings(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         return journalRepository.findByUserAndRereadingTrue(user)
                 .stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

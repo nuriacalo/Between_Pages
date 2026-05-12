@@ -20,7 +20,7 @@ class FanficSearchRepository {
       final response = await _apiClient.get(
         ApiConstants.fanficSearch,
         queryParameters: {
-          'q': query, // El backend espera 'q'
+          'title': query,
           'page': page,
           'size': size,
         },
@@ -30,6 +30,20 @@ class FanficSearchRepository {
       return data.map((json) => FanfictionResponseDTO.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Error buscando fanfics: $e');
+    }
+  }
+
+  /// Importa un fanfic desde AO3 usando el Crawler backend
+  Future<FanfictionResponseDTO> importFromAo3(String ao3Input) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.ao3Crawler,
+        data: {'ao3Input': ao3Input}, // El body esperado por el DTO en Java
+      );
+
+      return FanfictionResponseDTO.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Error al importar la obra de AO3. Verifica el enlace o ID.');
     }
   }
 }

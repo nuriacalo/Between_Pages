@@ -1,5 +1,4 @@
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
-import 'package:between_pages/features/journal/domain/journal_type.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/journal/application/providers/reading_stats_provider.dart';
@@ -7,9 +6,9 @@ import 'package:between_pages/features/journal/domain/book_journal_record_dto.da
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/pages/book_edit_page.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
-import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
-import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:between_pages/core/api/api_client.dart';
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -12,8 +12,17 @@ class JournalRepository<T> {
   final ApiClient _apiClient;
   final JournalType _type;
 
-  String get _userUrl => '/journal/${_type.name.toUpperCase()}/user';
-  String get _saveUrl => '/journal/${_type.name.toLowerCase()}';
+  String get _endpointPrefix {
+    switch (_type) {
+      case JournalType.fanfic:
+        return 'fanfiction-journal';
+      default:
+        return '${_type.name.toLowerCase()}-journal';
+    }
+  }
+
+  String get _userUrl => '/$_endpointPrefix/user';
+  String get _saveUrl => '/$_endpointPrefix';
 
   /// Parsea un JSON individual al tipo T
   T Function(Map<String, dynamic>) parser;

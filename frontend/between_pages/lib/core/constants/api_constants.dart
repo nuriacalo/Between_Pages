@@ -2,7 +2,7 @@ class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     // defaultValue:'http://10.0.2.2:8080/api', // Usa 10.0.2.2 para emuladores Android, 127.0.0.1 para iOS
-    defaultValue: 'http://192.168.0.15:8080/api',
+    defaultValue: 'http://127.0.0.1:8080/api',
   );
 
   // JIKAN API (MyAnimeList - Unofficial)
@@ -35,6 +35,9 @@ class ApiConstants {
   static const fanficSearch = '$baseUrl/fanfiction/search';
   static const fanficStatus = '$baseUrl/fanfiction/status';
   static const fanfic = '$baseUrl/fanfiction';
+  
+  // CRAWLER EXTERNO (/api/crawler)
+  static const ao3Crawler = '$baseUrl/crawler/ao3';
 
   // TAGS DE FANFICTION (/api/fanfiction/{fanficId}/tags)
   static const tagsFanfic =
@@ -73,13 +76,13 @@ class ApiConstants {
   static const mangaJournalUserRereadings =
       '$baseUrl/manga-journal/user/{userId}/rereadings';
 
-  // JOURNAL - FANFICTION (/api/fanfic-journal)
-  static const fanficJournal = '$baseUrl/fanfic-journal';
-  static const fanficJournalUser = '$baseUrl/fanfic-journal/user/';
+  // JOURNAL - FANFICTION (/api/fanfiction-journal)
+  static const fanficJournal = '$baseUrl/fanfiction-journal';
+  static const fanficJournalUser = '$baseUrl/fanfiction-journal/user/';
   static const fanficJournalUserStatus =
-      '$baseUrl/fanfic-journal/user/{userId}/status';
+      '$baseUrl/fanfiction-journal/user/{userId}/status';
   static const fanficJournalUserRereadings =
-      '$baseUrl/fanfic-journal/user/{userId}/rereadings';
+      '$baseUrl/fanfiction-journal/user/{userId}/rereadings';
 
   // JOURNAL - READING SESSIONS (/api/reading-sessions)
   static const readingSessions = '$baseUrl/reading-sessions';

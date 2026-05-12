@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/fanfiction/search",
                                 "/api/fanfiction/search/**",
                                 "/v3/api-docs/**",
+                                "/api/crawler/ao3",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()

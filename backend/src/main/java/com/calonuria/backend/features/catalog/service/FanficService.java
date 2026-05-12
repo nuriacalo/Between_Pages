@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.FanficResponseDTO;
+import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.catalog.model.Genre;
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class FanficService extends BaseCatalogService<Fanfiction, FanficResponseDTO, Long> {
+public class FanficService extends BaseCatalogService<Fanfiction, FanfictionResponseDTO, Long> {
 
     private final FanfictionRepository fanficRepository;
     private final GenreRepository genreRepository;
@@ -28,7 +28,7 @@ public class FanficService extends BaseCatalogService<Fanfiction, FanficResponse
         this.genreRepository = genreRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Fanfiction findOrCreate(Long fanficId, String ao3Id) {
         if (fanficId != null) {
             return fanficRepository.findById(fanficId)
@@ -44,8 +44,8 @@ public class FanficService extends BaseCatalogService<Fanfiction, FanficResponse
     }
 
     @Override
-    public FanficResponseDTO mapToDTO(Fanfiction fanfic) {
-        FanficResponseDTO dto = new FanficResponseDTO();
+    public FanfictionResponseDTO mapToDTO(Fanfiction fanfic) {
+        FanfictionResponseDTO dto = new FanfictionResponseDTO();
         dto.setId(fanfic.getId());
         dto.setAo3Id(fanfic.getAo3Id());
         dto.setTitle(fanfic.getTitle());
@@ -53,9 +53,16 @@ public class FanficService extends BaseCatalogService<Fanfiction, FanficResponse
         dto.setSourceMaterial(fanfic.getSourceMaterial());
         dto.setDescription(fanfic.getDescription());
         dto.setCoverUrl(fanfic.getCoverUrl());
+
         if (fanfic.getGenres() != null) {
             dto.setGenres(fanfic.getGenres().stream().map(Genre::getName).collect(Collectors.toList()));
         }
+
+        // Mapeamos los tags directamente de la entidad
+        if (fanfic.getTags() != null) {
+            dto.setTags(fanfic.getTags().stream().map(t -> t.getTag()).collect(Collectors.toList()));
+        }
+
         dto.setMainShip(fanfic.getMainShip());
         dto.setTheme(fanfic.getTheme());
         dto.setCurrentChapter(fanfic.getCurrentChapter());
@@ -64,7 +71,8 @@ public class FanficService extends BaseCatalogService<Fanfiction, FanficResponse
         return dto;
     }
 
-    public Optional<FanficResponseDTO> updateFanfic(Long id, FanficResponseDTO dto) {
+    @Transactional
+    public Optional<FanfictionResponseDTO> updateFanfic(Long id, FanfictionResponseDTO dto) {
         return fanficRepository.findById(id)
                 .map(fanfic -> {
                     fanfic.setTitle(dto.getTitle());
@@ -97,7 +105,7 @@ public class FanficService extends BaseCatalogService<Fanfiction, FanficResponse
     }
 
     @Override
-    public List<FanficResponseDTO> searchByTitle(String title) {
+    public List<FanfictionResponseDTO> searchByTitle(String title) {
         return fanficRepository.findByTitleContainingIgnoreCase(title)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }

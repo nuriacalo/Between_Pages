@@ -3,7 +3,7 @@ import 'package:between_pages/features/auth/application/providers/api_provider.d
 import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/journal_type.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

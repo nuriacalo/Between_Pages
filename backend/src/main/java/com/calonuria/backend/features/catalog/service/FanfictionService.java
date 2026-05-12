@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -69,14 +68,18 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         fanfic.setTotalChapters(dto.getTotalChapters());
         fanfic.setPublicationStatus(dto.getPublicationStatus());
 
-        if (StringUtils.hasText(dto.getGenre())) {
-            Set<Genre> genres = Arrays.stream(dto.getGenre().split(","))
+        // Corrección: Manejamos directamente la lista de géneros en lugar de un String
+        if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
+            Set<Genre> genres = dto.getGenres().stream()
+                    .filter(StringUtils::hasText) // Filtramos textos vacíos de la lista
                     .map(String::trim)
-                    .filter(StringUtils::hasText)
                     .map(genreName -> genreRepository.findByNameIgnoreCase(genreName)
                             .orElseGet(() -> genreRepository.save(new Genre(null, genreName))))
                     .collect(Collectors.toSet());
             fanfic.setGenres(genres);
+        } else {
+            // Si la lista viene vacía o nula, limpiamos los géneros
+            fanfic.setGenres(new HashSet<>());
         }
     }
 
@@ -144,15 +147,18 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         dto.setSourceMaterial(fanfic.getSourceMaterial());
         dto.setDescription(fanfic.getDescription());
         dto.setCoverUrl(fanfic.getCoverUrl());
+
+        // Corrección: Mapeamos el Set<Genre> a un List<String> directamente
         if (fanfic.getGenres() != null && !fanfic.getGenres().isEmpty()) {
-            dto.setGenre(fanfic.getGenres().stream().map(Genre::getName).collect(Collectors.joining(", ")));
+            dto.setGenres(fanfic.getGenres().stream().map(Genre::getName).collect(Collectors.toList()));
         }
+
         dto.setMainShip(fanfic.getMainShip());
         dto.setTheme(fanfic.getTheme());
         dto.setCurrentChapter(fanfic.getCurrentChapter());
         dto.setTotalChapters(fanfic.getTotalChapters());
         dto.setPublicationStatus(fanfic.getPublicationStatus());
-        
+
         // Cargar tags eficientemente gracias a @BatchSize en la entidad
         if (fanfic.getTags() != null) {
             List<String> tags = fanfic.getTags().stream().map(FanficTag::getTag).toList();

@@ -26,7 +26,7 @@ public class FanfictionResponseDTO {
     @JsonProperty("cover_url")
     private String coverUrl;
 
-    private String genre;
+    private List<String> genres;
 
     @JsonProperty("main_ship")
     private String mainShip;

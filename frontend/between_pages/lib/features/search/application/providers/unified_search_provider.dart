@@ -161,9 +161,21 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
 
           state = state.copyWith(bookResults: merged, isLoading: false);
           break;
-        case SearchContentType.fanfics:
-          final results = await _fanficRepo.searchFanfics(searchQuery);
-          state = state.copyWith(fanficResults: results, isLoading: false);
+      case SearchContentType.fanfics:
+          // Detectamos si el texto es un link de AO3 o un ID numérico (ej. 5 a 12 dígitos)
+          final isAo3Input = searchQuery.contains('archiveofourown.org/works/') || 
+                             RegExp(r'^\d{5,12}$').hasMatch(searchQuery);
+
+          if (isAo3Input) {
+            // Si es AO3, llamamos al crawler
+            final importedFanfic = await _fanficRepo.importFromAo3(searchQuery);
+            // El crawler devuelve un solo fanfic, lo metemos en la lista de resultados
+            state = state.copyWith(fanficResults: [importedFanfic], isLoading: false);
+          } else {
+            // Búsqueda normal en la BBDD
+            final results = await _fanficRepo.searchFanfics(searchQuery);
+            state = state.copyWith(fanficResults: results, isLoading: false);
+          }
           break;
         case SearchContentType.manga:
           final localResults = await _mangaRepo.searchManga(searchQuery);
