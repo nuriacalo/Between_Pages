@@ -1,0 +1,190 @@
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/profile/application/providers/user_provider.dart';
+import 'package:between_pages/features/catalog/application/repositories/manga_search_repository.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class MangaEditPage extends ConsumerStatefulWidget {
+  final MangaResponseDTO? manga;
+
+  const MangaEditPage({super.key, this.manga});
+
+  @override
+  ConsumerState<MangaEditPage> createState() => _MangaEditPageState();
+}
+
+class _MangaEditPageState extends ConsumerState<MangaEditPage> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
+
+  late TextEditingController _titleController;
+  late TextEditingController _authorController;
+  late TextEditingController _demographicController;
+  late TextEditingController _totalChaptersController;
+  late TextEditingController _totalVolumesController;
+  late TextEditingController _coverUrlController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _genreController;
+
+  @override
+  void initState() {
+    super.initState();
+    final manga = widget.manga;
+    _titleController = TextEditingController(text: manga?.title ?? '');
+    _authorController = TextEditingController(text: manga?.author ?? '');
+    _demographicController = TextEditingController(text: manga?.demographic ?? '');
+    _totalChaptersController = TextEditingController(text: manga?.totalChapters?.toString() ?? '');
+    _totalVolumesController = TextEditingController(text: manga?.totalVolumes?.toString() ?? '');
+    _coverUrlController = TextEditingController(text: manga?.coverUrl ?? '');
+    _descriptionController = TextEditingController(text: manga?.description ?? '');
+    _genreController = TextEditingController(text: manga?.genres.join(', ') ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _authorController.dispose();
+    _demographicController.dispose();
+    _totalChaptersController.dispose();
+    _totalVolumesController.dispose();
+    _coverUrlController.dispose();
+    _descriptionController.dispose();
+    _genreController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveMangaAndJournal() async {
+    if (!_formKey.currentState!.validate() || _isSaving) {
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final mangaRepo = ref.read(mangaSearchRepositoryProvider);
+      final mangaToSave = MangaResponseDTO(
+        idManga: widget.manga?.idManga ?? 0,
+        malId: widget.manga?.malId,
+        title: _titleController.text,
+        author: _authorController.text,
+        demographic: _demographicController.text,
+        totalChapters: int.tryParse(_totalChaptersController.text),
+        totalVolumes: int.tryParse(_totalVolumesController.text),
+        coverUrl: _coverUrlController.text,
+        description: _descriptionController.text,
+        genres: _genreController.text.isNotEmpty
+            ? _genreController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+            : [],
+        publicationStatus: widget.manga?.publicationStatus ?? 'Publishing',
+      );
+
+      final savedManga = await mangaRepo.saveOrUpdateManga(mangaToSave);
+
+      if (widget.manga == null) {
+        final journalRepo = ref.read(mangaJournalRepositoryProvider);
+        final userId = ref.read(userProfileProvider).value!.idUser;
+
+        final journalDto = MangaJournalRecordDTO(
+          userId: userId,
+          mangaId: savedManga.idManga,
+          status: 'TBR',
+        );
+        await journalRepo.saveRaw(journalDto.toJson());
+        ref.invalidate(journalProvider(JournalType.manga));
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Manga guardado y añadido al diario con éxito'),
+          backgroundColor: Colors.green,
+        ));
+        Navigator.pop(context, savedManga);
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar: $errorMessage'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.manga == null ? 'Añadir Manga' : 'Editar Manga'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _isSaving ? null : _saveMangaAndJournal,
+            tooltip: 'Guardar',
+          ),
+        ],
+      ),
+      body: _isSaving
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  _buildTextField(_titleController, 'Título', isRequired: true),
+                  _buildTextField(_authorController, 'Autor', isRequired: true),
+                  _buildTextField(_demographicController, 'Demografía'),
+                  _buildTextField(_totalChaptersController, 'Capítulos totales', keyboardType: TextInputType.number),
+                  _buildTextField(_totalVolumesController, 'Volúmenes totales', keyboardType: TextInputType.number),
+                  _buildTextField(_coverUrlController, 'URL de la portada', keyboardType: TextInputType.url),
+                  _buildTextField(_genreController, 'Géneros (separados por coma)'),
+                  _buildTextField(_descriptionController, 'Descripción', maxLines: 5),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    bool isRequired = false,
+    TextInputType? keyboardType,
+    int? maxLines = 1,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F5FF),
+        ),
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        validator: (value) {
+          if (isRequired && (value == null || value.isEmpty)) {
+            return 'Este campo es requerido';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+}
