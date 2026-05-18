@@ -16,6 +16,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -58,12 +60,11 @@ public class GoogleBooksService {
             }
         } catch (Exception e) {
             log.error("Error al conectar con Google Books para '{}': {}", title, e.getMessage());
-            // En caso de error, devolvemos una lista vacía. El controlador local se encargará del fallback si es necesario.
         }
         return results;
     }
-    
-    public Book fetchBookByGoogleId(String googleBooksId) {
+
+    public BookResponseDTO fetchBookByGoogleId(String googleBooksId) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
                 .fromHttpUrl(GOOGLE_BOOKS_API_URL + "/")
                 .path(googleBooksId);
@@ -76,7 +77,7 @@ public class GoogleBooksService {
         try {
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
-            return parseBookFromJsonNode(root);
+            return mapGoogleBookToDTO(root);
         } catch (Exception e) {
             log.error("Error al obtener libro de Google Books por ID '{}': {}", googleBooksId, e.getMessage());
             throw new ResourceNotFoundException("No se pudo obtener la información del libro desde Google Books para el ID: " + googleBooksId);
@@ -84,49 +85,32 @@ public class GoogleBooksService {
     }
 
     private BookResponseDTO mapGoogleBookToDTO(JsonNode item) {
-        Book book = parseBookFromJsonNode(item);
-        BookResponseDTO dto = new BookResponseDTO();
-        dto.setGoogleBooksId(book.getGoogleBooksId());
-        dto.setTitle(book.getTitle());
-        dto.setAuthor(book.getAuthor());
-        dto.setIsbn(book.getIsbn());
-        dto.setPublisher(book.getPublisher());
-        dto.setDescription(book.getDescription());
-        dto.setCoverUrl(book.getCoverUrl());
-        // Los géneros se parsean pero no se guardan en el DTO directamente aquí
-        // porque no tenemos la entidad Genre. El DTO solo lleva los nombres.
-        dto.setPublicationYear(book.getPublicationYear());
-        dto.setPageCount(book.getPageCount());
-        return dto;
-    }
-
-    private Book parseBookFromJsonNode(JsonNode item) {
         JsonNode info = item.path("volumeInfo");
-        Book book = new Book();
+        BookResponseDTO dto = new BookResponseDTO();
 
-        book.setGoogleBooksId(item.path("id").asText(null));
-        book.setTitle(info.path("title").asText("Título desconocido"));
+        dto.setGoogleBooksId(item.path("id").asText(null));
+        dto.setTitle(info.path("title").asText("Título desconocido"));
 
         if (info.path("authors").isArray() && info.path("authors").size() > 0) {
-            book.setAuthor(info.path("authors").get(0).asText());
+            dto.setAuthor(info.path("authors").get(0).asText());
         } else {
-            book.setAuthor("Autor desconocido");
+            dto.setAuthor("Autor desconocido");
         }
 
-        book.setPublisher(info.path("publisher").asText(null));
-        book.setDescription(info.path("description").asText(null));
-        book.setPageCount(info.path("pageCount").asInt(0));
+        dto.setPublisher(info.path("publisher").asText(null));
+        dto.setDescription(info.path("description").asText(null));
+        dto.setPageCount(info.path("pageCount").asInt(0));
 
         JsonNode isbnNodes = info.path("industryIdentifiers");
         if (isbnNodes.isArray()) {
             for (JsonNode isbnNode : isbnNodes) {
                 String type = isbnNode.path("type").asText();
                 if ("ISBN_13".equals(type)) {
-                    book.setIsbn(isbnNode.path("identifier").asText(null));
+                    dto.setIsbn(isbnNode.path("identifier").asText(null));
                     break;
                 }
                 if ("ISBN_10".equals(type)) {
-                    book.setIsbn(isbnNode.path("identifier").asText(null));
+                    dto.setIsbn(isbnNode.path("identifier").asText(null));
                 }
             }
         }
@@ -137,19 +121,26 @@ public class GoogleBooksService {
             if (thumbnailUrl != null && thumbnailUrl.startsWith("http:")) {
                 thumbnailUrl = thumbnailUrl.replace("http:", "https:");
             }
-            book.setCoverUrl(thumbnailUrl);
+            dto.setCoverUrl(thumbnailUrl);
         }
 
         String date = info.path("publishedDate").asText("");
         if (date.length() >= 4) {
             try {
-                book.setPublicationYear(Integer.parseInt(date.substring(0, 4)));
+                dto.setPublicationYear(Integer.parseInt(date.substring(0, 4)));
             } catch (NumberFormatException e) {
-                book.setPublicationYear(null);
+                dto.setPublicationYear(null);
             }
         }
-        
-        book.setBookType("STANDALONE");
-        return book;
+
+        if (info.has("categories") && info.get("categories").isArray()) {
+            List<String> genres = StreamSupport.stream(info.get("categories").spliterator(), false)
+                    .map(JsonNode::asText)
+                    .collect(Collectors.toList());
+            dto.setGenres(genres);
+        }
+
+        dto.setBookType("STANDALONE");
+        return dto;
     }
 }

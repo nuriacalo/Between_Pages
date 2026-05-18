@@ -1,6 +1,7 @@
 package com.calonuria.backend.features.journal.dto;
 
 import com.calonuria.backend.shared.constants.ValidationConstants;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,10 +14,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class FanficJournalRegistrationDTO extends BaseJournalRegistrationDTO {
 
+    @JsonProperty("fanficId")
     private Long fanfictionId;
 
     // --- Datos específicos del fanfic ---
     private String ao3Id;
+    private String title;
+    private String author;
     private String sourceMaterial;
     private String theme;
     private Integer totalChapters;

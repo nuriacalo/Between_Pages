@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface NoteRepository extends JpaRepository<Note, Long> {
-    List<Note> findByBookIdAndUserId(String bookId, Long userId);
+    List<Note> findByItemTypeAndItemIdAndUserId(String itemType, Long itemId, Long userId);
 }

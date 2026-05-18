@@ -19,9 +19,9 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
      */
     @Query("SELECT AVG(CAST(rs.pagesRead AS double) / (CAST(rs.durationSeconds AS double) / 3600)) " +
            "FROM ReadingSession rs WHERE rs.user.id = :userId " +
-           "AND (:bookId IS NULL OR (rs.itemType = 'BOOK' AND rs.itemId = :bookId)) " +
-           "AND (:mangaId IS NULL OR (rs.itemType = 'MANGA' AND rs.itemId = :mangaId)) " +
-           "AND (:fanficId IS NULL OR (rs.itemType = 'FANFIC' AND rs.itemId = :fanficId))")
+           "AND (:bookId IS NULL OR rs.book.id = :bookId) " +
+           "AND (:mangaId IS NULL OR rs.manga.id = :mangaId) " +
+           "AND (:fanficId IS NULL OR rs.fanfic.id = :fanficId)")
     Optional<Double> findAverageSpeedForItem(@Param("userId") Long userId,
                                              @Param("bookId") Long bookId,
                                              @Param("mangaId") Long mangaId,
@@ -31,21 +31,21 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
      * Calcula la velocidad promedio para todos los libros de un usuario.
      */
     @Query("SELECT AVG(CAST(rs.pagesRead AS double) / (CAST(rs.durationSeconds AS double) / 3600)) " +
-           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.itemType = 'BOOK'")
+           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.book IS NOT NULL")
     Optional<Double> findAverageSpeedForBookType(@Param("userId") Long userId);
 
     /**
      * Calcula la velocidad promedio para todos los mangas de un usuario.
      */
     @Query("SELECT AVG(CAST(rs.pagesRead AS double) / (CAST(rs.durationSeconds AS double) / 3600)) " +
-           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.itemType = 'MANGA'")
+           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.manga IS NOT NULL")
     Optional<Double> findAverageSpeedForMangaType(@Param("userId") Long userId);
 
     /**
      * Calcula la velocidad promedio para todos los fanfics de un usuario.
      */
     @Query("SELECT AVG(CAST(rs.pagesRead AS double) / (CAST(rs.durationSeconds AS double) / 3600)) " +
-           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.itemType = 'FANFIC'")
+           "FROM ReadingSession rs WHERE rs.user.id = :userId AND rs.fanfic IS NOT NULL")
     Optional<Double> findAverageSpeedForFanficType(@Param("userId") Long userId);
     
     /**

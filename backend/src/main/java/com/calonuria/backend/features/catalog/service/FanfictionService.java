@@ -19,8 +19,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Servicio para la gestión de fanfictions en el catálogo.
- * Extiende BaseCatalogService para reutilizar código común.
+ * Service class for managing fanfiction entities within the local catalog.
+ * Extends {@link BaseCatalogService} to reuse common catalog logic.
+ * Primarily designed to work alongside the AO3 Crawler Service to store
+ * and update extracted fanfiction metadata.
  */
 @Service
 public class FanfictionService extends BaseCatalogService<Fanfiction, FanfictionResponseDTO, Long> {
@@ -28,12 +30,27 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
     private final FanfictionRepository fanfictionRepository;
     private final GenreRepository genreRepository;
 
+    /**
+     * Constructs a new {@code FanfictionService}.
+     *
+     * @param fanfictionRepository the repository for fanfiction persistence
+     * @param genreRepository      the repository for genre persistence
+     */
     public FanfictionService(FanfictionRepository fanfictionRepository, GenreRepository genreRepository) {
         super(fanfictionRepository);
         this.fanfictionRepository = fanfictionRepository;
         this.genreRepository = genreRepository;
     }
 
+    /**
+     * Retrieves a fanfiction from the database or creates a new empty placeholder
+     * if it does not exist.
+     *
+     * @param fanfictionId the local database ID (optional)
+     * @param ao3Id        the Archive of Our Own ID (optional)
+     * @return the resolved or newly initialized {@link Fanfiction}
+     * @throws ResourceNotFoundException if the provided local ID does not exist
+     */
     @Transactional
     public Fanfiction findOrCreate(Long fanfictionId, String ao3Id) {
         if (fanfictionId != null) {
@@ -42,11 +59,20 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         }
         if (ao3Id != null && !ao3Id.isEmpty()) {
             return fanfictionRepository.findByAo3Id(ao3Id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Fanfiction no encontrado con ao3Id: " + ao3Id));
+                    .orElseGet(() -> fanfictionRepository.save(new Fanfiction(ao3Id)));
         }
-        throw new IllegalArgumentException("Se requiere fanfictionId o ao3Id");
+        // Si ambos son nulos, crea una nueva instancia sin ao3Id.
+        // El título y otros detalles se pueden añadir después.
+        return fanfictionRepository.save(new Fanfiction());
     }
 
+    /**
+     * Updates an existing fanfiction record with the properties provided in the DTO.
+     *
+     * @param id  the local database ID of the fanfiction to update
+     * @param dto the data to apply
+     * @return an {@link Optional} containing the updated DTO, or empty if not found
+     */
     @Transactional
     public Optional<FanfictionResponseDTO> updateFanfic(Long id, FanfictionResponseDTO dto) {
         return fanfictionRepository.findById(id)
@@ -56,6 +82,10 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
                 });
     }
 
+    /**
+     * Internal helper method to map fields from a DTO to a persistent entity.
+     * Handles complex mapping for relationships like genres.
+     */
     private void updateFanficFromDto(Fanfiction fanfic, FanfictionResponseDTO dto) {
         fanfic.setTitle(dto.getTitle());
         fanfic.setAuthor(dto.getAuthor());
@@ -68,7 +98,6 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         fanfic.setTotalChapters(dto.getTotalChapters());
         fanfic.setPublicationStatus(dto.getPublicationStatus());
 
-        // Corrección: Manejamos directamente la lista de géneros en lugar de un String
         if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
             Set<Genre> genres = dto.getGenres().stream()
                     .filter(StringUtils::hasText) // Filtramos textos vacíos de la lista
@@ -84,7 +113,11 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
     }
 
     /**
-     * Guarda un fanfiction solo si no existe ya por ao3Id.
+     * Persists a fanfiction entity only if another fanfiction with the same
+     * AO3 ID does not already exist in the database.
+     *
+     * @param fanfic the fanfiction entity to save
+     * @return the saved (or pre-existing) {@link FanfictionResponseDTO}
      */
     @Transactional
     public FanfictionResponseDTO saveIfNotExists(Fanfiction fanfic) {
@@ -98,7 +131,10 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
     }
 
     /**
-     * Crea y guarda un fanfiction desde un DTO si no existe.
+     * Creates and saves a new fanfiction from a DTO representation if it doesn't already exist.
+     *
+     * @param dto the payload representing the new fanfiction
+     * @return the mapped {@link FanfictionResponseDTO}
      */
     @Transactional
     public FanfictionResponseDTO saveFromDTO(FanfictionResponseDTO dto) {
@@ -108,11 +144,16 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         return saveIfNotExists(fanfic);
     }
 
-    // Alias para compatibilidad con controllers existentes
+    /**
+     * Alias method for finding a fanfiction by its database ID.
+     */
     public Optional<FanfictionResponseDTO> getFanficById(Long id) {
         return findById(id);
     }
 
+    /**
+     * Searches for fanfictions matching the given title query, ignoring case.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<FanfictionResponseDTO> searchByTitle(String title) {
@@ -121,7 +162,10 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
     }
 
     /**
-     * Busca fanfictions por estado de publicación.
+     * Searches for fanfictions by their publication status (e.g., 'ONGOING').
+     *
+     * @param status the publication status
+     * @return a list of matching {@link FanfictionResponseDTO}
      */
     @Transactional(readOnly = true)
     public List<FanfictionResponseDTO> searchByStatus(String status) {
@@ -129,13 +173,19 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
                 .stream().map(this::mapToDTO).toList();
     }
 
-    // Alias para compatibilidad con controllers existentes
+    /**
+     * Alias method for retrieving all fanfictions.
+     */
     public List<FanfictionResponseDTO> getAllFanfics() {
         return findAll();
     }
 
     /**
-     * Mapea un fanfiction a su DTO de respuesta.
+     * Converts a raw {@link Fanfiction} entity into its corresponding DTO format.
+     * Uses Hibernate BatchSize optimization to efficiently fetch AO3 tags.
+     *
+     * @param fanfic the entity to map
+     * @return the mapped {@link FanfictionResponseDTO}
      */
     @Override
     public FanfictionResponseDTO mapToDTO(Fanfiction fanfic) {
@@ -148,7 +198,6 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         dto.setDescription(fanfic.getDescription());
         dto.setCoverUrl(fanfic.getCoverUrl());
 
-        // Corrección: Mapeamos el Set<Genre> a un List<String> directamente
         if (fanfic.getGenres() != null && !fanfic.getGenres().isEmpty()) {
             dto.setGenres(fanfic.getGenres().stream().map(Genre::getName).collect(Collectors.toList()));
         }

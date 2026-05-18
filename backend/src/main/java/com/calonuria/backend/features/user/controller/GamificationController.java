@@ -11,6 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST Controller for user gamification features.
+ * Handles fetching user streaks, weekly activity, and updating annual reading goals.
+ * 
+ * <p>Base path: {@code /api/gamification}</p>
+ */
 @RestController
 @RequestMapping("/api/gamification")
 @Tag(name = "Gamification", description = "Endpoints para la gamificación (metas y rachas)")
@@ -18,10 +24,22 @@ public class GamificationController {
 
     private final GamificationService gamificationService;
 
+    /**
+     * Constructs a new {@code GamificationController}.
+     *
+     * @param gamificationService the service responsible for calculating gamification metrics
+     */
     public GamificationController(GamificationService gamificationService) {
         this.gamificationService = gamificationService;
     }
 
+    /**
+     * Retrieves the current gamification statistics for the authenticated user,
+     * including their current streak, annual goal progress, and a 7-day activity map.
+     *
+     * @param userDetails the authenticated user context
+     * @return a {@link ResponseEntity} containing a {@link GamificationStatsDTO}
+     */
     @Operation(summary = "Obtener estadísticas de gamificación del usuario actual")
     @GetMapping("/stats")
     public ResponseEntity<GamificationStatsDTO> getStats(@AuthenticationPrincipal UserDetails userDetails) {
@@ -29,6 +47,13 @@ public class GamificationController {
         return ResponseEntity.ok(stats);
     }
 
+    /**
+     * Updates or creates the annual reading goal for the authenticated user.
+     *
+     * @param userDetails the authenticated user context
+     * @param dto         the payload containing the target year and target reading amount
+     * @return a {@link ResponseEntity} with status 200 OK upon successful update
+     */
     @Operation(summary = "Actualizar la meta anual del usuario actual")
     @PostMapping("/goal")
     public ResponseEntity<Void> updateGoal(@AuthenticationPrincipal UserDetails userDetails,

@@ -9,7 +9,6 @@ import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.journal.repository.MangaJournalRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import com.calonuria.backend.features.catalog.service.MangaService;
-import com.calonuria.backend.shared.util.JournalStatusConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +42,7 @@ public class MangaJournalService extends BaseJournalService<MangaJournal, MangaJ
             journal.setManga(manga);
         }
 
-        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
+        journal.setStatus(normalizeJournalStatus(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setCurrentVolume(dto.getCurrentVolume());
         journal.setRating(dto.getRating());

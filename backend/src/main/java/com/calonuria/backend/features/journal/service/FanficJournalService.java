@@ -9,9 +9,9 @@ import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.journal.repository.FanficJournalRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import com.calonuria.backend.features.catalog.service.FanfictionService;
-import com.calonuria.backend.shared.util.JournalStatusConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 public class FanficJournalService extends BaseJournalService<FanficJournal, FanficJournalResponseDTO, FanficJournalRegistrationDTO> {
@@ -35,6 +35,11 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
         
         Fanfiction fanfic = fanfictionService.findOrCreate(dto.getFanfictionId(), dto.getAo3Id());
 
+        if (fanfic.getTitle() == null || fanfic.getTitle().isEmpty()) {
+            fanfic.setTitle(dto.getTitle() != null ? dto.getTitle() : "Título no disponible");
+            fanfic.setAuthor(dto.getAuthor() != null ? dto.getAuthor() : "Autor no disponible");
+        }
+
         FanficJournal journal = fanficJournalRepository.findByUserAndFanfic(user, fanfic)
                 .orElse(new FanficJournal());
 
@@ -43,7 +48,7 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
             journal.setFanfic(fanfic);
         }
 
-        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
+        journal.setStatus(normalizeJournalStatus(dto.getStatus()));
         journal.setCurrentChapter(dto.getCurrentChapter());
         journal.setRating(dto.getRating());
         journal.setTearDrops(dto.getTearDrops());
@@ -51,9 +56,15 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
         journal.setMainShip(dto.getMainShip());
         journal.setSecondaryShips(dto.getSecondaryShips());
         journal.setTheme(dto.getTheme());
-        journal.setAngstLevel(dto.getAngstLevel());
-        journal.setShipLoyalty(dto.getShipLoyalty());
-        journal.setCanonType(dto.getCanonType());
+
+        if (StringUtils.hasText(dto.getAngstLevel())) {
+            journal.setAngstLevel(dto.getAngstLevel());
+        } else {
+            journal.setAngstLevel("NONE");
+        }
+
+        journal.setShipLoyalty(StringUtils.hasText(dto.getShipLoyalty()) ? dto.getShipLoyalty() : null);
+        journal.setCanonType(StringUtils.hasText(dto.getCanonType()) ? dto.getCanonType() : null);
         journal.setRereading(dto.getRereading());
         journal.setPersonalNotes(dto.getPersonalNotes());
         journal.setStartDate(dto.getStartDate());
@@ -65,6 +76,7 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
 
     @Override
     protected FanficJournalResponseDTO mapToDTO(FanficJournal journal) {
+
         FanficJournalResponseDTO dto = new FanficJournalResponseDTO();
         dto.setId(journal.getId());
         dto.setUserId(journal.getUser().getId());
@@ -76,6 +88,7 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
         dto.setSpiceFlames(journal.getSpiceFlames());
         dto.setMainShip(journal.getMainShip());
         dto.setSecondaryShips(journal.getSecondaryShips());
+        dto.setTheme(journal.getTheme());
         dto.setAngstLevel(journal.getAngstLevel());
         dto.setShipLoyalty(journal.getShipLoyalty());
         dto.setCanonType(journal.getCanonType());

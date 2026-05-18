@@ -9,7 +9,6 @@ import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.journal.repository.BookJournalRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import com.calonuria.backend.features.catalog.service.BookService;
-import com.calonuria.backend.shared.util.JournalStatusConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +42,7 @@ public class BookJournalService extends BaseJournalService<BookJournal, BookJour
             journal.setBook(book);
         }
 
-        journal.setStatus(JournalStatusConverter.toDatabase(dto.getStatus()));
+        journal.setStatus(normalizeJournalStatus(dto.getStatus()));
         journal.setCurrentPage(dto.getCurrentPage());
         journal.setRating(dto.getRating());
         journal.setTearDrops(dto.getTearDrops());

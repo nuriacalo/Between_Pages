@@ -39,10 +39,29 @@ public abstract class BaseJournalService<T extends BaseJournal, R, D extends Bas
     public List<R> getByStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        return journalRepository.findByUserAndStatus(user, status)
+        return journalRepository.findByUserAndStatus(user, normalizeJournalStatus(status))
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    /**
+     * Normaliza el estado enviado por cliente (es/en) al formato persistido en BD.
+     */
+    protected String normalizeJournalStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "TBR";
+        }
+
+        return switch (status.trim().toUpperCase()) {
+            case "LISTA DE DESEOS", "WISHLIST" -> "WISHLIST";
+            case "POR LEER", "PENDIENTE", "TBR" -> "TBR";
+            case "LEYENDO", "READING" -> "READING";
+            case "PAUSADO", "PAUSED" -> "PAUSED";
+            case "ABANDONADO", "DROPPED" -> "DROPPED";
+            case "TERMINADO", "FINISHED" -> "FINISHED";
+            default -> status.trim().toUpperCase();
+        };
     }
 
     @Override

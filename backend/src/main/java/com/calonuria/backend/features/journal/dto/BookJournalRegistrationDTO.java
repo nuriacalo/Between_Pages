@@ -1,7 +1,6 @@
 package com.calonuria.backend.features.journal.dto;
 
 import com.calonuria.backend.shared.constants.ValidationConstants;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,14 +14,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class BookJournalRegistrationDTO extends BaseJournalRegistrationDTO {
 
-    @JsonProperty("book_id")
     private Long bookId;
 
-    @JsonProperty("google_books_id")
     private String googleBooksId;
 
     @Min(value = 0, message = "La página no puede ser negativa")
-    @JsonProperty("current_page")
     private Integer currentPage;
 
     @Pattern(regexp = ValidationConstants.BOOK_READING_FORMAT_PATTERN,
@@ -31,16 +27,12 @@ public class BookJournalRegistrationDTO extends BaseJournalRegistrationDTO {
 
     private List<String> emotions;
 
-    @JsonProperty("favorite_quotes")
     private String favoriteQuotes;
 
     // Campos Módulo 2: Series y Préstamos
-    @JsonProperty("series_name")
     private String seriesName;
 
-    @JsonProperty("series_order")
     private Double seriesOrder;
 
-    @JsonProperty("loaned_to")
     private String loanedTo;
 }

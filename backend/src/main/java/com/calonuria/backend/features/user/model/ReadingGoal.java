@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 
 /**
  * Entidad que representa la meta anual de lectura de un usuario.
- * Mapea la tabla "reading_goal" de la base de datos.
+ * Mapea la tabla "reading_goal" de la base de datos PostgreSQL.
+ * Define la cantidad objetivo de libros/obras que un usuario desea leer
+ * durante un año específico (Similar al Reading Challenge de Goodreads).
  */
 @Entity
 @Table(name = "reading_goal")
@@ -17,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class ReadingGoal {
 
     /**
-     * Identificador único de la meta.
+     * Identificador único de la meta (Primary Key).
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +33,14 @@ public class ReadingGoal {
     private User user;
 
     /**
-     * Año de la meta.
+     * El año del calendario al que corresponde esta meta (e.g., 2024, 2025).
+     * Solo puede haber una meta por usuario y año (Unique Constraint).
      */
     @Column(name = "goal_year", nullable = false)
     private Integer goalYear;
 
     /**
-     * Cantidad objetivo de obras a leer.
+     * Cantidad objetivo de obras a leer establecidas por el usuario (e.g., 50 libros).
      */
     @Column(name = "target_amount", nullable = false)
     private Integer targetAmount;

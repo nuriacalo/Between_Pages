@@ -10,15 +10,34 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST Controller that handles HTTP requests related to the Book Catalog.
+ * Extends {@link BaseCatalogController} to inherit standard CRUD operations
+ * while providing book-specific endpoints.
+ * 
+ * <p>Base path: {@code /api/book}</p>
+ */
 @RestController
 @RequestMapping("/api/book")
 @Tag(name = "Catálogo de Libros", description = "Endpoints para búsqueda y gestión de libros en la base de datos local")
 public class BookController extends BaseCatalogController<Book, BookResponseDTO, Long, BookService> {
 
+    /**
+     * Constructs a new {@code BookController}.
+     *
+     * @param bookService the service responsible for book business logic.
+     */
     public BookController(BookService bookService) {
         super(bookService);
     }
 
+    /**
+     * Searches for books in the local database by title.
+     *
+     * @param title the search query string (must not be empty)
+     * @return a {@link ResponseEntity} containing a list of {@link BookResponseDTO} matching the query,
+     *         or a 400 Bad Request if the search string is empty.
+     */
     @Operation(summary = "Buscar libros en la base de datos local")
     @GetMapping("/search")
     @Override
@@ -29,12 +48,26 @@ public class BookController extends BaseCatalogController<Book, BookResponseDTO,
         return ResponseEntity.ok(service.searchByTitle(title));
     }
 
+    /**
+     * Saves a new book into the local catalog.
+     *
+     * @param dto the payload containing book details to save
+     * @return a {@link ResponseEntity} containing the saved {@link BookResponseDTO}
+     */
     @Operation(summary = "Guardar un nuevo libro en el catálogo")
     @PostMapping
     public ResponseEntity<BookResponseDTO> saveBook(@RequestBody BookResponseDTO dto) {
         return ResponseEntity.ok(service.createBook(dto));
     }
 
+    /**
+     * Updates an existing book in the local catalog.
+     *
+     * @param id  the unique identifier of the book to update
+     * @param dto the payload containing updated book details
+     * @return a {@link ResponseEntity} containing the updated {@link BookResponseDTO},
+     *         or 404 Not Found if the book does not exist.
+     */
     @Operation(summary = "Actualizar un libro existente")
     @PutMapping("/{id}")
     public ResponseEntity<BookResponseDTO> updateBook(@PathVariable Long id, @RequestBody BookResponseDTO dto) {

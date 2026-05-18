@@ -9,6 +9,8 @@ import com.calonuria.backend.features.user.repository.ReadingActivityRepository;
 import com.calonuria.backend.features.user.repository.ReadingGoalRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReadingStatsService {
 
     private final ReadingGoalRepository readingGoalRepository;
@@ -39,7 +42,7 @@ public class ReadingStatsService {
      * @param userId ID del usuario
      * @return DTO con la meta de lectura
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public ReadingGoalDTO getOrCreateReadingGoal(Long userId) {
         int currentYear = LocalDate.now().getYear();
         User user = userRepository.findById(userId)
@@ -57,9 +60,17 @@ public class ReadingStatsService {
         newGoal.setUser(user);
         newGoal.setGoalYear(currentYear);
         newGoal.setTargetAmount(12);
-        ReadingGoal saved = readingGoalRepository.save(newGoal);
-
-        return new ReadingGoalDTO(saved.getId(), saved.getGoalYear(), saved.getTargetAmount());
+        
+        try {
+            ReadingGoal saved = readingGoalRepository.save(newGoal);
+            return new ReadingGoalDTO(saved.getId(), saved.getGoalYear(), saved.getTargetAmount());
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Reading goal for year {} already exists for user ID {}", currentYear, userId);
+            // Fetch the existing one that caused the conflict
+            ReadingGoal goal = readingGoalRepository.findByUserAndGoalYear(user, currentYear)
+                    .orElseThrow(() -> new RuntimeException("Unexpected error fetching reading goal"));
+            return new ReadingGoalDTO(goal.getId(), goal.getGoalYear(), goal.getTargetAmount());
+        }
     }
 
     /**
@@ -84,9 +95,13 @@ public class ReadingStatsService {
                 });
 
         goal.setTargetAmount(targetAmount);
-        ReadingGoal saved = readingGoalRepository.save(goal);
-
-        return new ReadingGoalDTO(saved.getId(), saved.getGoalYear(), saved.getTargetAmount());
+        try {
+            ReadingGoal saved = readingGoalRepository.save(goal);
+            return new ReadingGoalDTO(saved.getId(), saved.getGoalYear(), saved.getTargetAmount());
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Reading goal for year {} already exists for user ID {}", currentYear, userId);
+            return new ReadingGoalDTO(goal.getId(), goal.getGoalYear(), goal.getTargetAmount());
+        }
     }
 
     /**
@@ -174,7 +189,11 @@ public class ReadingStatsService {
             ReadingActivity activity = new ReadingActivity();
             activity.setUser(user);
             activity.setActivityDate(today);
-            readingActivityRepository.save(activity);
+            try {
+                readingActivityRepository.save(activity);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("Activity for date {} already exists for user ID {}", today, userId);
+            }
         }
     }
 }

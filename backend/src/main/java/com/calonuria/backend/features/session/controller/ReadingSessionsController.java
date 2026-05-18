@@ -15,8 +15,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller para sesiones de lectura (timer).
- * POST save session data, GET stats for ETA prediction.
+ * REST Controller that handles HTTP requests for reading sessions.
+ * Provides endpoints to record completed reading sessions and fetch reading velocity statistics
+ * (pages per hour) for predicting reading completion times.
+ * 
+ * <p>Base path: {@code /api/reading-sessions}</p>
  */
 @RestController
 @RequestMapping("/api/reading-sessions")
@@ -28,6 +31,14 @@ public class ReadingSessionsController {
     private final UserRepository userRepository;
     private final GamificationService gamificationService;
 
+    /**
+     * Saves a reading session upon completion of the reading timer.
+     * Maps the session to a book, manga, or fanfic and updates gamification activity.
+     *
+     * @param userDetails the authenticated user context
+     * @param dto         the payload containing the session data (duration, pages read, item ID)
+     * @return a {@link ResponseEntity} indicating success, or throws an error if user is not found.
+     */
     @Operation(summary = "Guardar sesión de lectura (finalizar timer)")
     @PostMapping
     public ResponseEntity<Void> saveSession(@AuthenticationPrincipal UserDetails userDetails,
@@ -40,6 +51,17 @@ public class ReadingSessionsController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Retrieves reading statistics and ETA calculations based on the user's historical reading velocity.
+     *
+     * @param userDetails    the authenticated user context
+     * @param remainingPages the number of pages/chapters remaining in the current media
+     * @param bookId         (Optional) ID of the book being read
+     * @param mangaId        (Optional) ID of the manga being read
+     * @param fanficId       (Optional) ID of the fanfic being read
+     * @return a {@link ResponseEntity} containing a {@link ReadingSessionStatsDTO} with the
+     *         average speed and estimated seconds to finish the remaining pages.
+     */
     @Operation(summary = "Estadísticas de velocidad y ETA para tiempo restante")
     @GetMapping("/stats")
     public ResponseEntity<ReadingSessionStatsDTO> getStats(

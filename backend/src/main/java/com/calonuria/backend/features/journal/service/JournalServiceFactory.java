@@ -18,8 +18,9 @@ public class JournalServiceFactory {
                 services.put(JournalType.BOOK, service);
             } else if (service instanceof MangaJournalService) {
                 services.put(JournalType.MANGA, service);
+            } else if (service instanceof FanficJournalService) {
+                services.put(JournalType.FANFIC, service);
             }
-            // TODO: Add FanficJournalService
         }
     }
 

@@ -1,19 +1,27 @@
 package com.calonuria.backend.features.notes.dto;
 
 public class CreateNoteDto {
-    private String bookId;
+    private String itemType;
+    private Long itemId;
     private String quote;
     private String note;
     private Integer page;
 
     // Getters and setters
-
-    public String getBookId() {
-        return bookId;
+    public String getItemType() {
+        return itemType;
     }
 
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     public String getQuote() {

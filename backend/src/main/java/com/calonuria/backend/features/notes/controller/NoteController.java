@@ -21,31 +21,30 @@ public class NoteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Note>> getNotesByBookId(@RequestParam String bookId, @AuthenticationPrincipal User user) {
-        List<Note> entries = noteRepository.findByBookIdAndUserId(bookId, user.getId());
-        return ResponseEntity.ok(entries);
+    public ResponseEntity<List<Note>> getNotesByItemId(
+            @RequestParam String itemType,
+            @RequestParam Long itemId,
+            @AuthenticationPrincipal User user) {
+        List<Note> notes = noteRepository.findByItemTypeAndItemIdAndUserId(itemType, itemId, user.getId());
+        return ResponseEntity.ok(notes);
     }
 
     @PostMapping
     public ResponseEntity<Note> createNote(@RequestBody CreateNoteDto createNoteDto, @AuthenticationPrincipal User user) {
         Note note = new Note();
-        note.setBookId(createNoteDto.getBookId());
+        note.setUser(user);
+        note.setItemType(createNoteDto.getItemType());
+        note.setItemId(createNoteDto.getItemId());
         note.setQuote(createNoteDto.getQuote());
         note.setNote(createNoteDto.getNote());
         note.setPage(createNoteDto.getPage());
-        note.setUser(user);
-
         Note savedNote = noteRepository.save(note);
         return ResponseEntity.ok(savedNote);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNote(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        Note note = noteRepository.findById(id).orElse(null);
-        if (note == null || !note.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.notFound().build();
-        }
-        noteRepository.delete(note);
+    public ResponseEntity<Void> deleteNote(@PathVariable Long id) {
+        noteRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

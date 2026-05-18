@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/profile/{userId}/goal")
+@RequestMapping("/api/profile/{userId}/goal")
 public class ProfileController {
 
     private final ProfileService profileService;

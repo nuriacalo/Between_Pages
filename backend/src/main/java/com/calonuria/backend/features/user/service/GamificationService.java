@@ -12,6 +12,7 @@ import com.calonuria.backend.features.user.repository.UserRepository;
 import com.calonuria.backend.features.user.application.events.ReadingActivityEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,7 +86,11 @@ public class GamificationService {
             goal.setTargetAmount(dto.getTargetAmount());
         }
         
-        readingGoalRepository.save(goal);
+        try {
+            readingGoalRepository.save(goal);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Reading goal for year {} already exists for user {}", dto.getGoalYear(), user.getEmail());
+        }
     }
     
     public void recordActivity(String email) {
@@ -97,7 +102,11 @@ public class GamificationService {
             ReadingActivity activity = new ReadingActivity();
             activity.setUser(user);
             activity.setActivityDate(today);
-            readingActivityRepository.save(activity);
+            try {
+                readingActivityRepository.save(activity);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("Activity for date {} already exists for user {}", today, user.getEmail());
+            }
         }
     }
 

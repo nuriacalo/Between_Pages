@@ -1,7 +1,6 @@
 package com.calonuria.backend.features.journal.dto;
 
 import com.calonuria.backend.shared.constants.ValidationConstants;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -15,7 +14,6 @@ import java.time.LocalDate;
 public abstract class BaseJournalRegistrationDTO {
 
     @NotNull(message = ValidationConstants.USER_ID_REQUIRED)
-    @JsonProperty("user_id")
     private Long userId;
 
     @NotBlank(message = ValidationConstants.STATUS_REQUIRED)
@@ -29,26 +27,20 @@ public abstract class BaseJournalRegistrationDTO {
 
     @Min(value = 0, message = ValidationConstants.TEAR_DROPS_MIN)
     @Max(value = 5, message = ValidationConstants.TEAR_DROPS_MAX)
-    @JsonProperty("tear_drops")
     private Integer tearDrops;
 
     @Min(value = 0, message = ValidationConstants.SPICE_FLAMES_MIN)
     @Max(value = 5, message = ValidationConstants.SPICE_FLAMES_MAX)
-    @JsonProperty("spice_flames")
     private Integer spiceFlames;
 
-    @JsonProperty("reading_format")
     private String readingFormat;
 
-    @JsonProperty("start_date")
     private LocalDate startDate;
 
-    @JsonProperty("end_date")
     private LocalDate endDate;
 
     private Boolean rereading;
 
-    @JsonProperty("personal_notes")
     private String personalNotes;
 
     private String ownership;
@@ -58,7 +50,6 @@ public abstract class BaseJournalRegistrationDTO {
     private String author;
     private String description;
 
-    @JsonProperty("cover_url")
     private String coverUrl;
 
     private String genre;

@@ -12,8 +12,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador para la autenticación de usuarios.
- * Delega la lógica de negocio a AuthService.
+ * REST Controller for user authentication and authorization.
+ * Handles login processing, JWT token issuance, and token refreshing.
+ * Delegates actual business logic to {@link AuthService}.
+ * 
+ * <p>Base path: {@code /api/auth}</p>
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -22,10 +25,22 @@ public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * Constructs a new {@code AuthController}.
+     *
+     * @param authService the service that handles authentication algorithms and token generation
+     */
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
+    /**
+     * Authenticates a user by their email and password.
+     *
+     * @param loginDTO the payload containing the user's login credentials
+     * @return a {@link ResponseEntity} containing an access token and a refresh token,
+     *         or a 401 Unauthorized status if credentials are invalid.
+     */
     @Operation(summary = "Login — devuelve accessToken y refreshToken")
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
@@ -36,6 +51,13 @@ public class AuthController {
         }
     }
 
+    /**
+     * Refreshes an expired access token using a valid refresh token.
+     *
+     * @param request the payload containing the active refresh token
+     * @return a {@link ResponseEntity} containing the newly generated tokens,
+     *         or a 401 Unauthorized status if the refresh token is invalid or expired.
+     */
     @Operation(summary = "Renovar tokens")
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
@@ -49,6 +71,14 @@ public class AuthController {
         }
     }
 
+    /**
+     * Retrieves the profile information of the currently authenticated user
+     * using the access token passed in the Authorization header.
+     *
+     * @param authentication the authenticated security context
+     * @return a {@link ResponseEntity} containing the user's data,
+     *         or 401 Unauthorized if the token is missing or invalid.
+     */
     @Operation(summary = "Datos del usuario autenticado")
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {

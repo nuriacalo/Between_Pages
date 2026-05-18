@@ -14,8 +14,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador para estadísticas de lectura del usuario.
- * Gestiona meta anual y racha de lectura.
+ * REST Controller for managing detailed reading statistics.
+ * This controller handles logic for reading goals, consecutive reading streaks,
+ * and recording daily activity points.
+ * 
+ * <p>Base path: {@code /api/reading-stats}</p>
  */
 @RestController
 @RequestMapping("/api/reading-stats")
@@ -28,8 +31,11 @@ public class ReadingStatsController {
     private final UserRepository userRepository;
 
     /**
-     * Obtiene el usuario por email o lanza excepción.
-     * Método privado para evitar duplicación de código.
+     * Internal helper method to resolve the authenticated user's ID from their email.
+     *
+     * @param email the user's email extracted from the JWT token
+     * @return the resolved {@link User} entity
+     * @throws RuntimeException if the user cannot be found in the database
      */
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -37,8 +43,11 @@ public class ReadingStatsController {
     }
 
     /**
-     * Obtiene la meta de lectura del usuario para el año actual.
-     * Si no existe, crea una meta por defecto de 12 libros.
+     * Retrieves the reading goal for the current year.
+     * If a goal does not exist yet, a default goal of 12 items is automatically created.
+     *
+     * @param email the authenticated user's email
+     * @return a {@link ResponseEntity} containing a {@link ReadingGoalDTO}
      */
     @Operation(summary = "Obtener meta de lectura anual")
     @GetMapping("/goal")
@@ -49,7 +58,11 @@ public class ReadingStatsController {
     }
 
     /**
-     * Actualiza la meta de lectura del usuario.
+     * Updates the target reading goal amount for the current year.
+     *
+     * @param email        the authenticated user's email
+     * @param targetAmount the new target number of items to read
+     * @return a {@link ResponseEntity} containing the updated {@link ReadingGoalDTO}
      */
     @Operation(summary = "Actualizar meta de lectura")
     @PutMapping("/goal")
@@ -61,7 +74,11 @@ public class ReadingStatsController {
     }
 
     /**
-     * Obtiene la racha de lectura y actividad semanal del usuario.
+     * Calculates and returns the user's current reading streak and their daily
+     * activity over the last 7 days.
+     *
+     * @param email the authenticated user's email
+     * @return a {@link ResponseEntity} containing a {@link ReadingStreakDTO}
      */
     @Operation(summary = "Obtener racha de lectura y actividad semanal")
     @GetMapping("/streak")
@@ -72,7 +89,11 @@ public class ReadingStatsController {
     }
 
     /**
-     * Registra actividad de lectura para hoy (llamar cuando se actualiza progreso).
+     * Forces a record of reading activity for today.
+     * Usually called silently when a user updates progress on any journal item.
+     *
+     * @param email the authenticated user's email
+     * @return a {@link ResponseEntity} with status 200 OK
      */
     @Operation(summary = "Registrar actividad de lectura de hoy")
     @PostMapping("/activity")

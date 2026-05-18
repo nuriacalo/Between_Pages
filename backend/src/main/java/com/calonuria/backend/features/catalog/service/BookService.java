@@ -41,8 +41,8 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
         if (StringUtils.hasText(googleBooksId)) {
             return bookRepository.findByGoogleBooksId(googleBooksId)
                     .orElseGet(() -> {
-                        Book newBook = googleBooksService.fetchBookByGoogleId(googleBooksId);
-                        return bookRepository.save(newBook);
+                        BookResponseDTO bookDTO = googleBooksService.fetchBookByGoogleId(googleBooksId);
+                        return createBookFromDto(bookDTO);
                     });
         }
 
@@ -77,10 +77,8 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
 
     @Transactional
     public BookResponseDTO createBook(BookResponseDTO dto) {
-        Book book = new Book();
-        updateBookFromDto(book, dto);
-        Book savedBook = bookRepository.save(book);
-        return mapToDTO(savedBook);
+        Book book = createBookFromDto(dto);
+        return mapToDTO(book);
     }
 
     @Transactional
@@ -90,6 +88,13 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
                     updateBookFromDto(book, dto);
                     return mapToDTO(bookRepository.save(book));
                 });
+    }
+
+    private Book createBookFromDto(BookResponseDTO dto) {
+        Book book = new Book();
+        book.setGoogleBooksId(dto.getGoogleBooksId());
+        updateBookFromDto(book, dto);
+        return bookRepository.save(book);
     }
 
     private void updateBookFromDto(Book book, BookResponseDTO dto) {
@@ -107,7 +112,11 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
             Set<Genre> genres = new HashSet<>();
             for (String genreName : dto.getGenres()) {
                 Genre genre = genreRepository.findByNameIgnoreCase(genreName)
-                        .orElseGet(() -> genreRepository.save(new Genre(null, genreName)));
+                        .orElseGet(() -> {
+                            Genre newGenre = new Genre();
+                            newGenre.setName(genreName);
+                            return genreRepository.save(newGenre);
+                        });
                 genres.add(genre);
             }
             book.setGenres(genres);

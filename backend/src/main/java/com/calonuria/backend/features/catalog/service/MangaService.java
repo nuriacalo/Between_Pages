@@ -1,6 +1,7 @@
 package com.calonuria.backend.features.catalog.service;
 
 import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
+import com.calonuria.backend.features.catalog.service.external.JikanService;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.features.catalog.model.Genre;
 import com.calonuria.backend.features.catalog.model.Manga;
@@ -16,18 +17,43 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing manga entities within the local catalog.
+ * Handles creation, updates, querying, and DTO mapping for mangas.
+ * Designed to interact cooperatively with external synchronization services (e.g., Jikan API).
+ */
 @Service
 public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Long> {
 
     private final MangaRepository mangaRepository;
     private final GenreRepository genreRepository;
+    private final JikanService jikanService;
 
-    public MangaService(MangaRepository mangaRepository, GenreRepository genreRepository) {
+    /**
+     * Constructs a new {@code MangaService}.
+     *
+     * @param mangaRepository the repository for manga persistence
+     * @param genreRepository the repository for genre persistence
+     */
+    public MangaService(MangaRepository mangaRepository, GenreRepository genreRepository, JikanService jikanService) {
         super(mangaRepository);
         this.mangaRepository = mangaRepository;
         this.genreRepository = genreRepository;
+        this.jikanService = jikanService;
     }
 
+    /**
+     * Retrieves a manga from the local database using either its internal ID or its MyAnimeList ID.
+     * Note: Unlike books or fanfics, if a manga does not exist by its MAL ID, this method
+     * throws an exception rather than fetching it automatically. External fetch logic should
+     * be handled by the Jikan API controller.
+     *
+     * @param mangaId the local database ID (optional)
+     * @param malId   the MyAnimeList ID (optional)
+     * @return the found {@link Manga} entity
+     * @throws ResourceNotFoundException if the manga is not found locally
+     * @throws IllegalArgumentException  if both IDs are null
+     */
     @Transactional
     public Manga findOrCreate(Long mangaId, Integer malId) {
         if (mangaId != null) {
@@ -36,15 +62,25 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
         }
 
         if (malId != null) {
-            // Intenta buscar por malId. Si no existe, lanza una excepción.
-            // La creación a partir de un malId debe ser manejada por JikanService y ExternalMangaController.
             return mangaRepository.findByMalId(malId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Manga con malId " + malId + " no encontrado en la base de datos local."));
+                    .orElseGet(() -> {
+                        MangaResponseDTO dto = jikanService.getMangaById(malId);
+                        if (dto == null) {
+                            throw new ResourceNotFoundException("Manga con malId " + malId + " no encontrado en la base de datos local ni en Jikan.");
+                        }
+                        return createMangaFromDTO(dto);
+                    });
         }
 
         throw new IllegalArgumentException("Se debe proporcionar un mangaId o un malId para encontrar un manga.");
     }
 
+    /**
+     * Converts a raw {@link Manga} entity into its corresponding DTO format.
+     *
+     * @param manga the entity to map
+     * @return the mapped {@link MangaResponseDTO}
+     */
     @Override
     public MangaResponseDTO mapToDTO(Manga manga) {
         MangaResponseDTO dto = new MangaResponseDTO();
@@ -66,9 +102,23 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
         return dto;
     }
 
+    /**
+     * Creates a new manual manga entry in the catalog.
+     *
+     * @param dto the data payload for the new manga
+     * @return the saved and mapped {@link MangaResponseDTO}
+     */
     @Transactional
     public MangaResponseDTO createManga(MangaResponseDTO dto) {
+        Manga manga = createMangaFromDTO(dto);
+        manga.setSource("MANUAL");
+        Manga savedManga = mangaRepository.save(manga);
+        return mapToDTO(savedManga);
+    }
+
+    private Manga createMangaFromDTO(MangaResponseDTO dto) {
         Manga manga = new Manga();
+        manga.setMalId(dto.getMalId());
         manga.setTitle(dto.getTitle());
         manga.setAuthor(dto.getAuthor());
         manga.setDemographic(dto.getDemographic());
@@ -78,7 +128,7 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
         manga.setTotalVolumes(dto.getTotalVolumes());
         manga.setPublicationStatus(dto.getPublicationStatus());
         manga.setMalScore(dto.getMalScore());
-        manga.setSource("MANUAL");
+        manga.setSource(dto.getSource());
 
         if (dto.getGenres() != null) {
             Set<Genre> genres = new HashSet<>();
@@ -93,11 +143,17 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
             }
             manga.setGenres(genres);
         }
-        
-        Manga savedManga = mangaRepository.save(manga);
-        return mapToDTO(savedManga);
+        return mangaRepository.save(manga);
     }
 
+    /**
+     * Updates an existing manga record with the properties provided in the DTO.
+     *
+     * @param id  the local database ID of the manga to update
+     * @param dto the data to apply
+     * @return an {@link Optional} containing the updated DTO, or empty if not found
+     */
+    @Transactional
     public Optional<MangaResponseDTO> updateManga(Long id, MangaResponseDTO dto) {
         return mangaRepository.findById(id)
                 .map(manga -> {
@@ -129,6 +185,12 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
                 });
     }
 
+    /**
+     * Searches for mangas matching the given title query, ignoring case.
+     *
+     * @param title the substring to search for in manga titles
+     * @return a list of {@link MangaResponseDTO} matching the query
+     */
     @Override
     public List<MangaResponseDTO> searchByTitle(String title) {
         return mangaRepository.findByTitleContainingIgnoreCase(title)

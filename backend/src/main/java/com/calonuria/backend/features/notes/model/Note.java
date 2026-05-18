@@ -16,8 +16,11 @@ public class Note {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "book_id", nullable = false)
-    private String bookId;
+    @Column(name = "item_type", nullable = false)
+    private String itemType;
+
+    @Column(name = "item_id", nullable = false)
+    private Long itemId;
 
     @Column(nullable = true)
     private String quote;
@@ -37,7 +40,6 @@ public class Note {
     }
 
     // Getters and setters
-
     public Long getId() {
         return id;
     }
@@ -54,12 +56,20 @@ public class Note {
         this.user = user;
     }
 
-    public String getBookId() {
-        return bookId;
+    public String getItemType() {
+        return itemType;
     }
 
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     public String getQuote() {

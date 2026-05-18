@@ -12,7 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador para la gestión de usuarios.
+ * REST Controller for managing user profiles and registration.
+ * Handles the creation of new accounts and fetching user metadata.
+ * 
+ * <p>Base path: {@code /api/user}</p>
  */
 @RestController
 @RequestMapping("/api/user")
@@ -21,10 +24,22 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Constructs a new {@code UserController}.
+     *
+     * @param userService the service handling user persistence and logic
+     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    /**
+     * Registers a new user in the system.
+     *
+     * @param registrationDTO the payload containing name, email, and password
+     * @return a {@link ResponseEntity} containing the registered {@link UserResponseDTO},
+     *         or a 400 Bad Request with an error message if the email is already taken.
+     */
     @Operation(summary = "Registrar un nuevo usuario")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente"),
@@ -39,6 +54,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieves the profile metadata for a specific user by their ID.
+     *
+     * @param id the unique identifier of the user
+     * @return a {@link ResponseEntity} containing the {@link UserResponseDTO},
+     *         or 404 Not Found if the user does not exist.
+     */
     @Operation(summary = "Obtener usuario por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuario encontrado"),

@@ -1,11 +1,15 @@
 package com.calonuria.backend.features.session.service;
 
+import com.calonuria.backend.features.catalog.model.Book;
+import com.calonuria.backend.features.catalog.model.Fanfiction;
+import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.session.dto.ReadingSessionRecordDTO;
 import com.calonuria.backend.features.session.dto.ReadingSessionStatsDTO;
 import com.calonuria.backend.features.session.model.ReadingSession;
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.session.repository.ReadingSessionRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ public class ReadingSessionService {
 
     private final ReadingSessionRepository readingSessionRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     private static final double DEFAULT_SPEED_PPH = 30.0; // Default 30 páginas/hora
 
@@ -35,14 +40,11 @@ public class ReadingSessionService {
         session.setPagesRead(dto.getPagesRead());
 
         if (dto.getBookId() != null) {
-            session.setItemType(ReadingSession.ItemType.BOOK);
-            session.setItemId(dto.getBookId());
+            session.setBook(entityManager.getReference(Book.class, dto.getBookId()));
         } else if (dto.getMangaId() != null) {
-            session.setItemType(ReadingSession.ItemType.MANGA);
-            session.setItemId(dto.getMangaId());
+            session.setManga(entityManager.getReference(Manga.class, dto.getMangaId()));
         } else if (dto.getFanficId() != null) {
-            session.setItemType(ReadingSession.ItemType.FANFIC);
-            session.setItemId(dto.getFanficId());
+            session.setFanfic(entityManager.getReference(Fanfiction.class, dto.getFanficId()));
         } else {
             throw new IllegalArgumentException("Debe especificar al menos un ID de item (book/manga/fanfic)");
         }
