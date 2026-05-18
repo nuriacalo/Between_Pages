@@ -193,23 +193,23 @@ En seguridad hay rutas públicas explícitas (registro, login, refresh, búsqued
 - `GET /api/external/manga/{malId}`
 
 ### Journal
-- `POST /api/book-journal`
-- `GET /api/book-journal/user/{userId}`
-- `GET /api/book-journal/user/{userId}/status?status=...`
-- `GET /api/book-journal/user/{userId}/rereadings`
-- `DELETE /api/book-journal/{journalId}`
+- `POST /api/journal/book`
+- `GET /api/journal/BOOK/user/{userId}`
+- `GET /api/journal/BOOK/user/{userId}/status?status=...`
+- `GET /api/journal/BOOK/user/{userId}/rereadings`
+- `DELETE /api/journal/BOOK/{journalId}`
 
-- `POST /api/manga-journal`
-- `GET /api/manga-journal/user/{userId}`
-- `GET /api/manga-journal/user/{userId}/status?status=...`
-- `GET /api/manga-journal/user/{userId}/rereadings`
-- `DELETE /api/manga-journal/{journalId}`
+- `POST /api/journal/manga`
+- `GET /api/journal/MANGA/user/{userId}`
+- `GET /api/journal/MANGA/user/{userId}/status?status=...`
+- `GET /api/journal/MANGA/user/{userId}/rereadings`
+- `DELETE /api/journal/MANGA/{journalId}`
 
-- `POST /api/fanfic-journal`
-- `GET /api/fanfic-journal/user/{userId}`
-- `GET /api/fanfic-journal/user/{userId}/status?status=...`
-- `GET /api/fanfic-journal/user/{userId}/rereadings`
-- `DELETE /api/fanfic-journal/{journalId}`
+- `POST /api/journal/fanfic`
+- `GET /api/journal/FANFIC/user/{userId}`
+- `GET /api/journal/FANFIC/user/{userId}/status?status=...`
+- `GET /api/journal/FANFIC/user/{userId}/rereadings`
+- `DELETE /api/journal/FANFIC/{journalId}`
 
 ### Listas
 - `GET /api/lists/user/{userId}`
@@ -255,4 +255,3 @@ flutter build linux
 
 ## Autoría
 Nuria Calo — Proyecto TFC.
-
