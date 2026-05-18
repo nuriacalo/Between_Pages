@@ -14,8 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Página de progreso de lectura de un libro.
-/// Muestra stats, progreso circular y permite actualizar la página actual.
 class BookReadingProgressPage extends ConsumerStatefulWidget {
   final BookJournalResponseDto journal;
 
@@ -29,8 +27,8 @@ class BookReadingProgressPage extends ConsumerStatefulWidget {
 class _BookReadingProgressPageState
     extends ConsumerState<BookReadingProgressPage> {
   bool _isSaving = false;
-  int? _currentPageLocal; // Para actualizaciones inmediatas sin esperar provider
-  int? _totalPagesLocal;  // Para actualizaciones inmediatas del total de páginas
+  int? _currentPageLocal;
+  int? _totalPagesLocal;
 
   BookJournalResponseDto get _journal => widget.journal;
   BookResponseDTO get _book => _journal.book;
@@ -44,7 +42,7 @@ class _BookReadingProgressPageState
     final previousPage = _currentPageLocal;
     setState(() {
       _isSaving = true;
-      _currentPageLocal = newPage; // Actualización optimista e inmediata de la UI
+      _currentPageLocal = newPage;
     });
 
     try {
@@ -54,8 +52,8 @@ class _BookReadingProgressPageState
 
       final dto = BookJournalRecordDTO(
         userId: user.idUser,
-        bookId: _book.idBook > 0 ? _book.idBook : null,
-        googleBooksId: _book.googleBooksId.isNotEmpty ? _book.googleBooksId : null,
+        bookId: _book.idBook,
+        googleBooksId: _book.googleBooksId != null && _book.googleBooksId!.isNotEmpty ? _book.googleBooksId : null,
         status: JournalStatusHelper.mapStatusToDb(_journal.status),
         currentPage: newPage,
         rating: _journal.rating,
@@ -72,7 +70,6 @@ class _BookReadingProgressPageState
 
       await repo.saveRaw(dto.toJson());
 
-      // Refrescar providers en background
       ref.invalidate(journalProvider(JournalType.book));
       ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
 
@@ -96,7 +93,6 @@ class _BookReadingProgressPageState
       }
     } catch (e) {
       if (mounted) {
-        // Revertir el estado local en caso de que la petición falle
         setState(() => _currentPageLocal = previousPage);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -159,7 +155,6 @@ class _BookReadingProgressPageState
             ),
           ),
         );
-        // Después de guardar, mostramos el modal para actualizar el progreso
         _showUpdatePageSheet(knownTotal: totalPages);
       }
     } catch (e) {
@@ -352,8 +347,6 @@ class _BookReadingProgressPageState
       ),
     );
 
-    // Si el libro fue editado y guardado, invalidamos el provider para
-    // que la UI se refresque con los nuevos datos.
     if (result != null && mounted) {
       ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
       ref.invalidate(journalProvider(JournalType.book));
@@ -366,13 +359,10 @@ class _BookReadingProgressPageState
     final textTheme = Theme.of(context).textTheme;
     final accent = const Color(0xFFA87C80);
 
-    // Escuchar el provider para actualizaciones en tiempo real
     final updatedJournal = ref.watch(journalEntryProvider((JournalType.book, _book.idBook)));
     final journal = (updatedJournal as BookJournalResponseDto?) ?? _journal;
     final book = journal.book;
 
-    // Prioriza el estado local para una actualización visual inmediata (optimistic UI),
-    // luego el valor del provider.
     final currentPage = _currentPageLocal ?? journal.currentPage ?? 0;
     final totalPages = _totalPagesLocal ?? book.pageCount;
     final progress = ((totalPages ?? 0) > 0)
@@ -381,6 +371,11 @@ class _BookReadingProgressPageState
    return DefaultTabController(
   length: 3,
   child: Scaffold(
+    floatingActionButton: FloatingActionButton(
+      onPressed: _goToEditBookDetails,
+      tooltip: 'Editar datos del libro',
+      child: const Icon(Icons.edit),
+    ),
     body: NestedScrollView(
       headerSliverBuilder: (context, innerScrolled) => [
         SliverAppBar(
@@ -388,13 +383,6 @@ class _BookReadingProgressPageState
                 pinned: true,
                 backgroundColor: accent,
                 foregroundColor: Colors.white,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_document),
-                    tooltip: 'Editar datos del libro',
-                    onPressed: _goToEditBookDetails,
-                  ),
-                ],
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     book.title,
@@ -423,7 +411,7 @@ class _BookReadingProgressPageState
       body: TabBarView(
         children: [
           _buildProgressTab(accent, currentPage, totalPages, progress, journal, colorScheme, textTheme),
-          SecondBrainTab(bookId: _book.idBook),
+          SecondBrainTab(itemType: 'BOOK', itemId: _book.idBook),
           JournalItemEditPage(journal: journal, type: JournalType.book),
         ],
       ),
@@ -486,7 +474,7 @@ class _BookReadingProgressPageState
               label: const Text('Editar journal completo'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: accent,
-                side: BorderSide(color: accent.withValues(alpha: 0.4)),
+                side: BorderSide(color: accent.withOpacity(0.4)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -512,7 +500,7 @@ class _BookReadingProgressPageState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -528,10 +516,10 @@ class _BookReadingProgressPageState
                           imageUrl: coverUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withOpacity(0.1),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withOpacity(0.1),
                             child: const Icon(
                               Icons.book,
                               color: Colors.white54,
@@ -540,7 +528,7 @@ class _BookReadingProgressPageState
                           ),
                         )
                       : Container(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Colors.white.withOpacity(0.1),
                           child: const Icon(
                             Icons.book,
                             color: Colors.white54,
@@ -558,7 +546,6 @@ class _BookReadingProgressPageState
 
   Widget _buildProgressIndicator(Color accent, int currentPage, int? totalPages, double progress) {
     final total = totalPages;
-    // Módulo 1: Precisión matemática con 1 decimal
     final percentage = (progress * 100).toStringAsFixed(1);
 
     return Column(
@@ -569,16 +556,14 @@ class _BookReadingProgressPageState
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Fondo del círculo
               CircularProgressIndicator(
                 value: 1,
                 strokeWidth: 14,
-                backgroundColor: accent.withValues(alpha: 0.1),
+                backgroundColor: accent.withOpacity(0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  accent.withValues(alpha: 0.1),
+                  accent.withOpacity(0.1),
                 ),
               ),
-              // Progreso animado
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0, end: progress),
                 duration: const Duration(milliseconds: 1200),
@@ -593,7 +578,6 @@ class _BookReadingProgressPageState
                   );
                 },
               ),
-              // Texto central
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -642,7 +626,6 @@ class _BookReadingProgressPageState
 
     return Consumer(
       builder: (context, ref, child) {
-        // Calculamos los parámetros usando el valor actualizado en tiempo real
         final remainingForStats = remaining ?? 0;
         final statsParams = ReadingStatsParams(
           bookId: journal.book.idBook,
@@ -677,7 +660,6 @@ class _BookReadingProgressPageState
         ];
 
         final statsData = statsAsync.value;
-        // Solo mostrar velocidad si hay datos reales (no el valor por defecto de 30.0)
         final speed = statsData?['speedPagesPerHour'] as double?;
         if (speed != null && speed > 0 && speed != 30.0) {
           stats.add(
@@ -732,8 +714,6 @@ class _BookReadingProgressPageState
   }
 }
 
-// ─── Modelo y card para stats ─────────────────────────────────────────────────
-
 class _StatItem {
   final IconData icon;
   final String label;
@@ -761,7 +741,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF3D2D30) : const Color(0xFFFDF5F2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.15)),
+        border: Border.all(color: accent.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CachedImage extends StatelessWidget {
   final String url;
@@ -26,11 +27,21 @@ class CachedImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      placeholder: (context, url) => placeholder ?? const CircularProgressIndicator(),
-      errorWidget: (context, url, error) => errorWidget ?? const Icon(Icons.error),
+      placeholder: (context, url) =>
+          placeholder ??
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: width,
+              height: height,
+              color: Colors.white,
+            ),
+          ),
+      errorWidget: (context, url, error) =>
+          errorWidget ?? const Icon(Icons.error),
       fadeInDuration: const Duration(milliseconds: 300),
       fadeOutDuration: const Duration(milliseconds: 200),
     );
   }
 }
-

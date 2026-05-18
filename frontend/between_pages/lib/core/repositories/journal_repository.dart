@@ -12,17 +12,35 @@ class JournalRepository<T> {
   final ApiClient _apiClient;
   final JournalType _type;
 
-  String get _endpointPrefix {
+  // Backend endpoints (JournalController)
+  // POST:
+  //   /api/journal/book | /api/journal/manga | /api/journal/fanfic
+  // GET:
+  //   /api/journal/BOOK|MANGA|FANFIC/user/{userId}
+  String get _journalBase => '/journal';
+
+  String get _saveUrl {
     switch (_type) {
+      case JournalType.book:
+        return '$_journalBase/book';
+      case JournalType.manga:
+        return '$_journalBase/manga';
       case JournalType.fanfic:
-        return 'fanfiction-journal';
-      default:
-        return '${_type.name.toLowerCase()}-journal';
+        return '$_journalBase/fanfic';
     }
   }
 
-  String get _userUrl => '/$_endpointPrefix/user';
-  String get _saveUrl => '/$_endpointPrefix';
+  String get _userUrl {
+    switch (_type) {
+      case JournalType.book:
+        return '$_journalBase/BOOK/user';
+      case JournalType.manga:
+        return '$_journalBase/MANGA/user';
+      case JournalType.fanfic:
+        return '$_journalBase/FANFIC/user';
+    }
+  }
+
 
   /// Parsea un JSON individual al tipo T
   T Function(Map<String, dynamic>) parser;
@@ -53,6 +71,8 @@ class JournalRepository<T> {
       throw Exception(
         'Backend dice: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}',
       );
+    } catch (e) {
+      throw Exception('Error al procesar los datos: $e');
     }
   }
 
@@ -74,10 +94,11 @@ class JournalRepository<T> {
 
   /// Actualiza un journal existente
   Future<Map<String, dynamic>> updateRaw(Map<String, dynamic> json) async {
+    // El backend actual solo expone POST (no PUT/PATCH) en JournalController.
     try {
-      debugPrint('[JournalRepository] PUT $_saveUrl');
+      debugPrint('[JournalRepository] POST $_saveUrl (update)');
       debugPrint('[JournalRepository] Payload: ${jsonEncode(json)}');
-      final response = await _apiClient.put(_saveUrl, data: json);
+      final response = await _apiClient.post(_saveUrl, data: json);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       debugPrint('[JournalRepository] Error: ${e.response?.statusCode}');

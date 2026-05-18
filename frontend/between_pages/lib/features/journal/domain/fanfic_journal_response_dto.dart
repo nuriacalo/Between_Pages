@@ -3,8 +3,12 @@ import 'package:between_pages/features/journal/application/providers/reading_tim
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'base_journal_response_dto.dart';
 
+part 'fanfic_journal_response_dto.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class FanficJournalResponseDTO extends BaseJournalResponseDTO {
   final FanfictionResponseDTO fanfic;
   final int? currentChapter;
@@ -40,53 +44,10 @@ class FanficJournalResponseDTO extends BaseJournalResponseDTO {
           author: fanfic.author,
         );
 
-  factory FanficJournalResponseDTO.fromJson(Map<String, dynamic> json) {
-    return FanficJournalResponseDTO(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      userId: int.tryParse(json['userId']?.toString() ?? '0') ?? 0,
-      fanfic: FanfictionResponseDTO.fromJson(
-        json['fanfic'] as Map<String, dynamic>,
-      ),
-      status: json['status'] as String,
-      currentChapter: json['currentChapter'] as int?,
-      rating: json['rating'] as int?,
-      tearDrops: json['tearDrops'] as int?,
-      spiceFlames: json['spiceFlames'] as int?,
-      mainShip: json['mainShip'] as String?,
-      secondaryShips: json['secondaryShips'] as String?,
-      theme: json['theme'] as String?,
-      angstLevel: json['angstLevel'] as String?,
-      shipLoyalty: json['shipLoyalty'] as String?,
-      canonType: json['canonType'] as String?,
-      rereading: json['rereading'] as bool?,
-      personalNotes: json['personalNotes'] as String?,
-      startDate: json['startDate'] as String?,
-      endDate: json['endDate'] as String?,
-    );
-  }
+  factory FanficJournalResponseDTO.fromJson(Map<String, dynamic> json) =>
+      _$FanficJournalResponseDTOFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'fanfic': fanfic.toJson(),
-      'status': status,
-      'currentChapter': currentChapter,
-      'rating': rating,
-      'tearDrops': tearDrops,
-      'spiceFlames': spiceFlames,
-      'mainShip': mainShip,
-      'secondaryShips': secondaryShips,
-      'theme': theme,
-      'angstLevel': angstLevel,
-      'shipLoyalty': shipLoyalty,
-      'canonType': canonType,
-      'rereading': rereading,
-      'personalNotes': personalNotes,
-      'startDate': startDate,
-      'endDate': endDate,
-    };
-  }
+  Map<String, dynamic> toJson() => _$FanficJournalResponseDTOToJson(this);
 
   DiaryJournalData toDiaryData() {
     return DiaryJournalData(

@@ -48,6 +48,24 @@ class CatalogRepository {
       );
     }
   }
+
+  Future<MangaResponseDTO> saveOrUpdateManga(MangaResponseDTO manga) async {
+    try {
+      final Response response;
+      if (manga.idManga == 0) {
+        // Crear nuevo manga
+        response = await _apiClient.post(ApiConstants.manga, data: manga.toJson());
+      } else {
+        // Actualizar manga existente
+        response = await _apiClient.put('${ApiConstants.manga}/${manga.idManga}', data: manga.toJson());
+      }
+      return MangaResponseDTO.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(
+        'Error al guardar el manga: ${e.response?.statusCode} -> ${e.response?.data ?? e.message}',
+      );
+    }
+  }
 }
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {

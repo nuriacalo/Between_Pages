@@ -1,21 +1,42 @@
 import 'package:between_pages/core/repositories/journal_repository.dart';
 import 'package:between_pages/features/journal/domain/base_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/journal/presentation/widgets/emoji_rating_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// A generic, reusable form for editing any type of journal entry (Book, Manga, Fanfic).
+/// 
+/// This widget abstracts away the boilerplate of handling form state, emotional ratings 
+/// (tear drops and spice flames), ownership status, and save operations.
+/// 
+/// [T] represents the specific response DTO type (e.g., BookJournalResponseDto).
+/// [R] represents the specific record DTO type for saving (e.g., BookJournalRecordDTO).
 class JournalEditForm<
     T extends BaseJournalResponseDTO,
     R extends BaseJournalRecordDTO> extends ConsumerStatefulWidget {
+  
+  /// The existing journal data to pre-fill the form.
   final T journal;
+  
+  /// The repository instance used to save the updated journal data.
   final JournalRepository repository;
+  
+  /// A builder function that constructs the specific record DTO [R] from the current 
+  /// journal state and the updated values map.
   final R Function(T, Map<String, dynamic>) recordDtoBuilder;
+  
+  /// A builder function that provides UI for any media-specific fields (e.g., current page, current chapter).
   final Widget Function(T, Map<String, TextEditingController>)
       specificFieldsBuilder;
+  
+  /// Callback triggered immediately after a successful save operation.
   final Function(WidgetRef) onSave;
+  
+  /// Optional accent color to theme the form specific to the media type.
   final Color? accentColor;
 
   const JournalEditForm({
@@ -44,6 +65,7 @@ class _JournalEditFormState<
   late int? _spiceFlames;
   late int? _rating;
   late String? _ownership;
+  late bool _isRereading;
   late final TextEditingController _personalNotesController;
   late final Map<String, TextEditingController> _specificControllers;
 
@@ -70,6 +92,7 @@ class _JournalEditFormState<
     _spiceFlames = journal.spiceFlames;
     _rating = journal.rating;
     _ownership = _ownershipDbToUi[journal.ownership] ?? journal.ownership;
+    _isRereading = journal.rereading ?? false;
     _personalNotesController = TextEditingController(text: journal.personalNotes);
     _specificControllers = {};
   }
@@ -83,6 +106,7 @@ class _JournalEditFormState<
     super.dispose();
   }
 
+  /// Validates the form and triggers the save operation to the backend API.
   Future<void> _saveJournal() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -108,10 +132,13 @@ class _JournalEditFormState<
           'spiceFlames': _spiceFlames,
           'rating': _rating,
           'ownership': _ownership != null ? _ownershipUiToDb[_ownership] : null,
+          'rereading': _isRereading,
           'personalNotes': _personalNotesController.text,
+          // Back usa LocalDate (YYYY-MM-DD). Evitamos mandar ISO8601 con hora/offset.
           'endDate': isFinishing
-              ? DateTime.now().toIso8601String()
+              ? DateTime.now().toLocal().toIso8601String().split('T').first
               : widget.journal.endDate,
+
           ...specificValues,
         },
       );
@@ -165,9 +192,14 @@ class _JournalEditFormState<
           children: [
             // Common fields
             _buildStatusSelector(),
+            _buildRereadingToggle(),
             _buildEmotionSelectors(),
             _buildRatingSelector(),
-            _buildOwnershipSelector(),
+            // En fanfic no usamos propiedad (siempre en inglés según requerimiento)
+            // Propiedad no necesaria para fanfic; la ocultamos
+            // Fanfic: no usamos propiedad
+            // (Book/Manga sí soportan ownership)
+            if (widget.journal is! FanficJournalResponseDTO) _buildOwnershipSelector(),
 
             // Specific fields
             widget.specificFieldsBuilder(widget.journal, _specificControllers),
@@ -207,35 +239,61 @@ class _JournalEditFormState<
     );
   }
 
-Widget _buildEmotionSelectors() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('Emociones', style: Theme.of(context).textTheme.titleMedium),
-      const SizedBox(height: 16),
-      EmojiRatingSelector(
-        emoji: '💧',
-        label: 'Lágrimas',
-        value: _tearDrops,
-        activeColor: const Color(0xFF5BA4C4),
-        activeBg: const Color(0xFFE8F4F8),
-        activeBorder: const Color(0xFF5BA4C4),
-        onChanged: (v) => setState(() => _tearDrops = v),
-      ),
-      const SizedBox(height: 16),
-      EmojiRatingSelector(
-        emoji: '🔥',
-        label: 'Spice',
-        value: _spiceFlames,
-        activeColor: const Color(0xFFE07A30),
-        activeBg: const Color(0xFFFFF0E0),
-        activeBorder: const Color(0xFFE07A30),
-        onChanged: (v) => setState(() => _spiceFlames = v),
-      ),
-      const SizedBox(height: 24),
-    ],
-  );
-}
+  Widget _buildRereadingToggle() {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          ),
+          child: SwitchListTile(
+            title: const Text('Relectura', style: TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: const Text('Aviso: Marcar como relectura actualizará las fechas de inicio y fin, borrando las originales.', style: TextStyle(fontSize: 12)),
+            value: _isRereading,
+            activeThumbColor: widget.accentColor ?? Theme.of(context).colorScheme.primary,
+            onChanged: (bool value) {
+              setState(() {
+                _isRereading = value;
+              });
+            },
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildEmotionSelectors() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Emociones', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 16),
+        EmojiRatingSelector(
+          emoji: '💧',
+          label: 'Lágrimas',
+          value: _tearDrops,
+          activeColor: const Color(0xFF5BA4C4),
+          activeBg: const Color(0xFFE8F4F8),
+          activeBorder: const Color(0xFF5BA4C4),
+          onChanged: (v) => setState(() => _tearDrops = v),
+        ),
+        const SizedBox(height: 16),
+        EmojiRatingSelector(
+          emoji: '🔥',
+          label: 'Spice',
+          value: _spiceFlames,
+          activeColor: const Color(0xFFE07A30),
+          activeBg: const Color(0xFFFFF0E0),
+          activeBorder: const Color(0xFFE07A30),
+          onChanged: (v) => setState(() => _spiceFlames = v),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
  
   Widget _buildRatingSelector() {
     return Column(

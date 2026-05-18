@@ -79,6 +79,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       decoration: InputDecoration(
                         labelText: l10n.loginEmail,
                         prefixIcon: const Icon(Icons.email_outlined),
+                        filled: true,
+                        fillColor: colorSchema.surface,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorSchema.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorSchema.primary, width: 2),
+                        ),
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
@@ -97,6 +107,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       decoration: InputDecoration(
                         labelText: l10n.loginPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
+                        filled: true,
+                        fillColor: colorSchema.surface,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorSchema.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorSchema.primary, width: 2),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -145,7 +165,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: colorSchema.primary,
+                        foregroundColor: colorSchema.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: isLoading
                           ? const SizedBox(

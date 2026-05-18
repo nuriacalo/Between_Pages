@@ -28,7 +28,7 @@ class UniversalSessionData {
   final int currentProgress;
   final String progressPrompt;
   final Color accentColor;
-  final dynamic rawJournal; // Referencia al DTO original (Book, Manga, Fanfic)
+  final dynamic rawJournal;
 
   UniversalSessionData({
     required this.mediaType,
@@ -271,7 +271,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           final repo = ref.read(fanficJournalRepositoryProvider);
           final dto = FanficJournalRecordDTO(
             userId: user.idUser,
-            fanfictionId: fanfic.idFanfic,
+            fanficId: fanfic.idFanfic ?? 0,
             ao3Id: fanfic.ao3Id,
             status: journal.status,
             currentChapter: newProgress,
@@ -305,12 +305,14 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
       }
 
       ref.read(readingTimerProvider.notifier).reset();
-      if (mounted) context.pop();
+    if (mounted) context.pop();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -324,7 +326,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
     final accent = widget.data.accentColor;
     final bgContainer = isDark
         ? const Color(0xFF1E1E1E)
-        : accent.withValues(alpha: 0.05);
+        : accent.withOpacity(0.05);
 
     return Scaffold(
       backgroundColor: bgContainer,
@@ -359,7 +361,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accent.withValues(alpha: 0.4),
+                        color: accent.withOpacity(0.4),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -463,7 +465,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                       ).colorScheme.onSecondaryContainer,
                       elevation: 0,
                       onPressed: () =>
-                          _showAddBrainEntryFromSession(context, ref),
+          _showAddBrainEntryFromSession(context, ref),
                       child: const Icon(Icons.psychology_outlined),
                     ),
                   ],
@@ -491,7 +493,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
       backgroundColor: Colors.transparent,
       builder: (_) => AddEntrySheet(
         ref: ref,
-        bookId: widget.data.itemId,
+        itemType: widget.data.mediaType.toString().split('.').last.toUpperCase(),
+        itemId: widget.data.itemId,
       ),
     );
   }

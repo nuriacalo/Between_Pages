@@ -1,32 +1,41 @@
-import 'package:between_pages/features/notes/application/repository/note_repository.dart';
+import 'package:between_pages/features/notes/application/repositories/note_repository.dart';
 import 'package:between_pages/features/notes/domain/note_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Carga las notas de un libro concreto
-final notesProvider = FutureProvider.family<List<NoteDTO>, int>(
-  (ref, bookId) async {
-    final repo = ref.watch(noteRepositoryProvider);
-    return repo.getEntries(bookId);
-  },
-);
+final notesProvider = FutureProvider.autoDispose.family<List<NoteDTO>, ({String itemType, int itemId})>((ref, ids) {
+  final repo = ref.watch(noteRepositoryProvider);
+  return repo.getNotes(ids.itemType, ids.itemId);
+});
 
-// Notifier para añadir y borrar con invalidación automática
-class NoteNotifier extends AsyncNotifier<void> {
-  @override
-  Future<void> build() async {}
+final noteNotifierProvider = StateNotifierProvider<NoteNotifier, AsyncValue<void>>((ref) {
+  return NoteNotifier(ref.watch(noteRepositoryProvider), ref);
+});
 
-  Future<void> addEntry(NoteDTO entry) async {
-    final repo = ref.read(noteRepositoryProvider);
-    await repo.addEntry(entry);
-    ref.invalidate(notesProvider(entry.bookId));
+class NoteNotifier extends StateNotifier<AsyncValue<void>> {
+  final NoteRepository _repo;
+  final Ref _ref;
+
+  NoteNotifier(this._repo, this._ref) : super(const AsyncData(null));
+
+  Future<void> addEntry(NoteDTO note) async {
+    state = const AsyncLoading();
+    try {
+      await _repo.addNote(note);
+      _ref.invalidate(notesProvider((itemType: note.itemType, itemId: note.itemId)));
+      state = const AsyncData(null);
+    } catch (e, s) {
+      state = AsyncError(e, s);
+    }
   }
 
-  Future<void> deleteEntry(int entryId, int bookId) async {
-    final repo = ref.read(noteRepositoryProvider);
-    await repo.deleteEntry(entryId);
-    ref.invalidate(notesProvider(bookId));
+  Future<void> deleteEntry(int noteId, String itemType, int itemId) async {
+    state = const AsyncLoading();
+    try {
+      await _repo.deleteNote(noteId);
+      _ref.invalidate(notesProvider((itemType: itemType, itemId: itemId)));
+      state = const AsyncData(null);
+    } catch (e, s) {
+      state = AsyncError(e, s);
+    }
   }
 }
-
-final noteNotifierProvider =
-    AsyncNotifierProvider<NoteNotifier, void>(NoteNotifier.new);

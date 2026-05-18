@@ -1,13 +1,20 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 
+part 'list_item_dto.g.dart';
+
+@JsonSerializable(explicitToJson: true, includeIfNull: false)
 class ListItemDTO {
+  @JsonKey(readValue: _readId)
   final int id;
-  final String itemType; // 'BOOK', 'MANGA' o 'FANFIC'
+  
+  @JsonKey(name: 'item_type', readValue: _readItemType)
+  final String itemType;
+  
   final int? position;
 
-  // Solo uno de estos será no null dependiendo del itemType
   final BookResponseDTO? book;
   final MangaResponseDTO? manga;
   final FanfictionResponseDTO? fanfic;
@@ -21,38 +28,19 @@ class ListItemDTO {
     this.fanfic,
   });
 
-  factory ListItemDTO.fromJson(Map<String, dynamic> json) {
-    final itemType =
-        json['item_type'] as String? ?? json['itemType'] as String? ?? '';
-
-    return ListItemDTO(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      itemType: itemType,
-      position: json['position'] as int?,
-      book: json['book'] != null
-          ? BookResponseDTO.fromJson(json['book'])
-          : null,
-      manga: json['manga'] != null
-          ? MangaResponseDTO.fromJson(json['manga'])
-          : null,
-      fanfic: json['fanfic'] != null
-          ? FanfictionResponseDTO.fromJson(json['fanfic'])
-          : null,
-    );
+  static Object? _readId(Map<dynamic, dynamic> json, String key) {
+    return int.tryParse(json['id']?.toString() ?? '0') ?? 0;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'item_type': itemType,
-      'position': position,
-      'book': book?.toJson(),
-      'manga': manga?.toJson(),
-      'fanfic': fanfic?.toJson(),
-    };
+  static Object? _readItemType(Map<dynamic, dynamic> json, String key) {
+    return json['item_type'] ?? json['itemType'] ?? '';
   }
 
-  // Helper para obtener el título según el tipo
+  factory ListItemDTO.fromJson(Map<String, dynamic> json) => 
+      _$ListItemDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ListItemDTOToJson(this);
+
   String get title {
     switch (itemType) {
       case 'BOOK':
@@ -66,7 +54,6 @@ class ListItemDTO {
     }
   }
 
-  // Helper para obtener el autor según el tipo
   String get author {
     switch (itemType) {
       case 'BOOK':
@@ -80,7 +67,6 @@ class ListItemDTO {
     }
   }
 
-  // Helper para obtener la URL de portada según el tipo
   String? get coverUrl {
     switch (itemType) {
       case 'BOOK':
@@ -94,7 +80,6 @@ class ListItemDTO {
     }
   }
 
-  // Helper para obtener el ID del contenido según el tipo
   int get contentId {
     switch (itemType) {
       case 'BOOK':

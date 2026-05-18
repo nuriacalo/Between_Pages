@@ -308,8 +308,8 @@ class _Cover extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: coverUrl!,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => _PlaceholderCover(accent: accent, icon: typeIcon),
-                errorWidget: (_, __, ___) => _PlaceholderCover(accent: accent, icon: typeIcon),
+                placeholder: (_, _) => _PlaceholderCover(accent: accent, icon: typeIcon),
+                errorWidget: (_, _, _) => _PlaceholderCover(accent: accent, icon: typeIcon),
               )
             : _PlaceholderCover(accent: accent, icon: typeIcon),
       ),

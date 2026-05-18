@@ -1,6 +1,9 @@
+import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
+import 'package:between_pages/features/catalog/presentation/widgets/ownership_badge.dart';
 import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
@@ -15,6 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/l10n/app_localizations.dart'; // Import AppLocalizations
 
 enum CatalogItemType { book, manga, fanfic }
 
@@ -68,11 +72,25 @@ class CatalogDetailPage extends ConsumerStatefulWidget {
 
 class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   bool _isAdding = false;
+  late dynamic _currentItem;
+
+  bool _isNotesEnabledForType() => widget.type == CatalogItemType.book;
+
+  String _formatStatusLabel(String? status) {
+    if (status == null || status.isEmpty) return '';
+    return status.uiLabel;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _currentItem = widget.item;
+  }
 
   UnifiedCatalogData get _data {
     switch (widget.type) {
       case CatalogItemType.book:
-        final b = widget.item as BookResponseDTO;
+        final b = _currentItem as BookResponseDTO;
         return UnifiedCatalogData(
           title: b.title,
           author: b.author,
@@ -84,7 +102,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           publisher: b.publisher,
         );
       case CatalogItemType.manga:
-        final m = widget.item as MangaResponseDTO;
+        final m = _currentItem as MangaResponseDTO;
         return UnifiedCatalogData(
           title: m.title ?? 'Sin título',
           author: m.author ?? 'Autor desconocido',
@@ -97,7 +115,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           malScore: m.malScore,
         );
       case CatalogItemType.fanfic:
-        final f = widget.item as FanfictionResponseDTO;
+        final f = _currentItem as FanfictionResponseDTO;
         return UnifiedCatalogData(
           title: f.title ?? 'Sin título',
           author: f.author ?? 'Autor desconocido',
@@ -115,19 +133,21 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   dynamic _getExistingJournal() {
     switch (widget.type) {
       case CatalogItemType.book:
-        final book = widget.item as BookResponseDTO;
+        final book = _currentItem as BookResponseDTO;
         return ref.watch(journalEntryProvider((JournalType.book, book.idBook)));
       case CatalogItemType.manga:
-        final manga = widget.item as MangaResponseDTO;
+        final manga = _currentItem as MangaResponseDTO;
         return ref.watch(journalEntryProvider((JournalType.manga, manga.idManga ?? 0)));
       case CatalogItemType.fanfic:
-        final fanfic = widget.item as FanfictionResponseDTO;
+        final fanfic = _currentItem as FanfictionResponseDTO;
         return ref.watch(journalEntryProvider((JournalType.fanfic, fanfic.idFanfic ?? 0)));
     }
   }
 
   Future<void> _addToJournal(String status) async {
     if (_isAdding) return;
+    if (!mounted) return;
+
     setState(() => _isAdding = true);
 
     try {
@@ -136,10 +156,16 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
 
       switch (widget.type) {
         case CatalogItemType.book:
-          final book = widget.item as BookResponseDTO;
+          var book = _currentItem as BookResponseDTO;
+          if (book.idBook == 0) {
+            book = await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(book);
+            setState(() {
+              _currentItem = book;
+            });
+          }
           final dto = BookJournalRecordDTO(
             userId: userId,
-            bookId: book.idBook > 0 ? book.idBook : null,
+            bookId: book.idBook,
             googleBooksId: book.googleBooksId,
             status: status,
             currentPage: 0,
@@ -148,8 +174,8 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           break;
 
         case CatalogItemType.manga:
-          final manga = widget.item as MangaResponseDTO;
-          final int? mId = manga.idManga; // Asignación segura para evaluar nulidad
+          final manga = _currentItem as MangaResponseDTO;
+          final int? mId = manga.idManga;
           final dto = MangaJournalRecordDTO(
             userId: userId,
             mangaId: (mId != null && mId > 0) ? mId : null,
@@ -161,11 +187,16 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           break;
 
         case CatalogItemType.fanfic:
-          final fanfic = widget.item as FanfictionResponseDTO;
-          final int? fId = fanfic.idFanfic;
+          var fanfic = _currentItem as FanfictionResponseDTO;
+          if (fanfic.idFanfic == null || fanfic.idFanfic == 0) {
+            fanfic = await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(fanfic);
+            setState(() {
+              _currentItem = fanfic;
+            });
+          }
           final dto = FanficJournalRecordDTO(
             userId: userId,
-            fanfictionId: (fId != null && fId > 0) ? fId : null,
+            fanficId: fanfic.idFanfic!,
             ao3Id: fanfic.ao3Id,
             status: status,
             currentChapter: 0,
@@ -180,15 +211,86 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
 
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
       final msg = switch (status) {
-        'READING' => 'Empezaste a leer "${_data.title}"',
-        'WISHLIST' => 'Añadido a la wishlist',
-        'TBR' => '"${_data.title}" añadido a la lista',
-        _ => '"${_data.title}" añadido a la lista',
+        'READING' => l10n.startedReadingItem(_data.title),
+        'WISHLIST' => l10n.addedToWishlistItem(_data.title),
+        'TBR' => l10n.addedToTbrItem(_data.title),
+        'FINISHED' => l10n.finishedReadingItem(_data.title),
+        _ => l10n.addedToJournalItem(_data.title),
       };
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(msg)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isAdding = false);
+    }
+  }
+
+  Future<void> _updateJournalStatus(dynamic existingJournal, String newStatus) async {
+    if (_isAdding) return;
+    if (!mounted) return;
+
+    setState(() => _isAdding = true);
+
+    try {
+      final user = await ref.read(userProfileProvider.future);
+      final userId = user.idUser;
+
+      switch (widget.type) {
+        case CatalogItemType.book:
+          final journal = existingJournal as BookJournalResponseDto;
+          final dto = BookJournalRecordDTO(
+            id: journal.id, // Pass the existing journal's ID
+            userId: userId,
+            bookId: journal.book.idBook,
+            googleBooksId: journal.book.googleBooksId,
+            status: newStatus,
+            currentPage: journal.currentPage,
+          );
+          await ref.read(bookJournalRepositoryProvider).updateRaw(dto.toJson()); // Pass only the JSON
+          break;
+        case CatalogItemType.manga:
+          final journal = existingJournal as MangaJournalResponseDTO;
+          final dto = MangaJournalRecordDTO(
+            id: journal.id, // Pass the existing journal's ID
+            userId: userId,
+            mangaId: journal.manga?.idManga,
+            malId: journal.manga?.malId,
+            status: newStatus,
+            currentChapter: journal.currentChapter,
+          );
+          await ref.read(mangaJournalRepositoryProvider).updateRaw(dto.toJson()); // Pass only the JSON
+          break;
+        case CatalogItemType.fanfic:
+          final journal = existingJournal as FanficJournalResponseDTO;
+          final dto = FanficJournalRecordDTO(
+            id: journal.id, // Pass the existing journal's ID
+            userId: userId,
+            fanficId: journal.fanfic.idFanfic!,
+            ao3Id: journal.fanfic.ao3Id,
+            status: newStatus,
+            currentChapter: journal.currentChapter,
+          );
+          await ref.read(fanficJournalRepositoryProvider).updateRaw(dto.toJson()); // Pass only the JSON
+          break;
+      }
+
+      ref.invalidate(journalProvider(JournalType.book));
+      ref.invalidate(journalProvider(JournalType.manga));
+      ref.invalidate(journalProvider(JournalType.fanfic));
+
+      if (!mounted) return;
+
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.statusUpdated(_data.title, newStatus.uiLabel))),
       );
     } catch (e) {
       if (!mounted) return;
@@ -214,49 +316,113 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
     }
   }
 
+  Future<void> _showAddStatusDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedStatus = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.addToJournal),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(l10n.statusReading),
+              onTap: () => Navigator.pop(context, 'READING'),
+            ),
+            ListTile(
+              title: Text(l10n.statusTBR),
+              onTap: () => Navigator.pop(context, 'TBR'),
+            ),
+            ListTile(
+              title: Text(l10n.statusFinished),
+              onTap: () => Navigator.pop(context, 'FINISHED'),
+            ),
+            ListTile(
+              title: Text(l10n.statusWishlist),
+              onTap: () => Navigator.pop(context, 'WISHLIST'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (selectedStatus != null) {
+      _addToJournal(selectedStatus);
+    }
+  }
+
+  Future<void> _showChangeStatusDialog(dynamic existingJournal) async {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedStatus = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.changeStatus),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(l10n.statusReading),
+              onTap: () => Navigator.pop(context, 'READING'),
+            ),
+            ListTile(
+              title: Text(l10n.statusTBR),
+              onTap: () => Navigator.pop(context, 'TBR'),
+            ),
+            ListTile(
+              title: Text(l10n.statusFinished),
+              onTap: () => Navigator.pop(context, 'FINISHED'),
+            ),
+            ListTile(
+              title: Text(l10n.statusPaused),
+              onTap: () => Navigator.pop(context, 'PAUSED'),
+            ),
+            ListTile(
+              title: Text(l10n.statusDropped),
+              onTap: () => Navigator.pop(context, 'DROPPED'),
+            ),
+            ListTile(
+              title: Text(l10n.statusWishlist),
+              onTap: () => Navigator.pop(context, 'WISHLIST'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (selectedStatus != null) {
+      _updateJournalStatus(existingJournal, selectedStatus);
+    }
+  }
+
   Widget _buildActionButtons(dynamic existingJournal) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (existingJournal == null) {
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _isAdding ? null : () => _addToJournal('READING'),
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Empezar a leer'),
+              onPressed: _isAdding ? null : _showAddStatusDialog,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addToJournal),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isAdding ? null : () => _addToJournal('TBR'),
-                  icon: const Icon(Icons.bookmark_add),
-                  label: const Text('Quiero leer'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isAdding ? null : () => _addToJournal('READING'),
-                  icon: const Icon(Icons.timer_outlined),
-                  label: const Text('Leyendo'),
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                tooltip: 'Más estados',
-                onSelected: _isAdding ? null : _addToJournal,
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'WISHLIST',
-                    child: const Text('Añadir a wishlist'),
+          if (_isAdding)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
+                  const SizedBox(width: 10),
+                  Text(l10n.saving),
                 ],
               ),
-            ],
-          ),
+            ),
         ],
       );
     }
@@ -281,7 +447,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                 }
               },
               icon: const Icon(Icons.menu_book),
-              label: const Text('Ver progreso de lectura'),
+              label: Text(l10n.viewReadingProgress),
             ),
           ),
           const SizedBox(height: 12),
@@ -297,7 +463,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                 context.push(route, extra: existingJournal);
               },
               icon: const Icon(Icons.timer_outlined),
-              label: const Text('Iniciar sesión de lectura'),
+              label: Text(l10n.startReadingSession),
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).colorScheme.onSecondary,
@@ -308,9 +474,9 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => _openJournalEdit(existingJournal),
+              onPressed: _isAdding ? null : () => _showChangeStatusDialog(existingJournal),
               icon: const Icon(Icons.pause),
-              label: const Text('Pausar o abandonar'),
+              label: Text(l10n.pauseOrAbandonReading),
             ),
           ),
         ] else if (isFinished) ...[
@@ -319,17 +485,17 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             child: FilledButton.icon(
               onPressed: () => _openJournalEdit(existingJournal),
               icon: const Icon(Icons.check_circle),
-              label: const Text('Ver en el Journal'),
-              style: FilledButton.styleFrom(backgroundColor: Colors.green),
+              label: Text(l10n.viewInJournal),
+              style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondaryContainer),
             ),
           ),
         ] else ...[
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () => _openJournalEdit(existingJournal),
+              onPressed: _isAdding ? null : () => _showChangeStatusDialog(existingJournal),
               icon: const Icon(Icons.book),
-              label: Text('Estado: ${status.uiLabel}'),
+              label: Text('${l10n.statusLabel}: ${status.uiLabel}'),
             ),
           ),
         ],
@@ -337,7 +503,20 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
         OutlinedButton.icon(
           onPressed: () => _openJournalEdit(existingJournal),
           icon: const Icon(Icons.edit),
-          label: const Text('Editar Journal'),
+          label: Text(l10n.editJournal),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _isNotesEnabledForType() && !_isAdding
+              ? () {
+                  final journal = existingJournal as BookJournalResponseDto;
+                  if (journal.book.idBook > 0) {
+                    context.push('/notes', extra: journal.book.idBook);
+                  }
+                }
+              : null,
+          icon: const Icon(Icons.note_alt_outlined),
+          label: Text(l10n.notes),
         ),
       ],
     );
@@ -346,34 +525,73 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   @override
   Widget build(BuildContext context) {
     final existingJournal = _getExistingJournal();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const accent = Color(0xFFA87C80);
-    final bgColor = isDark ? const Color(0xFF2C2025) : const Color(0xFFF5E6E0);
+    final accent = Theme.of(context).colorScheme.secondary;
+    final bgColor = Theme.of(context).colorScheme.surfaceContainerLow;
+
+    final statusLabel = existingJournal == null ? null : _formatStatusLabel(existingJournal.status);
+    final statusChipColor = Theme.of(context).colorScheme.secondaryContainer;
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 400,
-            pinned: true,
-            backgroundColor: accent,
-            foregroundColor: Colors.white,
-            flexibleSpace: FlexibleSpaceBar(background: _buildHeader(accent)),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 400,
+                pinned: true,
+                backgroundColor: accent,
+                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                flexibleSpace: FlexibleSpaceBar(background: _buildHeader(accent)),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (statusLabel != null && statusLabel.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: statusChipColor,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  statusLabel,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              if (existingJournal?.ownership != null && existingJournal!.ownership!.isNotEmpty && existingJournal!.ownership != 'NONE') ...[
+                                const SizedBox(width: 8),
+                                OwnershipBadge(ownership: existingJournal.ownership!),
+                              ],
+                            ],
+                          ),
+                        ),
+                      _buildInfoSection(accent),
+                      const SizedBox(height: 24),
+                      _buildActionButtons(existingJournal),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoSection(accent),
-                  const SizedBox(height: 24),
-                  _buildActionButtons(existingJournal),
-                ],
+          if (_isAdding)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withOpacity(0.05),
+                child: const IgnorePointer(child: SizedBox()),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -394,7 +612,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -410,10 +628,10 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                             imageUrl: _data.coverUrl!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: Colors.white.withOpacity(0.1),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: Colors.white.withOpacity(0.1),
                               child: const Icon(
                                 Icons.book,
                                 color: Colors.white54,
@@ -422,7 +640,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                             ),
                           )
                         : Container(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withOpacity(0.1),
                             child: const Icon(
                               Icons.book,
                               color: Colors.white54,
@@ -449,7 +667,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               Text(
                 _data.author,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -464,6 +682,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   }
 
   Widget _buildInfoSection(Color accent) {
+    final l10n = AppLocalizations.of(context)!;
     final totalChapters = _data.totalChapters;
     final publicationStatus = _data.publicationStatus;
     final description = _data.description;
@@ -474,7 +693,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       children: [
         if (genres.isNotEmpty) ...[
           Text(
-            'Géneros',
+            l10n.genres,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -492,47 +711,47 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
         if (totalChapters != null) ...[
           _buildInfoRow(
             Icons.format_list_numbered,
-            'Capítulos',
+            l10n.chapters,
             '$totalChapters',
           ),
           const SizedBox(height: 12),
         ],
         if (_data.pageCount != null && _data.pageCount! > 0) ...[
-          _buildInfoRow(Icons.auto_stories, 'Páginas', '${_data.pageCount}'),
+          _buildInfoRow(Icons.auto_stories, l10n.pages, '${_data.pageCount}'),
           const SizedBox(height: 12),
         ],
         if (_data.publishYear != null) ...[
-          _buildInfoRow(Icons.calendar_today_outlined, 'Año de publicación', '${_data.publishYear}'),
+          _buildInfoRow(Icons.calendar_today_outlined, l10n.publishYear, '${_data.publishYear}'),
           const SizedBox(height: 12),
         ],
         if (_data.publisher != null && _data.publisher!.isNotEmpty) ...[
-          _buildInfoRow(Icons.business_outlined, 'Editorial', _data.publisher!),
+          _buildInfoRow(Icons.business_outlined, l10n.publisher, _data.publisher!),
           const SizedBox(height: 12),
         ],
         if (_data.malScore != null && _data.malScore! > 0) ...[
-          _buildInfoRow(Icons.star_outline, 'Puntuación MAL', '${_data.malScore}'),
+          _buildInfoRow(Icons.star_outline, l10n.malScore, '${_data.malScore}'),
           const SizedBox(height: 12),
         ],
         if (_data.demographic != null && _data.demographic!.isNotEmpty) ...[
-          _buildInfoRow(Icons.group_outlined, 'Demografía', _data.demographic!),
+          _buildInfoRow(Icons.group_outlined, l10n.demographic, _data.demographic!),
           const SizedBox(height: 12),
         ],
         if (_data.mainShip != null && _data.mainShip!.isNotEmpty) ...[
-          _buildInfoRow(Icons.favorite_border, 'Ship principal', _data.mainShip!),
+          _buildInfoRow(Icons.favorite_border, l10n.mainShip, _data.mainShip!),
           const SizedBox(height: 12),
         ],
         if (_data.theme != null && _data.theme!.isNotEmpty) ...[
-          _buildInfoRow(Icons.category_outlined, 'Tema', _data.theme!),
+          _buildInfoRow(Icons.category_outlined, l10n.theme, _data.theme!),
           const SizedBox(height: 12),
         ],
         if (publicationStatus != null && publicationStatus.isNotEmpty) ...[
-          _buildInfoRow(Icons.schedule, 'Estado', publicationStatus),
+          _buildInfoRow(Icons.schedule, l10n.statusLabel, publicationStatus),
           const SizedBox(height: 12),
         ],
         if (description != null && description.isNotEmpty) ...[
           const Divider(height: 24),
           Text(
-            'Sinopsis',
+            l10n.synopsis,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

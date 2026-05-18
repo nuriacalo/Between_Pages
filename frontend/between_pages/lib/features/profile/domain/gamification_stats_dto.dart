@@ -1,6 +1,16 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'gamification_stats_dto.g.dart';
+
+@JsonSerializable()
 class GamificationStatsDTO {
+  @JsonKey(defaultValue: 12)
   final int annualGoal;
+  
+  @JsonKey(defaultValue: 0)
   final int currentStreak;
+  
+  @JsonKey(defaultValue: [false, false, false, false, false, false, false])
   final List<bool> weekActivity;
 
   GamificationStatsDTO({
@@ -9,14 +19,8 @@ class GamificationStatsDTO {
     required this.weekActivity,
   });
 
-  factory GamificationStatsDTO.fromJson(Map<String, dynamic> json) {
-    return GamificationStatsDTO(
-      annualGoal: json['annualGoal'] as int? ?? 12,
-      currentStreak: json['currentStreak'] as int? ?? 0,
-      weekActivity: (json['weekActivity'] as List<dynamic>?)
-              ?.map((e) => e as bool)
-              .toList() ??
-          List.filled(7, false),
-    );
-  }
+  factory GamificationStatsDTO.fromJson(Map<String, dynamic> json) => 
+      _$GamificationStatsDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GamificationStatsDTOToJson(this);
 }

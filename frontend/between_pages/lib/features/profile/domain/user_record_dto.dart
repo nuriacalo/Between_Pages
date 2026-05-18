@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'user_record_dto.g.dart';
+
+@JsonSerializable()
 class UserRegistrationDTO {
   final String name;
   final String email;
@@ -9,15 +14,8 @@ class UserRegistrationDTO {
     required this.password,
   });
 
-  factory UserRegistrationDTO.fromJson(Map<String, dynamic> json) {
-    return UserRegistrationDTO(
-      name: json['name'] as String,
-      email: json['email'] as String,
-      password: json['password'] as String,
-    );
-  }
+  factory UserRegistrationDTO.fromJson(Map<String, dynamic> json) => 
+      _$UserRegistrationDTOFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {'name': name, 'email': email, 'password': password};
-  }
+  Map<String, dynamic> toJson() => _$UserRegistrationDTOToJson(this);
 }

@@ -3,8 +3,12 @@ import 'package:between_pages/features/journal/application/providers/reading_tim
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'base_journal_response_dto.dart';
 
+part 'manga_journal_response_dto.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class MangaJournalResponseDTO extends BaseJournalResponseDTO {
   final MangaResponseDTO? manga;
   final int? currentChapter;
@@ -37,61 +41,10 @@ class MangaJournalResponseDTO extends BaseJournalResponseDTO {
           author: manga?.author,
         );
 
-  factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) {
-    MangaResponseDTO? manga;
-    final mangaJson = json['manga'];
-    if (mangaJson != null && mangaJson is Map<String, dynamic>) {
-      try {
-        manga = MangaResponseDTO.fromJson(mangaJson);
-      } catch (e) {
-        manga = null;
-      }
-    }
+  factory MangaJournalResponseDTO.fromJson(Map<String, dynamic> json) =>
+      _$MangaJournalResponseDTOFromJson(json);
 
-    return MangaJournalResponseDTO(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      userId: int.tryParse(json['userId']?.toString() ?? '0') ?? 0,
-      manga: manga,
-      status: json['status'] as String,
-      currentChapter: json['currentChapter'] as int?,
-      currentVolume: json['currentVolume'] as int?,
-      rating: json['rating'] as int?,
-      tearDrops: json['tearDrops'] as int?,
-      spiceFlames: json['spiceFlames'] as int?,
-      readingFormat: json['readingFormat'] as String?,
-      favoriteCharacter: json['favoriteCharacter'] as String?,
-      favoriteArc: json['favoriteArc'] as String?,
-      personalNotes: json['personalNotes'] as String?,
-      startDate: json['startDate'] as String?,
-      endDate: json['endDate'] as String?,
-      rereading: json['rereading'] as bool?,
-      ownership: json['ownership'] as String?,
-      loanedTo: json['loanedTo'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'manga': manga?.toJson(),
-      'status': status,
-      'currentChapter': currentChapter,
-      'currentVolume': currentVolume,
-      'rating': rating,
-      'tearDrops': tearDrops,
-      'spiceFlames': spiceFlames,
-      'readingFormat': readingFormat,
-      'favoriteCharacter': favoriteCharacter,
-      'favoriteArc': favoriteArc,
-      'personalNotes': personalNotes,
-      'startDate': startDate,
-      'endDate': endDate,
-      'rereading': rereading,
-      'ownership': ownership,
-      'loanedTo': loanedTo,
-    };
-  }
+  Map<String, dynamic> toJson() => _$MangaJournalResponseDTOToJson(this);
 
   DiaryJournalData toDiaryData() {
     return DiaryJournalData(

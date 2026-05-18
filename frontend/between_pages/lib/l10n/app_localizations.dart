@@ -187,6 +187,12 @@ abstract class AppLocalizations {
   /// **'App Language'**
   String get profileLanguage;
 
+  /// No description provided for @profileDarkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get profileDarkMode;
+
   /// No description provided for @loginWelcomeBack.
   ///
   /// In en, this message translates to:
@@ -756,6 +762,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Borrowed'**
   String get borrowed;
+
+  /// No description provided for @importOtherWay.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to import this fanfic another way?'**
+  String get importOtherWay;
+
+  /// No description provided for @importAo3Link.
+  ///
+  /// In en, this message translates to:
+  /// **'Import via AO3 link'**
+  String get importAo3Link;
+
+  /// No description provided for @importManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Import manually'**
+  String get importManual;
+
+  /// No description provided for @importAo3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Import fanfic from AO3'**
+  String get importAo3Title;
+
+  /// No description provided for @importAo3Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the AO3 link or ID'**
+  String get importAo3Hint;
+
+  /// No description provided for @importAo3Label.
+  ///
+  /// In en, this message translates to:
+  /// **'AO3 Link'**
+  String get importAo3Label;
+
+  /// No description provided for @importButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importButton;
+
+  /// No description provided for @addFanfic.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Fanfic'**
+  String get addFanfic;
+
+  /// No description provided for @editFanfic.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Fanfic'**
+  String get editFanfic;
+
+  /// No description provided for @saveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveButton;
+
+  /// No description provided for @fanficTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get fanficTitle;
+
+  /// No description provided for @fanficAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get fanficAuthor;
+
+  /// No description provided for @fanficFandom.
+  ///
+  /// In en, this message translates to:
+  /// **'Fandom / Source material'**
+  String get fanficFandom;
+
+  /// No description provided for @fanficChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of chapters'**
+  String get fanficChapters;
+
+  /// No description provided for @fanficStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Publication status'**
+  String get fanficStatus;
+
+  /// No description provided for @fanficStatusOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get fanficStatusOngoing;
+
+  /// No description provided for @fanficStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get fanficStatusCompleted;
+
+  /// No description provided for @fanficStatusHiatus.
+  ///
+  /// In en, this message translates to:
+  /// **'On Hiatus'**
+  String get fanficStatusHiatus;
+
+  /// No description provided for @fanficStatusAbandoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned'**
+  String get fanficStatusAbandoned;
+
+  /// No description provided for @fanficGenresHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres (comma separated)'**
+  String get fanficGenresHint;
+
+  /// No description provided for @fanficTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma separated)'**
+  String get fanficTagsHint;
+
+  /// No description provided for @fanficCoverUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover URL'**
+  String get fanficCoverUrl;
+
+  /// No description provided for @fanficSavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanfic successfully saved and added to journal'**
+  String get fanficSavedSuccess;
+
+  /// No description provided for @angstLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Angst Level'**
+  String get angstLevelTitle;
+
+  /// No description provided for @angstLevelNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get angstLevelNone;
+
+  /// No description provided for @angstLevelLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get angstLevelLow;
+
+  /// No description provided for @angstLevelMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get angstLevelMedium;
+
+  /// No description provided for @angstLevelHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get angstLevelHigh;
+
+  /// No description provided for @angstLevelExtreme.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme'**
+  String get angstLevelExtreme;
+
+  /// No description provided for @findSomethingToRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Find something to read'**
+  String get findSomethingToRead;
+
+  /// No description provided for @annualGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Goal'**
+  String get annualGoal;
+
+  /// No description provided for @booksRead.
+  ///
+  /// In en, this message translates to:
+  /// **'books read'**
+  String get booksRead;
+
+  /// No description provided for @editGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Goal'**
+  String get editGoal;
+
+  /// No description provided for @setYourGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your annual reading goal'**
+  String get setYourGoal;
+
+  /// No description provided for @goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goal;
+
+  /// No description provided for @goalAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal Achieved! Keep it up!'**
+  String get goalAchieved;
+
+  /// No description provided for @booksToGo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more to go'**
+  String booksToGo(Object count);
+
+  /// No description provided for @addToJournal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Journal'**
+  String get addToJournal;
+
+  /// No description provided for @changeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Status'**
+  String get changeStatus;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @startedReadingItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Started reading \"{title}\"'**
+  String startedReadingItem(Object title);
+
+  /// No description provided for @addedToWishlistItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{title}\" to wishlist'**
+  String addedToWishlistItem(Object title);
+
+  /// No description provided for @addedToTbrItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{title}\" to To Be Read list'**
+  String addedToTbrItem(Object title);
+
+  /// No description provided for @finishedReadingItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished reading \"{title}\"'**
+  String finishedReadingItem(Object title);
+
+  /// No description provided for @addedToJournalItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{title}\" to journal'**
+  String addedToJournalItem(Object title);
+
+  /// No description provided for @statusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Status for \"{title}\" updated to {status}'**
+  String statusUpdated(Object title, Object status);
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

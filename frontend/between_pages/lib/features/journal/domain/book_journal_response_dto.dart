@@ -3,8 +3,12 @@ import 'package:between_pages/features/journal/application/providers/reading_tim
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'base_journal_response_dto.dart';
 
+part 'book_journal_response_dto.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class BookJournalResponseDto extends BaseJournalResponseDTO {
   final BookResponseDTO book;
   final int? currentPage;
@@ -39,53 +43,10 @@ class BookJournalResponseDto extends BaseJournalResponseDTO {
           author: book.author,
         );
 
-  factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) {
-    return BookJournalResponseDto(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      userId: int.tryParse(json['userId']?.toString() ?? '0') ?? 0,
-      book: BookResponseDTO.fromJson(json['book'] as Map<String, dynamic>),
-      status: json['status'] as String,
-      currentPage: json['currentPage'] as int?,
-      rating: json['rating'] as int?,
-      tearDrops: json['tearDrops'] as int?,
-      spiceFlames: json['spiceFlames'] as int?,
-      readingFormat: json['readingFormat'] as String?,
-      emotions: (json['emotions'] as List?)?.cast<String>(),
-      favoriteQuotes: json['favoriteQuotes'] as String?,
-      personalNotes: json['personalNotes'] as String?,
-      startDate: json['startDate'] as String?,
-      endDate: json['endDate'] as String?,
-      rereading: json['rereading'] as bool?,
-      ownership: json['ownership'] as String?,
-      seriesName: json['seriesName'] as String?,
-      seriesOrder: (json['seriesOrder'] as num?)?.toDouble(),
-      loanedTo: json['loanedTo'] as String?,
-    );
-  }
+  factory BookJournalResponseDto.fromJson(Map<String, dynamic> json) =>
+      _$BookJournalResponseDtoFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'book': book.toJson(),
-      'status': status,
-      'currentPage': currentPage,
-      'rating': rating,
-      'tearDrops': tearDrops,
-      'spiceFlames': spiceFlames,
-      'readingFormat': readingFormat,
-      'emotions': emotions,
-      'favoriteQuotes': favoriteQuotes,
-      'personalNotes': personalNotes,
-      'startDate': startDate,
-      'endDate': endDate,
-      'rereading': rereading,
-      'ownership': ownership,
-      'seriesName': seriesName,
-      'seriesOrder': seriesOrder,
-      'loanedTo': loanedTo,
-    };
-  }
+  Map<String, dynamic> toJson() => _$BookJournalResponseDtoToJson(this);
 
   DiaryJournalData toDiaryData() {
     return DiaryJournalData(

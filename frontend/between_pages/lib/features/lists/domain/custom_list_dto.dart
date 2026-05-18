@@ -1,9 +1,17 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:between_pages/features/lists/domain/list_item_dto.dart';
 
+part 'custom_list_dto.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class CustomListDTO {
+  @JsonKey(readValue: _readId)
   final int id;
+  
   final String name;
   final String? description;
+  
+  @JsonKey(defaultValue: [])
   final List<ListItemDTO> items;
 
   CustomListDTO({
@@ -13,25 +21,12 @@ class CustomListDTO {
     required this.items,
   });
 
-  factory CustomListDTO.fromJson(Map<String, dynamic> json) {
-    return CustomListDTO(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      items:
-          (json['items'] as List<dynamic>?)
-              ?.map((e) => ListItemDTO.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
+  static Object? _readId(Map<dynamic, dynamic> json, String key) {
+    return int.tryParse(json['id']?.toString() ?? '0') ?? 0;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'items': items.map((e) => e.toJson()).toList(),
-    };
-  }
+  factory CustomListDTO.fromJson(Map<String, dynamic> json) => 
+      _$CustomListDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CustomListDTOToJson(this);
 }

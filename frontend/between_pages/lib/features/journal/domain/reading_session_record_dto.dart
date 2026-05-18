@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'reading_session_record_dto.g.dart';
+
+@JsonSerializable(includeIfNull: false)
 class ReadingSessionRecordDTO {
   final int userId;
   final int? bookId;
@@ -15,21 +20,8 @@ class ReadingSessionRecordDTO {
     required this.pagesRead,
   });
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {
-      'user_id': userId,
-      'duration_seconds': durationSeconds,
-      'pages_read': pagesRead,
-    };
-    if (bookId != null) {
-      data['book_id'] = bookId;
-    }
-    if (mangaId != null) {
-      data['manga_id'] = mangaId;
-    }
-    if (fanficId != null) {
-      data['fanfic_id'] = fanficId;
-    }
-    return data;
-  }
+  factory ReadingSessionRecordDTO.fromJson(Map<String, dynamic> json) => 
+      _$ReadingSessionRecordDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ReadingSessionRecordDTOToJson(this);
 }

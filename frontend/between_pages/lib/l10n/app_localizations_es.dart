@@ -54,6 +54,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileLanguage => 'Idioma de la aplicación';
 
   @override
+  String get profileDarkMode => 'Modo Oscuro';
+
+  @override
   String get loginWelcomeBack => 'Bienvenido de nuevo';
 
   @override
@@ -337,4 +340,159 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get borrowed => 'Prestado';
+
+  @override
+  String get importOtherWay => '¿Quieres importar este fanfic de otra forma?';
+
+  @override
+  String get importAo3Link => 'Importar por enlace de AO3';
+
+  @override
+  String get importManual => 'Importar manualmente';
+
+  @override
+  String get importAo3Title => 'Importar fanfic de AO3';
+
+  @override
+  String get importAo3Hint => 'Pega el enlace o ID de AO3';
+
+  @override
+  String get importAo3Label => 'Enlace de AO3';
+
+  @override
+  String get importButton => 'Importar';
+
+  @override
+  String get addFanfic => 'Añadir Fanfic';
+
+  @override
+  String get editFanfic => 'Editar Fanfic';
+
+  @override
+  String get saveButton => 'Guardar';
+
+  @override
+  String get fanficTitle => 'Título';
+
+  @override
+  String get fanficAuthor => 'Autor';
+
+  @override
+  String get fanficFandom => 'Fandom / Material de origen';
+
+  @override
+  String get fanficChapters => 'Número de capítulos';
+
+  @override
+  String get fanficStatus => 'Estado de publicación';
+
+  @override
+  String get fanficStatusOngoing => 'En progreso (Ongoing)';
+
+  @override
+  String get fanficStatusCompleted => 'Completado (Completed)';
+
+  @override
+  String get fanficStatusHiatus => 'En pausa (Hiatus)';
+
+  @override
+  String get fanficStatusAbandoned => 'Abandonado (Abandoned)';
+
+  @override
+  String get fanficGenresHint => 'Géneros (separados por coma)';
+
+  @override
+  String get fanficTagsHint => 'Tags (separados por coma)';
+
+  @override
+  String get fanficCoverUrl => 'URL de la portada';
+
+  @override
+  String get fanficSavedSuccess => 'Fanfic guardado y añadido al diario con éxito';
+
+  @override
+  String get angstLevelTitle => 'Nivel de Angst';
+
+  @override
+  String get angstLevelNone => 'Nada';
+
+  @override
+  String get angstLevelLow => 'Bajo';
+
+  @override
+  String get angstLevelMedium => 'Medio';
+
+  @override
+  String get angstLevelHigh => 'Alto';
+
+  @override
+  String get angstLevelExtreme => 'Extremo';
+
+  @override
+  String get findSomethingToRead => 'Encuentra algo para leer';
+
+  @override
+  String get annualGoal => 'Meta Anual';
+
+  @override
+  String get booksRead => 'libros leídos';
+
+  @override
+  String get editGoal => 'Editar Meta';
+
+  @override
+  String get setYourGoal => 'Define tu meta de lectura anual';
+
+  @override
+  String get goal => 'Meta';
+
+  @override
+  String get goalAchieved => '¡Meta alcanzada! ¡Sigue así!';
+
+  @override
+  String booksToGo(Object count) {
+    return '$count más para alcanzar la meta';
+  }
+
+  @override
+  String get addToJournal => 'Añadir al Journal';
+
+  @override
+  String get changeStatus => 'Cambiar Estado';
+
+  @override
+  String get saving => 'Guardando...';
+
+  @override
+  String startedReadingItem(Object title) {
+    return 'Empezaste a leer \"$title\"';
+  }
+
+  @override
+  String addedToWishlistItem(Object title) {
+    return 'Añadido \"$title\" a la lista de deseos';
+  }
+
+  @override
+  String addedToTbrItem(Object title) {
+    return 'Añadido \"$title\" a la lista de Por Leer';
+  }
+
+  @override
+  String finishedReadingItem(Object title) {
+    return 'Terminaste de leer \"$title\"';
+  }
+
+  @override
+  String addedToJournalItem(Object title) {
+    return 'Añadido \"$title\" al journal';
+  }
+
+  @override
+  String statusUpdated(Object title, Object status) {
+    return 'Estado de \"$title\" actualizado a $status';
+  }
+
+  @override
+  String get notes => 'Notas';
 }

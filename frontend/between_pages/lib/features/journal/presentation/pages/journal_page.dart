@@ -12,8 +12,6 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 
-/// Página principal del Journal con tabs para Libros, Mangas y Fanfics.
-/// Usa widgets genéricos para eliminar duplicación entre tipos de contenido.
 class JournalPage extends StatelessWidget {
   const JournalPage({super.key});
 
@@ -27,10 +25,7 @@ class JournalPage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            l10n.journalTitle,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
+          title: Text(l10n.journalTitle, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           backgroundColor: colorScheme.surface,
           actions: [
             IconButton(
@@ -62,10 +57,6 @@ class JournalPage extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TABS ESPECÍFICAS (solo configuran el genérico)
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _BooksTab extends StatelessWidget {
   const _BooksTab();
 
@@ -81,13 +72,9 @@ class _BooksTab extends StatelessWidget {
           id: journal.id,
           title: journal.book.title,
           coverUrl: journal.book.coverUrl,
-          subtitle: journal.currentPage != null && journal.currentPage! > 0
-              ? 'Pág. ${journal.currentPage}'
-              : null,
+          subtitle: journal.currentPage != null && journal.currentPage! > 0 ? 'Pág. ${journal.currentPage}' : null,
           ownership: journal.ownership,
-          route: journal.status == 'READING'
-              ? '/journal/book/progress'
-              : '/journal/book/edit',
+          route: '/journal/book/edit', // Always navigate to edit page
           extra: journal,
         );
       },
@@ -110,18 +97,13 @@ class _MangaTab extends StatelessWidget {
       toItemData: (j) {
         final journal = j as MangaJournalResponseDTO;
         final manga = journal.manga;
-        // Debug: rastrear por qué se está yendo a rutas distintas
-        // (verifica espacios/valores del status real)
-        // debugPrint('[JournalPage][MANGA] id=${journal.id} title=${manga?.title} status="${journal.status}" currentChapter=${journal.currentChapter}');
         return JournalItemData(
           id: journal.id,
           title: manga?.title ?? 'Sin título',
           coverUrl: manga?.coverUrl,
-          subtitle: (journal.currentChapter ?? 0) > 0
-              ? 'Cap. ${journal.currentChapter ?? 0}'
-              : null,
+          subtitle: (journal.currentChapter ?? 0) > 0 ? 'Cap. ${journal.currentChapter ?? 0}' : null,
           ownership: journal.ownership,
-          route: (journal.status.trim().toUpperCase() == 'READING') ? '/journal/manga/session' : '/journal/manga/edit',
+          route: '/journal/manga/edit', // Always navigate to edit page
           extra: journal,
         );
       },
@@ -148,10 +130,8 @@ class _FanficsTab extends StatelessWidget {
           id: journal.id,
           title: fanfic.title ?? 'Sin título',
           coverUrl: fanfic.coverUrl,
-          subtitle: (journal.currentChapter ?? 0) > 0
-              ? 'Cap. ${journal.currentChapter ?? 0}'
-              : null,
-          ownership: null, // Fanfics don't have ownership
+          subtitle: (journal.currentChapter ?? 0) > 0 ? 'Cap. ${journal.currentChapter ?? 0}' : null,
+          ownership: null,
           route: '/journal/fanfic/edit',
           extra: journal,
         );
@@ -162,11 +142,6 @@ class _FanficsTab extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// WIDGET GENÉRICO JOURNAL TAB<T>
-// Elimina duplicación entre tabs de libros, manga y fanfics.
-// ─────────────────────────────────────────────────────────────────────────────
 
 class JournalTab<T> extends ConsumerWidget {
   final ProviderListenable<AsyncValue<List<T>>> provider;
@@ -185,7 +160,6 @@ class JournalTab<T> extends ConsumerWidget {
     required this.emptyTitle,
     this.emptySubtitle,
   });
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -208,13 +182,13 @@ class JournalTab<T> extends ConsumerWidget {
             icon: fallbackIcon,
             title: emptyTitle,
             subtitle: emptySubtitle,
+            actionLabel: l10n.findSomethingToRead, 
+            onAction: () => GoRouter.of(context).go('/search'),
           );
         }
 
         final grouped = _groupByStatus(journals);
-        final orderedStatuses = statusConfig.keys
-            .where((s) => grouped.containsKey(s) && grouped[s]!.isNotEmpty)
-            .toList();
+        final orderedStatuses = statusConfig.keys.where((s) => grouped.containsKey(s) && grouped[s]!.isNotEmpty).toList();
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -227,10 +201,7 @@ class JournalTab<T> extends ConsumerWidget {
               title: config.label,
               color: config.color,
               count: items.length,
-              children: items.map(toItemData).map((data) => JournalItemCard(
-                item: data,
-                fallbackIcon: fallbackIcon,
-              )).toList(),
+              children: items.map(toItemData).map((data) => JournalItemCard(item: data, fallbackIcon: fallbackIcon)).toList(),
             );
           },
         );
@@ -254,22 +225,13 @@ class JournalTab<T> extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SECCIÓN DE ESTADO (ej: "Leyendo", "Pendientes")
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _StatusSection extends StatelessWidget {
   final String title;
   final Color color;
   final int count;
   final List<Widget> children;
 
-  const _StatusSection({
-    required this.title,
-    required this.color,
-    required this.count,
-    required this.children,
-  });
+  const _StatusSection({required this.title, required this.color, required this.count, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -278,56 +240,27 @@ class _StatusSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Container(
-              width: 4,
-              height: 20,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+            Container(width: 4, height: 20, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
             const SizedBox(width: 8),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '$count',
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
+              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+              child: Text('$count', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           ],
         ),
         const SizedBox(height: 12),
         SizedBox(
           height: 180,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: children,
-          ),
+          child: ListView(scrollDirection: Axis.horizontal, children: children),
         ),
         const SizedBox(height: 24),
       ],
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SHIMMER LOADING (mejor UX que CircularProgressIndicator)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _JournalShimmer extends StatelessWidget {
   const _JournalShimmer();
@@ -338,7 +271,7 @@ class _JournalShimmer extends StatelessWidget {
 
     return Shimmer.fromColors(
       baseColor: baseColor,
-      highlightColor: baseColor.withValues(alpha: 0.5),
+      highlightColor: baseColor.withOpacity(0.5),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 3,
@@ -346,17 +279,8 @@ class _JournalShimmer extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título de sección shimmer
-              Container(
-                width: 120,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
+              Container(width: 120, height: 20, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
               const SizedBox(height: 12),
-              // Cards shimmer
               SizedBox(
                 height: 180,
                 child: ListView.builder(
@@ -368,23 +292,9 @@ class _JournalShimmer extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 110,
-                            height: 140,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                          Container(width: 110, height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
                           const SizedBox(height: 6),
-                          Container(
-                            width: 90,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
+                          Container(width: 90, height: 12, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
                         ],
                       ),
                     );

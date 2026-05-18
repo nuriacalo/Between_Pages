@@ -1,19 +1,23 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'list_response_dto.g.dart';
+
+@JsonSerializable()
 class ListResponseDTO {
+  @JsonKey(readValue: _readId)
   final int id;
+  
   final String name;
   final String? description;
 
   ListResponseDTO({required this.id, required this.name, this.description});
 
-  factory ListResponseDTO.fromJson(Map<String, dynamic> json) {
-    return ListResponseDTO(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-    );
+  static Object? _readId(Map<dynamic, dynamic> json, String key) {
+    return int.tryParse(json['id']?.toString() ?? '0') ?? 0;
   }
 
-  Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'description': description};
-  }
+  factory ListResponseDTO.fromJson(Map<String, dynamic> json) => 
+      _$ListResponseDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ListResponseDTOToJson(this);
 }

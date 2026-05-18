@@ -14,6 +14,7 @@
     "profileNotifications": "Notifications",
     "profilePrivacy": "Privacy and Security",
     "profileLanguage": "App Language",
+    "profileDarkMode": "Dark Mode",
     "loginWelcomeBack": "Welcome back",
     "loginEmail": "Email address",
     "loginPassword": "Password",
@@ -108,5 +109,88 @@
     "synopsis": "Synopsis",
     "physical": "Physical",
     "digital": "Digital",
-    "borrowed": "Borrowed"
+    "borrowed": "Borrowed",
+    "importOtherWay": "Do you want to import this fanfic another way?",
+    "importAo3Link": "Import via AO3 link",
+    "importManual": "Import manually",
+    "importAo3Title": "Import fanfic from AO3",
+    "importAo3Hint": "Paste the AO3 link or ID",
+    "importAo3Label": "AO3 Link",
+    "importButton": "Import",
+    "addFanfic": "Add Fanfic",
+    "editFanfic": "Edit Fanfic",
+    "saveButton": "Save",
+    "fanficTitle": "Title",
+    "fanficAuthor": "Author",
+    "fanficFandom": "Fandom / Source material",
+    "fanficChapters": "Number of chapters",
+    "fanficStatus": "Publication status",
+    "fanficStatusOngoing": "Ongoing",
+    "fanficStatusCompleted": "Completed",
+    "fanficStatusHiatus": "On Hiatus",
+    "fanficStatusAbandoned": "Abandoned",
+    "fanficGenresHint": "Genres (comma separated)",
+    "fanficTagsHint": "Tags (comma separated)",
+    "fanficCoverUrl": "Cover URL",
+    "fanficSavedSuccess": "Fanfic successfully saved and added to journal",
+    "angstLevelTitle": "Angst Level",
+    "angstLevelNone": "None",
+    "angstLevelLow": "Low",
+    "angstLevelMedium": "Medium",
+    "angstLevelHigh": "High",
+    "angstLevelExtreme": "Extreme",
+    "findSomethingToRead": "Find something to read",
+    "annualGoal": "Annual Goal",
+    "booksRead": "books read",
+    "editGoal": "Edit Goal",
+    "setYourGoal": "Set your annual reading goal",
+    "goal": "Goal",
+    "goalAchieved": "Goal Achieved! Keep it up!",
+    "booksToGo": "{count} more to go",
+    "@booksToGo": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "addToJournal": "Add to Journal",
+    "changeStatus": "Change Status",
+    "saving": "Saving...",
+    "startedReadingItem": "Started reading \"{title}\"",
+    "@startedReadingItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToWishlistItem": "Added \"{title}\" to wishlist",
+    "@addedToWishlistItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToTbrItem": "Added \"{title}\" to To Be Read list",
+    "@addedToTbrItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "finishedReadingItem": "Finished reading \"{title}\"",
+    "@finishedReadingItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToJournalItem": "Added \"{title}\" to journal",
+    "@addedToJournalItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "statusUpdated": "Status for \"{title}\" updated to {status}",
+    "@statusUpdated": {
+        "placeholders": {
+            "title": {},
+            "status": {}
+        }
+    },
+    "notes": "Notes"
 }

@@ -1,6 +1,16 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'reading_streak_dto.g.dart';
+
+@JsonSerializable()
 class ReadingStreakDTO {
+  @JsonKey(name: 'current_streak', readValue: _readCurrentStreak)
   final int currentStreak;
-  final List<bool> weekActivity; // 7 días, true si hubo actividad ese día
+  
+  @JsonKey(name: 'week_activity', readValue: _readWeekActivity)
+  final List<bool> weekActivity;
+  
+  @JsonKey(name: 'total_active_days', readValue: _readTotalActiveDays)
   final int totalActiveDays;
 
   ReadingStreakDTO({
@@ -9,27 +19,22 @@ class ReadingStreakDTO {
     required this.totalActiveDays,
   });
 
-  factory ReadingStreakDTO.fromJson(Map<String, dynamic> json) {
-    return ReadingStreakDTO(
-      currentStreak: json['current_streak'] as int? ?? json['currentStreak'] as int? ?? 0,
-      weekActivity: (json['week_activity'] as List<dynamic>?)
-              ?.map((e) => e as bool)
-              .toList() ??
-          (json['weekActivity'] as List<dynamic>?)
-              ?.map((e) => e as bool)
-              .toList() ??
-          List.generate(7, (_) => false),
-      totalActiveDays: json['total_active_days'] as int? ?? json['totalActiveDays'] as int? ?? 0,
-    );
+  static Object? _readCurrentStreak(Map<dynamic, dynamic> json, String key) {
+    return json['current_streak'] ?? json['currentStreak'] ?? 0;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'current_streak': currentStreak,
-      'week_activity': weekActivity,
-      'total_active_days': totalActiveDays,
-    };
+  static Object? _readWeekActivity(Map<dynamic, dynamic> json, String key) {
+    return json['week_activity'] ?? json['weekActivity'] ?? List.filled(7, false);
   }
+
+  static Object? _readTotalActiveDays(Map<dynamic, dynamic> json, String key) {
+    return json['total_active_days'] ?? json['totalActiveDays'] ?? 0;
+  }
+
+  factory ReadingStreakDTO.fromJson(Map<String, dynamic> json) => 
+      _$ReadingStreakDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ReadingStreakDTOToJson(this);
 
   /// Obtiene el índice del día actual (0 = Lunes, 6 = Domingo)
   int get todayIndex {

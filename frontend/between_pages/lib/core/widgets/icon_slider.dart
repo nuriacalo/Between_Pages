@@ -11,7 +11,7 @@ class IconSlider extends StatefulWidget {
   final int initialRating;
 
   const IconSlider({
-    Key? key,
+    super.key,
     this.maxRating = 5,
     required this.onRatingChanged,
     required this.filledIcon,
@@ -19,7 +19,7 @@ class IconSlider extends StatefulWidget {
     required this.activeColor,
     this.inactiveColor = Colors.grey,
     this.initialRating = 0,
-  }) : super(key: key);
+  });
 
   @override
   _IconSliderState createState() => _IconSliderState();

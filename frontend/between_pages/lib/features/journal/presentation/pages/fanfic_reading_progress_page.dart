@@ -1,11 +1,10 @@
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/pages/fanfic_edit_page.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
+import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,7 +32,7 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
     );
 
     if (result != null && mounted) {
-      ref.invalidate(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic)));
+      ref.invalidate(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic ?? 0)));
       ref.invalidate(journalProvider(JournalType.fanfic));
     }
   }
@@ -41,41 +40,52 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
   @override
   Widget build(BuildContext context) {
     final accent = Colors.blue[300]!;
-    final updatedJournal = ref.watch(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic)));
+    final updatedJournal = ref.watch(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic ?? 0)));
     final journal = (updatedJournal as FanficJournalResponseDTO?) ?? _journal;
     final fanfic = journal.fanfic;
 
-    final currentPage = journal.currentChapter ?? 0;
-    final totalPages = fanfic.totalChapters;
-    final progress = ((totalPages ?? 0) > 0) ? (currentPage / totalPages!).clamp(0.0, 1.0) : 0.0;
-
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerScrolled) => [
-          SliverAppBar(
-            expandedHeight: 320,
-            pinned: true,
-            backgroundColor: accent,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_document),
-                tooltip: 'Editar datos del fanfic',
-                onPressed: _goToEditFanficDetails,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: _goToEditFanficDetails,
+          tooltip: 'Editar datos del fanfic',
+          child: const Icon(Icons.edit),
+        ),
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerScrolled) => [
+            SliverAppBar(
+              expandedHeight: 320,
+              pinned: true,
+              backgroundColor: accent,
+              foregroundColor: Colors.white,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  fanfic.title,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                background: _buildHeader(accent, fanfic.coverUrl),
               ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                fanfic.title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              bottom: const TabBar(
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white54,
+                indicatorColor: Colors.white,
+                tabs: [
+                  Tab(text: 'Segundo Cerebro'),
+                  Tab(text: 'Editar'),
+                ],
               ),
-              background: _buildHeader(accent, fanfic.coverUrl),
             ),
+          ],
+          body: TabBarView(
+            children: [
+              SecondBrainTab(itemType: 'FANFIC', itemId: fanfic.idFanfic ?? 0),
+              JournalItemEditPage(journal: journal, type: JournalType.fanfic),
+            ],
           ),
-        ],
-        body: JournalItemEditPage(journal: journal, type: JournalType.fanfic),
+        ),
       ),
     );
   }
@@ -90,7 +100,7 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 20, offset: const Offset(0, 8))],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -101,14 +111,14 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
                       ? CachedNetworkImage(
                           imageUrl: coverUrl,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.1)),
+                          placeholder: (context, url) => Container(color: Colors.white.withAlpha(26)),
                           errorWidget: (context, url, error) => Container(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withAlpha(26),
                             child: const Icon(Icons.book, color: Colors.white54, size: 40),
                           ),
                         )
                       : Container(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha(26),
                           child: const Icon(Icons.book, color: Colors.white54, size: 40),
                         ),
                 ),

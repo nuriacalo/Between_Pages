@@ -1,120 +1,133 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-class AppTheme {
+@immutable
+class CustomColors extends ThemeExtension<CustomColors> {
+  const CustomColors({
+    required this.statusReading,
+    required this.statusPending,
+    required this.statusFinished,
+    required this.statusAbandoned,
+    required this.colorLibro,
+    required this.colorFanfic,
+    required this.colorManga,
+  });
 
-  static ThemeData get light {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.lightBackground,
-      colorScheme: const ColorScheme.light(
-        primary:          AppColors.lightAccent,
-        secondary:        AppColors.lightEmphasis,
-        surface:          AppColors.lightSurface,
-        onPrimary:        Colors.white,
-        onSurface:        AppColors.lightTextPrimary,
-        outline:          AppColors.lightBorder,
-      ),
-      textTheme: _textTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
-      cardTheme: _cardTheme(AppColors.lightCard, AppColors.lightBorder),
-      appBarTheme: _appBarTheme(AppColors.lightBackground, AppColors.lightTextPrimary),
-      inputDecorationTheme: _inputTheme(AppColors.lightSurface, AppColors.lightTextSecondary, AppColors.lightBorder),
-      bottomNavigationBarTheme: _bottomNavTheme(AppColors.lightSurface, AppColors.lightAccent, AppColors.lightTextSecondary),
+  final Color? statusReading;
+  final Color? statusPending;
+  final Color? statusFinished;
+  final Color? statusAbandoned;
+  final Color? colorLibro;
+  final Color? colorFanfic;
+  final Color? colorManga;
+
+
+  @override
+  CustomColors copyWith({
+    Color? statusReading,
+    Color? statusPending,
+    Color? statusFinished,
+    Color? statusAbandoned,
+    Color? colorLibro,
+    Color? colorFanfic,
+    Color? colorManga,
+  }) {
+    return CustomColors(
+      statusReading: statusReading ?? this.statusReading,
+      statusPending: statusPending ?? this.statusPending,
+      statusFinished: statusFinished ?? this.statusFinished,
+      statusAbandoned: statusAbandoned ?? this.statusAbandoned,
+      colorLibro: colorLibro ?? this.colorLibro,
+      colorFanfic: colorFanfic ?? this.colorFanfic,
+      colorManga: colorManga ?? this.colorManga,
     );
   }
 
-  static ThemeData get dark {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.darkBackground,
-      colorScheme: const ColorScheme.dark(
-        primary:          AppColors.darkAccent,
-        secondary:        AppColors.darkEmphasis,
-        surface:          AppColors.darkSurface,
-        onPrimary:        Colors.white,
-        onSurface:        AppColors.darkTextPrimary,
-        outline:          AppColors.darkBorder,
-      ),
-      textTheme: _textTheme(AppColors.darkTextPrimary, AppColors.darkTextSecondary),
-      cardTheme: _cardTheme(AppColors.darkCard, AppColors.darkBorder),
-      appBarTheme: _appBarTheme(AppColors.darkBackground, AppColors.darkTextPrimary),
-      inputDecorationTheme: _inputTheme(AppColors.darkSurface, AppColors.darkTextSecondary, AppColors.darkBorder),
-      bottomNavigationBarTheme: _bottomNavTheme(AppColors.darkSurface, AppColors.darkAccent, AppColors.darkTextSecondary),
+  @override
+  CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
+    if (other is! CustomColors) {
+      return this;
+    }
+    return CustomColors(
+      statusReading: Color.lerp(statusReading, other.statusReading, t),
+      statusPending: Color.lerp(statusPending, other.statusPending, t),
+      statusFinished: Color.lerp(statusFinished, other.statusFinished, t),
+      statusAbandoned: Color.lerp(statusAbandoned, other.statusAbandoned, t),
+      colorLibro: Color.lerp(colorLibro, other.colorLibro, t),
+      colorFanfic: Color.lerp(colorFanfic, other.colorFanfic, t),
+      colorManga: Color.lerp(colorManga, other.colorManga, t),
     );
   }
-
-  // ── Helpers privados ─────────────────────────
-
-  static TextTheme _textTheme(Color primary, Color secondary) {
-    return TextTheme(
-      displayLarge:  GoogleFonts.lora(fontSize: 28, fontWeight: FontWeight.bold,   color: primary),
-      displayMedium: GoogleFonts.lora(fontSize: 24, fontWeight: FontWeight.bold,   color: primary),
-      titleLarge:    GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w600,   color: primary),
-      titleMedium:   GoogleFonts.lora(fontSize: 17, fontWeight: FontWeight.w600,   color: primary),
-      bodyLarge:     GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.normal, color: primary),
-      bodyMedium:    GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.normal, color: primary),
-      bodySmall:     GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.normal, color: secondary),
-      labelLarge:    GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600,   color: primary),
-      labelSmall:    GoogleFonts.nunito(fontSize: 11, fontWeight: FontWeight.w500,   color: secondary),
-    );
-  }
-
-static CardThemeData _cardTheme(Color color, Color border) {
-  return CardThemeData(
-    color: color,
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: BorderSide(color: border, width: 1),
-    ),
-  );
 }
 
-  static AppBarTheme _appBarTheme(Color bg, Color text) {
-    return AppBarTheme(
-      backgroundColor: bg,
-      elevation: 0,
-      centerTitle: false,
-      titleTextStyle: GoogleFonts.lora(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: text,
+class AppTheme {
+  static final lightTheme = ThemeData(
+    brightness: Brightness.light,
+    colorScheme: const ColorScheme.light(
+      primary: AppColors.lightAccent,
+      secondary: AppColors.lightEmphasis,
+      surface: AppColors.lightSurface,
+      onSurface: AppColors.lightTextPrimary,
+      primaryContainer: AppColors.lightCard,
+      onPrimaryContainer: AppColors.lightTextPrimary,
+      secondaryContainer: AppColors.lightBorder,
+    ),
+    textTheme: _textTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
+    extensions: const <ThemeExtension<dynamic>>[
+      CustomColors(
+        statusReading: AppColors.statusReading,
+        statusPending: AppColors.statusPending,
+        statusFinished: AppColors.statusFinished,
+        statusAbandoned: AppColors.statusAbandoned,
+        colorLibro: AppColors.colorLibro,
+        colorFanfic: AppColors.colorFanfic,
+        colorManga: AppColors.colorManga,
       ),
-      iconTheme: IconThemeData(color: text),
+    ],
+  );
+
+  static final darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    colorScheme: const ColorScheme.dark(
+      primary: AppColors.darkAccent,
+      secondary: AppColors.darkEmphasis,
+      surface: AppColors.darkSurface,
+      onSurface: AppColors.darkTextPrimary,
+      primaryContainer: AppColors.darkCard,
+      onPrimaryContainer: AppColors.darkTextPrimary,
+      secondaryContainer: AppColors.darkBorder,
+    ),
+    textTheme: _textTheme(AppColors.darkTextPrimary, AppColors.darkTextSecondary),
+    extensions: const <ThemeExtension<dynamic>>[
+      CustomColors(
+        statusReading: AppColors.statusReading,
+        statusPending: AppColors.statusPending,
+        statusFinished: AppColors.statusFinished,
+        statusAbandoned: AppColors.statusAbandoned,
+        colorLibro: AppColors.colorLibro,
+        colorFanfic: AppColors.colorFanfic,
+        colorManga: AppColors.colorManga,
+      ),
+    ],
+  );
+
+  static TextTheme _textTheme(Color primaryColor, Color secondaryColor) {
+    // Material 3: keep TextTheme keys that exist on your Flutter version.
+    // Some widgets in this repo still reference legacy Material 2 names.
+    return const TextTheme().apply(
+      bodyColor: primaryColor,
+      displayColor: primaryColor,
+      decorationColor: primaryColor,
+    ).copyWith(
+      labelSmall: TextStyle(color: secondaryColor),
+      labelMedium: TextStyle(color: secondaryColor),
+      labelLarge: TextStyle(color: secondaryColor),
     );
   }
 
-  static InputDecorationTheme _inputTheme(Color fill, Color hint, Color border) {
-    return InputDecorationTheme(
-      filled: true,
-      fillColor: fill,
-      hintStyle: GoogleFonts.nunito(color: hint, fontSize: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightAccent, width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    );
-  }
 
-  static BottomNavigationBarThemeData _bottomNavTheme(Color bg, Color selected, Color unselected) {
-    return BottomNavigationBarThemeData(
-      backgroundColor: bg,
-      selectedItemColor: selected,
-      unselectedItemColor: unselected,
-      type: BottomNavigationBarType.fixed,
-      elevation: 0,
-    );
-  }
+}
+
+extension CustomTheme on BuildContext {
+  CustomColors get customColors => Theme.of(this).extension<CustomColors>()!;
 }

@@ -24,8 +24,11 @@ class BookSearchRepository {
         queryParameters: {'q': query, 'page': page, 'size': size},
       );
 
-      final List<dynamic> data = response.data ?? [];
-      return data.map((json) => BookResponseDTO.fromJson(json)).toList();
+      final data = _extractList(response.data);
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(BookResponseDTO.fromJson)
+          .toList();
     } catch (e) {
       throw Exception('Error buscando libros: $e');
     }
@@ -50,7 +53,7 @@ class BookSearchRepository {
       final data = book.toJson();
       Response response;
 
-      if (book.idBook > 0) {
+      if (book.idBook! > 0) {
         // Actualiza un libro existente
         response = await _apiClient.put(
           '${ApiConstants.book}/${book.idBook}',
@@ -66,6 +69,15 @@ class BookSearchRepository {
     } catch (e) {
       throw Exception('Error inesperado guardando el libro: $e');
     }
+  }
+
+  List<dynamic> _extractList(dynamic payload) {
+    if (payload is List) return payload;
+    if (payload is Map<String, dynamic>) {
+      final nested = payload['content'] ?? payload['items'] ?? payload['results'] ?? payload['data'];
+      if (nested is List) return nested;
+    }
+    return const [];
   }
 }
 

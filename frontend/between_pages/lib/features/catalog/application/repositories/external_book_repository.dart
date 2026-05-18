@@ -18,6 +18,7 @@ class ExternalBookRepository {
     try {
       final response = await _apiClient.get(
         '/external/book/search',
+
         queryParameters: {
           'q': query,
           // tu backend no recibe paginación aquí, pero dejamos placeholders
@@ -27,11 +28,23 @@ class ExternalBookRepository {
         },
       );
 
-      final List<dynamic> data = response.data ?? [];
-      return data.map((json) => BookResponseDTO.fromJson(json)).toList();
+      final data = _extractList(response.data);
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(BookResponseDTO.fromJson)
+          .toList();
     } catch (e) {
       throw Exception('Error buscando libros en Google Books: $e');
     }
+  }
+
+  List<dynamic> _extractList(dynamic payload) {
+    if (payload is List) return payload;
+    if (payload is Map<String, dynamic>) {
+      final nested = payload['content'] ?? payload['items'] ?? payload['results'] ?? payload['data'];
+      if (nested is List) return nested;
+    }
+    return const [];
   }
 }
 
@@ -39,4 +52,3 @@ final externalBookRepositoryProvider = Provider<ExternalBookRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return ExternalBookRepository(apiClient);
 });
-

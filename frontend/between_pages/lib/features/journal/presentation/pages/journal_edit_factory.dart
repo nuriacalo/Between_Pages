@@ -7,6 +7,7 @@ import 'package:between_pages/features/journal/domain/manga_journal_record_dto.d
 import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/presentation/widgets/angst_level_selector.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -82,7 +83,7 @@ class JournalEditFactory {
           final userId = ref.read(userProfileProvider).value!.idUser;
           return FanficJournalRecordDTO(
             userId: userId,
-            fanfictionId: fanfic.idFanfic,
+            fanficId: fanfic.idFanfic ?? 0,
             ao3Id: fanfic.ao3Id,
             status: updatedValues['status'] as String,
             rating: updatedValues['rating'] as int?,
@@ -252,7 +253,7 @@ class JournalEditFactory {
           controllers.putIfAbsent('secondaryShips',
               () => TextEditingController(text: j.secondaryShips ?? ''));
           controllers.putIfAbsent('angstLevel',
-              () => TextEditingController(text: j.angstLevel ?? ''));
+              () => TextEditingController(text: j.angstLevel ?? 'NONE'));
           controllers.putIfAbsent('shipLoyalty',
               () => TextEditingController(text: j.shipLoyalty ?? ''));
           controllers.putIfAbsent('canonType',
@@ -289,6 +290,19 @@ class JournalEditFactory {
                 controller: controllers['canonType']!,
                 label: 'Tipo de canon (ej: AU, Canon Divergence)',
                 icon: Icons.alt_route_outlined,
+              ),
+              const SizedBox(height: 24),
+              StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return AngstLevelSelector(
+                    initialValue: controllers['angstLevel']!.text,
+                    onAngstLevelSelected: (level) {
+                      setState(() {
+                        controllers['angstLevel']!.text = level;
+                      });
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 24),
             ],

@@ -14,6 +14,7 @@
     "profileNotifications": "Notificaciones",
     "profilePrivacy": "Privacidad y Seguridad",
     "profileLanguage": "Idioma de la aplicación",
+    "profileDarkMode": "Modo Oscuro",
     "loginWelcomeBack": "Bienvenido de nuevo",
     "loginEmail": "Correo electrónico",
     "loginPassword": "Contraseña",
@@ -108,5 +109,88 @@
     "synopsis": "Sinopsis",
     "physical": "Físico",
     "digital": "Digital",
-    "borrowed": "Prestado"
+    "borrowed": "Prestado",
+    "importOtherWay": "¿Quieres importar este fanfic de otra forma?",
+    "importAo3Link": "Importar por enlace de AO3",
+    "importManual": "Importar manualmente",
+    "importAo3Title": "Importar fanfic de AO3",
+    "importAo3Hint": "Pega el enlace o ID de AO3",
+    "importAo3Label": "Enlace de AO3",
+    "importButton": "Importar",
+    "addFanfic": "Añadir Fanfic",
+    "editFanfic": "Editar Fanfic",
+    "saveButton": "Guardar",
+    "fanficTitle": "Título",
+    "fanficAuthor": "Autor",
+    "fanficFandom": "Fandom / Material de origen",
+    "fanficChapters": "Número de capítulos",
+    "fanficStatus": "Estado de publicación",
+    "fanficStatusOngoing": "En progreso (Ongoing)",
+    "fanficStatusCompleted": "Completado (Completed)",
+    "fanficStatusHiatus": "En pausa (Hiatus)",
+    "fanficStatusAbandoned": "Abandonado (Abandoned)",
+    "fanficGenresHint": "Géneros (separados por coma)",
+    "fanficTagsHint": "Tags (separados por coma)",
+    "fanficCoverUrl": "URL de la portada",
+    "fanficSavedSuccess": "Fanfic guardado y añadido al diario con éxito",
+    "angstLevelTitle": "Nivel de Angst",
+    "angstLevelNone": "Nada",
+    "angstLevelLow": "Bajo",
+    "angstLevelMedium": "Medio",
+    "angstLevelHigh": "Alto",
+    "angstLevelExtreme": "Extremo",
+    "findSomethingToRead": "Encuentra algo para leer",
+    "annualGoal": "Meta Anual",
+    "booksRead": "libros leídos",
+    "editGoal": "Editar Meta",
+    "setYourGoal": "Define tu meta de lectura anual",
+    "goal": "Meta",
+    "goalAchieved": "¡Meta alcanzada! ¡Sigue así!",
+    "booksToGo": "{count} más para alcanzar la meta",
+    "@booksToGo": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "addToJournal": "Añadir al Journal",
+    "changeStatus": "Cambiar Estado",
+    "saving": "Guardando...",
+    "startedReadingItem": "Empezaste a leer \"{title}\"",
+    "@startedReadingItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToWishlistItem": "Añadido \"{title}\" a la lista de deseos",
+    "@addedToWishlistItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToTbrItem": "Añadido \"{title}\" a la lista de Por Leer",
+    "@addedToTbrItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "finishedReadingItem": "Terminaste de leer \"{title}\"",
+    "@finishedReadingItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "addedToJournalItem": "Añadido \"{title}\" al journal",
+    "@addedToJournalItem": {
+        "placeholders": {
+            "title": {}
+        }
+    },
+    "statusUpdated": "Estado de \"{title}\" actualizado a {status}",
+    "@statusUpdated": {
+        "placeholders": {
+            "title": {},
+            "status": {}
+        }
+    },
+    "notes": "Notas"
 }

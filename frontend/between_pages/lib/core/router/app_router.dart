@@ -12,9 +12,10 @@ import 'package:between_pages/features/journal/presentation/pages/book_reading_p
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/reading_lists_page.dart';
+import 'package:between_pages/features/notes/presentation/pages/notes_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/settings_page.dart';
+import 'package:between_pages/features/profile/presentation/pages/profile_edit_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -48,9 +49,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/item/:type/:id',
         builder: (context, state) {
           final type = state.pathParameters['type']!;
+          final itemType = CatalogItemType.values.firstWhere(
+            (e) => e.toString() == 'CatalogItemType.$type',
+          );
+
+          // Evitamos crashear si alguien navega sin extra.
+          if (state.extra == null) {
+            // Mostrar un error claro en vez de hacer cast inseguro.
+            return Scaffold(
+              appBar: AppBar(title: const Text('Error')),
+              body: const Center(
+                child: Text('Falta el item en navigation.extra'),
+              ),
+            );
+          }
+
           final item = state.extra as dynamic;
-          final itemType = CatalogItemType.values.firstWhere((e) => e.toString() == 'CatalogItemType.$type');
           return CatalogDetailPage(item: item, type: itemType);
+
         },
       ),
       GoRoute(
@@ -128,8 +144,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ReadingListsPage(),
       ),
       GoRoute(
+        path: '/notes',
+        builder: (context, state) {
+          final bookId = state.extra as int;
+          return NotesPage(bookId: bookId);
+        },
+      ),
+      GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const ProfileEditPage(),
       ),
     ],
   );

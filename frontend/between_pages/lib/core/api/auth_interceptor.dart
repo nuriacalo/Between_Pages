@@ -104,7 +104,7 @@ class AuthInterceptor extends Interceptor {
       );
 
       final response = await dio.post(
-        '/auth/refresh',
+        ApiConstants.refresh, // Corrección: Usa la constante en lugar del path estricto con '/'
         data: {'refreshToken': refreshToken},
       );
 
@@ -137,11 +137,11 @@ class AuthInterceptor extends Interceptor {
       final options = err.requestOptions;
       options.headers['Authorization'] = 'Bearer $token';
 
-      final response = await Dio().fetch(options);
+      final dio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
+      final response = await dio.fetch(options);
       handler.resolve(response);
     } catch (e) {
       handler.reject(err);
     }
   }
 }
-

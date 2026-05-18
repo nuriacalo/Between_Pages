@@ -2,7 +2,7 @@ class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     // defaultValue:'http://10.0.2.2:8080/api', // Usa 10.0.2.2 para emuladores Android, 127.0.0.1 para iOS
-    defaultValue: 'http://127.0.0.1:8080/api',
+    defaultValue: 'http://192.168.0.15:8080/api',
   );
 
   // JIKAN API (MyAnimeList - Unofficial)
@@ -60,29 +60,32 @@ class ApiConstants {
   static const listAddItem = '$baseUrl/lists/{listId}/items';
   static const listRemoveItem = '$baseUrl/lists/{listId}/items';
 
-  // JOURNAL - BOOKS (/api/book-journal)
-  static const bookJournal = '$baseUrl/book-journal';
-  static const bookJournalUser = '$baseUrl/book-journal/user/';
+  // JOURNAL - BOOKS (/api/journal/BOOK)
+  static const bookJournal = '$baseUrl/journal/book'; // POST (Minúsculas en el backend)
+  static const bookJournalUser = '$baseUrl/journal/BOOK/user/';
   static const bookJournalUserStatus =
-      '$baseUrl/book-journal/user/{userId}/status';
+      '$baseUrl/journal/BOOK/user/{userId}/status';
   static const bookJournalUserRereadings =
-      '$baseUrl/book-journal/user/{userId}/rereadings';
+      '$baseUrl/journal/BOOK/user/{userId}/rereadings';
+  static const bookJournalDelete = '$baseUrl/journal/BOOK/'; // Para concatenar el ID al eliminar
 
-  // JOURNAL - MANGA (/api/manga-journal)
-  static const mangaJournal = '$baseUrl/manga-journal';
-  static const mangaJournalUser = '$baseUrl/manga-journal/user/';
+  // JOURNAL - MANGA (/api/journal/MANGA)
+  static const mangaJournal = '$baseUrl/journal/manga'; // POST
+  static const mangaJournalUser = '$baseUrl/journal/MANGA/user/';
   static const mangaJournalUserStatus =
-      '$baseUrl/manga-journal/user/{userId}/status';
+      '$baseUrl/journal/MANGA/user/{userId}/status';
   static const mangaJournalUserRereadings =
-      '$baseUrl/manga-journal/user/{userId}/rereadings';
+      '$baseUrl/journal/MANGA/user/{userId}/rereadings';
+  static const mangaJournalDelete = '$baseUrl/journal/MANGA/';
 
-  // JOURNAL - FANFICTION (/api/fanfiction-journal)
-  static const fanficJournal = '$baseUrl/fanfiction-journal';
-  static const fanficJournalUser = '$baseUrl/fanfiction-journal/user/';
+  // JOURNAL - FANFICTION (/api/journal/FANFIC)
+  static const fanficJournal = '$baseUrl/journal/fanfic'; // POST
+  static const fanficJournalUser = '$baseUrl/journal/FANFIC/user/';
   static const fanficJournalUserStatus =
-      '$baseUrl/fanfiction-journal/user/{userId}/status';
+      '$baseUrl/journal/FANFIC/user/{userId}/status';
   static const fanficJournalUserRereadings =
-      '$baseUrl/fanfiction-journal/user/{userId}/rereadings';
+      '$baseUrl/journal/FANFIC/user/{userId}/rereadings';
+  static const fanficJournalDelete = '$baseUrl/journal/FANFIC/';
 
   // JOURNAL - READING SESSIONS (/api/reading-sessions)
   static const readingSessions = '$baseUrl/reading-sessions';

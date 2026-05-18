@@ -4,6 +4,7 @@ import 'package:between_pages/features/journal/domain/manga_journal_response_dto
 import 'package:between_pages/features/catalog/presentation/pages/manga_edit_page.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
+import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +32,7 @@ class _MangaReadingProgressPageState extends ConsumerState<MangaReadingProgressP
     );
 
     if (result != null && mounted) {
-      ref.invalidate(journalEntryProvider((JournalType.manga, _manga.idManga)));
+      ref.invalidate(journalEntryProvider((JournalType.manga, _manga.idManga ?? 0)));
       ref.invalidate(journalProvider(JournalType.manga));
     }
   }
@@ -39,41 +40,52 @@ class _MangaReadingProgressPageState extends ConsumerState<MangaReadingProgressP
   @override
   Widget build(BuildContext context) {
     final accent = Colors.green[300]!;
-    final updatedJournal = ref.watch(journalEntryProvider((JournalType.manga, _manga.idManga)));
+    final updatedJournal = ref.watch(journalEntryProvider((JournalType.manga, _manga.idManga ?? 0)));
     final journal = (updatedJournal as MangaJournalResponseDTO?) ?? _journal;
     final manga = journal.manga!;
 
-    final currentPage = journal.currentChapter ?? 0;
-    final totalPages = manga.totalChapters;
-    final progress = ((totalPages ?? 0) > 0) ? (currentPage / totalPages!).clamp(0.0, 1.0) : 0.0;
-
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerScrolled) => [
-          SliverAppBar(
-            expandedHeight: 320,
-            pinned: true,
-            backgroundColor: accent,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_document),
-                tooltip: 'Editar datos del manga',
-                onPressed: _goToEditMangaDetails,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: _goToEditMangaDetails,
+          tooltip: 'Editar datos del manga',
+          child: const Icon(Icons.edit),
+        ),
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerScrolled) => [
+            SliverAppBar(
+              expandedHeight: 320,
+              pinned: true,
+              backgroundColor: accent,
+              foregroundColor: Colors.white,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  manga.title,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                background: _buildHeader(accent, manga.coverUrl),
               ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                manga.title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              bottom: const TabBar(
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white54,
+                indicatorColor: Colors.white,
+                tabs: [
+                  Tab(text: 'Segundo Cerebro'),
+                  Tab(text: 'Editar'),
+                ],
               ),
-              background: _buildHeader(accent, manga.coverUrl),
             ),
+          ],
+          body: TabBarView(
+            children: [
+              SecondBrainTab(itemType: 'MANGA', itemId: manga.idManga ?? 0),
+              JournalItemEditPage(journal: journal, type: JournalType.manga),
+            ],
           ),
-        ],
-        body: JournalItemEditPage(journal: journal, type: JournalType.manga),
+        ),
       ),
     );
   }
@@ -88,7 +100,7 @@ class _MangaReadingProgressPageState extends ConsumerState<MangaReadingProgressP
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 20, offset: const Offset(0, 8))],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -99,14 +111,14 @@ class _MangaReadingProgressPageState extends ConsumerState<MangaReadingProgressP
                       ? CachedNetworkImage(
                           imageUrl: coverUrl,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.1)),
+                          placeholder: (context, url) => Container(color: Colors.white.withAlpha(26)),
                           errorWidget: (context, url, error) => Container(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withAlpha(26),
                             child: const Icon(Icons.book, color: Colors.white54, size: 40),
                           ),
                         )
                       : Container(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha(26),
                           child: const Icon(Icons.book, color: Colors.white54, size: 40),
                         ),
                 ),

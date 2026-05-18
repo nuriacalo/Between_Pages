@@ -1,6 +1,7 @@
+import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-class AngstLevelSelector extends StatelessWidget {
+class AngstLevelSelector extends StatefulWidget {
   final String? initialValue;
   final ValueChanged<String> onAngstLevelSelected;
 
@@ -11,40 +12,90 @@ class AngstLevelSelector extends StatelessWidget {
   });
 
   @override
+  State<AngstLevelSelector> createState() => _AngstLevelSelectorState();
+}
+
+class _AngstLevelSelectorState extends State<AngstLevelSelector> {
+  late String _selectedAngst;
+  final List<String> _angstLevels = ['NONE', 'LOW', 'MEDIUM', 'HIGH', 'EXTREME'];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedAngst = widget.initialValue ?? 'NONE';
+  }
+
+  String _getTranslatedLevel(BuildContext context, String level) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (level) {
+      case 'NONE':
+        return l10n.angstLevelNone;
+      case 'LOW':
+        return l10n.angstLevelLow;
+      case 'MEDIUM':
+        return l10n.angstLevelMedium;
+      case 'HIGH':
+        return l10n.angstLevelHigh;
+      case 'EXTREME':
+        return l10n.angstLevelExtreme;
+      default:
+        return '';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<String> angstLevels = ['NONE', 'LOW', 'MEDIUM', 'HIGH', 'EXTREME'];
-    final selectedAngst = initialValue ?? 'NONE';
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? Colors.purple[300]! : Colors.purple[700]!;
+    final inactiveColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Nivel de Angst',
-          style: Theme.of(context).textTheme.titleMedium,
+          l10n.angstLevelTitle,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(angstLevels.length, (index) {
-            final level = angstLevels[index];
-            final isSelected = level == selectedAngst;
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(_angstLevels.length, (index) {
+            final level = _angstLevels[index];
+            final isSelected = _angstLevels.indexOf(_selectedAngst) >= index;
+
             return GestureDetector(
-              onTap: () => onAngstLevelSelected(level),
+              onTap: () {
+                setState(() {
+                  _selectedAngst = level;
+                });
+                widget.onAngstLevelSelected(level);
+              },
               child: Column(
                 children: [
                   Icon(
-                    Icons.local_fire_department,
-                    color: isSelected
-                        ? Colors.redAccent
-                        : Colors.grey.withOpacity(0.5),
-                    size: 32,
+                    Icons.heart_broken,
+                    color: isSelected ? activeColor : inactiveColor,
+                    size: 36,
+                    shadows: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: activeColor.withOpacity(0.5),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    level,
+                    _getTranslatedLevel(context, level),
                     style: TextStyle(
-                      fontSize: 10,
-                      color: isSelected ? Colors.redAccent : Colors.grey,
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? activeColor : inactiveColor,
                     ),
                   ),
                 ],

@@ -22,8 +22,8 @@ class BetweenPagesApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Between Pages',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
       // Usamos las delegaciones y locales autogenerados por Flutter

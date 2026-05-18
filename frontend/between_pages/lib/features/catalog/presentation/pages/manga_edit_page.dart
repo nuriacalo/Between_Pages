@@ -1,11 +1,10 @@
+import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
-import 'package:between_pages/features/catalog/application/repositories/manga_search_repository.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MangaEditPage extends ConsumerStatefulWidget {
@@ -65,7 +64,7 @@ class _MangaEditPageState extends ConsumerState<MangaEditPage> {
     setState(() => _isSaving = true);
 
     try {
-      final mangaRepo = ref.read(mangaSearchRepositoryProvider);
+      final mangaRepo = ref.read(catalogRepositoryProvider);
       final mangaToSave = MangaResponseDTO(
         idManga: widget.manga?.idManga ?? 0,
         malId: widget.manga?.malId,

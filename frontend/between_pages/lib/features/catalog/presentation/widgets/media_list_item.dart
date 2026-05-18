@@ -4,10 +4,14 @@ import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 
+import 'package:between_pages/core/theme/app_theme.dart';
+import 'package:between_pages/core/theme/app_colors.dart';
+
+
 class MediaListItem extends StatelessWidget {
   final MediaItem item;
 
-  const MediaListItem({Key? key, required this.item}) : super(key: key);
+  const MediaListItem({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +47,14 @@ class MediaListItem extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     item.author,
-                    style: Theme.of(context).textTheme.bodyText2,
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -59,6 +63,7 @@ class MediaListItem extends StatelessWidget {
                   _buildTypeSpecificDetails(context),
                 ],
               ),
+
             ),
           ],
         ),

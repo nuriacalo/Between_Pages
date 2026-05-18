@@ -77,21 +77,14 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
   /// Cambia el tipo de contenido activo
   void setContentType(SearchContentType type) {
     state = state.copyWith(contentType: type);
-    // Si hay query y no hay resultados para este tipo, buscar automáticamente
+
+    // FIX: si ya hay query activa, siempre volvemos a ejecutar la búsqueda
+    // para el nuevo tipo. Así la UI no queda vacía por un estado parcial.
     if (state.query.isNotEmpty) {
-      switch (type) {
-        case SearchContentType.books:
-          if (state.bookResults.isEmpty) search();
-          break;
-        case SearchContentType.fanfics:
-          if (state.fanficResults.isEmpty) search();
-          break;
-        case SearchContentType.manga:
-          if (state.mangaResults.isEmpty) search();
-          break;
-      }
+      search(state.query);
     }
   }
+
 
   /// Ejecuta la búsqueda según el tipo de contenido activo
   Future<void> search([String? query]) async {
@@ -119,13 +112,9 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
           final localResults = await _bookRepo.searchBooks(searchQuery);
           final googleResults = await _externalBookRepo.searchBooks(searchQuery);
 
-          // Queremos mezclar pero garantizando que si existe en BBDD se use el local.
-          // Regla:
-          // - si googleBooksId existe en BBDD => reemplazar con el local
-          // - si no existe => mantener el resultado de Google
           final localByGoogleId = <String, BookResponseDTO>{
             for (final b in localResults)
-              if (b.googleBooksId.isNotEmpty) b.googleBooksId: b,
+              if (b.googleBooksId != null && b.googleBooksId!.isNotEmpty) b.googleBooksId!: b,
           };
 
           final merged = <BookResponseDTO>[];
@@ -133,8 +122,7 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
 
           for (final g in googleResults) {
             final gid = g.googleBooksId;
-            if (gid.isEmpty) {
-              // Si no hay googleBooksId no podemos deduplicar; lo añadimos.
+            if (gid == null || gid.isEmpty) {
               merged.add(g);
               continue;
             }
@@ -145,12 +133,9 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
             merged.add(local ?? g);
           }
 
-          // Añadimos también los locales que no vinieron en Google.
-          // (por ejemplo si Google no devolvió ese libro para el query)
           for (final l in localResults) {
             final gid = l.googleBooksId;
-            if (gid.isEmpty) {
-              // No deduplicable, lo añadimos
+            if (gid == null || gid.isEmpty) {
               merged.add(l);
               continue;
             }
@@ -162,17 +147,13 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
           state = state.copyWith(bookResults: merged, isLoading: false);
           break;
       case SearchContentType.fanfics:
-          // Detectamos si el texto es un link de AO3 o un ID numérico (ej. 5 a 12 dígitos)
           final isAo3Input = searchQuery.contains('archiveofourown.org/works/') || 
                              RegExp(r'^\d{5,12}$').hasMatch(searchQuery);
 
           if (isAo3Input) {
-            // Si es AO3, llamamos al crawler
             final importedFanfic = await _fanficRepo.importFromAo3(searchQuery);
-            // El crawler devuelve un solo fanfic, lo metemos en la lista de resultados
             state = state.copyWith(fanficResults: [importedFanfic], isLoading: false);
           } else {
-            // Búsqueda normal en la BBDD
             final results = await _fanficRepo.searchFanfics(searchQuery);
             state = state.copyWith(fanficResults: results, isLoading: false);
           }
@@ -181,7 +162,6 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
           final localResults = await _mangaRepo.searchManga(searchQuery);
           final externalResults = await _externalMangaRepo.searchManga(searchQuery);
 
-          // Mezclamos usando malId cuando exista. Si malId es nulo, no deduplicamos.
           final localByMalId = <int, MangaResponseDTO>{
             for (final m in localResults)
               if (m.malId != null) m.malId!: m,
@@ -220,7 +200,21 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
     }
   }
 
-  /// Limpia todos los resultados
+  Future<bool> importFanficByLink(String link) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final importedFanfic = await _fanficRepo.importFromAo3(link);
+      state = state.copyWith(
+        fanficResults: [importedFanfic],
+        isLoading: false,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   void clear() {
     state = state.copyWith(
       query: '',
@@ -232,7 +226,6 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
   }
 }
 
-/// Provider principal de búsqueda unificada
 final unifiedSearchProvider =
     StateNotifierProvider<UnifiedSearchNotifier, UnifiedSearchState>((ref) {
       final bookRepo = ref.watch(bookSearchRepositoryProvider);

@@ -1,67 +1,96 @@
-class MangaResponseDTO {
+import 'package:json_annotation/json_annotation.dart';
+
+import 'media_item.dart';
+
+part 'manga_response_dto.g.dart';
+
+@JsonSerializable(includeIfNull: false)
+class MangaResponseDTO implements MediaItem {
+  @JsonKey(name: 'id', readValue: _readId)
   final int? idManga;
+
+  @JsonKey(name: 'mal_id')
   final int? malId;
+
+  @JsonKey(name: 'mal_score')
   final double? malScore;
-  final String? source;
-  final String? title;
-  final String? author;
-  final String? demographic;
+
+  @JsonKey(name: 'source')
+  final String? _source;
+
+  @JsonKey(name: 'title')
+  final String? _title;
+
+  @JsonKey(name: 'author')
+  final String? _author;
+
+  @JsonKey(name: 'demographic')
+  final String? _demographic;
+
+  @JsonKey(defaultValue: [])
   final List<String> genres;
+
   final String? description;
+
+  @JsonKey(name: 'cover_url')
+  @override
   final String? coverUrl;
+
+  @JsonKey(name: 'total_chapters')
   final int? totalChapters;
+
+  @JsonKey(name: 'total_volumes')
   final int? totalVolumes;
-  final String? publicationStatus;
+
+  /// Legacy alias used by some widgets.
+  int? get volumes => totalVolumes;
+
+
+  @JsonKey(name: 'publication_status')
+  final String? _publicationStatus;
 
   MangaResponseDTO({
     this.idManga,
     this.malId,
     this.malScore,
-    this.source,
-    this.title,
-    this.author,
-    this.demographic,
+    String? source,
+    String? title,
+    String? author,
+    String? demographic,
     this.genres = const [],
     this.description,
     this.coverUrl,
     this.totalChapters,
     this.totalVolumes,
-    this.publicationStatus,
-  });
+    String? publicationStatus,
+  })  : _source = source,
+        _title = title,
+        _author = author,
+        _demographic = demographic,
+        _publicationStatus = publicationStatus;
 
-  factory MangaResponseDTO.fromJson(Map<String, dynamic> json) {
-    return MangaResponseDTO(
-      idManga: json['id'] != null ? int.tryParse(json['id'].toString()) : null,
-      malId: json['mal_id'] as int?,
-      malScore: (json['mal_score'] as num?)?.toDouble(),
-      source: json['source'] as String?,
-      title: json['title'] as String?,
-      author: json['author'] as String?,
-      demographic: json['demographic'] as String?,
-      genres: (json['genres'] as List<dynamic>?)?.cast<String>() ?? [],
-      description: json['description'] as String?,
-      coverUrl: json['cover_url'] as String?,
-      totalChapters: json['total_chapters'] as int?,
-      totalVolumes: json['total_volumes'] as int?,
-      publicationStatus: json['publication_status'] as String?,
-    );
+  static Object? _readId(Map<dynamic, dynamic> json, String key) {
+    return json['id'] != null ? int.tryParse(json['id'].toString()) : null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': idManga,
-      'mal_id': malId,
-      'mal_score': malScore,
-      'source': source,
-      'title': title,
-      'author': author,
-      'demographic': demographic,
-      'genres': genres,
-      'description': description,
-      'cover_url': coverUrl,
-      'total_chapters': totalChapters,
-      'total_volumes': totalVolumes,
-      'publication_status': publicationStatus,
-    };
-  }
+  factory MangaResponseDTO.fromJson(Map<String, dynamic> json) =>
+      _$MangaResponseDTOFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MangaResponseDTOToJson(this);
+
+  @override
+  MediaType get itemType => MediaType.manga;
+
+  @override
+  String get title => _title ?? 'No Title';
+
+  @override
+  String get author => _author ?? 'Unknown Author';
+
+  String get source => _source ?? 'Unknown';
+  String get demographic => _demographic ?? 'N/A';
+  String get publicationStatus => _publicationStatus ?? 'Unknown';
+
+  @override
+  String? get coverImageUrl => coverUrl;
 }

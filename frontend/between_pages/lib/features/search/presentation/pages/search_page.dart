@@ -1,3 +1,6 @@
+import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
+import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/presentation/pages/fanfic_edit_page.dart';
 import 'package:between_pages/features/library/presentation/widgets/catalog_item_card.dart';
 import 'package:between_pages/features/search/application/providers/unified_search_provider.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
@@ -49,10 +52,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: l10n.searchPlaceholder,
-                      prefixIcon: const Icon(Icons.search),
+                      hintStyle: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: Icon(
+                                Icons.clear,
+                                color: colorScheme.onSurface,
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                                 searchNotifier.clear();
@@ -62,10 +74,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(
+                          color: colorScheme.outline,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: colorScheme.outline,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: colorScheme.primary,
+                          width: 2,
+                        ),
                       ),
                       filled: true,
-                      fillColor: colorScheme.surfaceContainerHighest,
+                      fillColor: colorScheme.surface,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                       ),
@@ -81,8 +108,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   indicatorColor: colorScheme.primary,
                   tabs: [
                     Tab(icon: const Icon(Icons.book), text: l10n.tabBooks),
-                    Tab(icon: const Icon(Icons.menu_book), text: l10n.tabFanfics),
-                    Tab(icon: const Icon(Icons.auto_stories), text: l10n.tabMangas),
+                    Tab(
+                      icon: const Icon(Icons.menu_book),
+                      text: l10n.tabFanfics,
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.auto_stories),
+                      text: l10n.tabMangas,
+                    ),
                   ],
                   // ignore: unnecessary_lambdas — readability
                   onTap: (index) {
@@ -124,26 +157,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text('${l10n.errorPrefix}: ${state.error}'),
-            Text('${l10n.errorPrefix}: ${state.error}'),
           ],
         ),
       );
     }
 
     if (state.query.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchBooksHint,
-        colorScheme,
-        textTheme,
-      );
+      return _buildEmptyState(l10n.searchBooksHint, colorScheme, textTheme);
     }
 
     if (state.bookResults.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchBooksEmpty,
-        colorScheme,
-        textTheme,
-      );
+      return _buildEmptyState(l10n.searchBooksEmpty, colorScheme, textTheme);
     }
 
     return _buildResultsGrid(
@@ -151,8 +175,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       colorScheme,
       textTheme,
       (book) => CatalogItemCard(
-        title: book.title,
-        author: book.author,
+        title: book.title.isEmpty ? l10n.noTitle : book.title,
+        author: book.author.isEmpty ? l10n.unknownAuthor : book.author,
         coverUrl: book.coverUrl,
         fallbackIcon: Icons.book,
         onTap: () => context.push('/item/book/${book.idBook}', extra: book),
@@ -177,26 +201,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           children: [
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
-            Text('Error: ${state.error}'),
+            Text('${l10n.errorPrefix}: ${state.error}'),
           ],
         ),
       );
     }
 
     if (state.query.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchFanficsHint,
-        colorScheme,
-        textTheme,
-      );
+      return _buildEmptyState(l10n.searchFanficsHint, colorScheme, textTheme);
     }
 
     if (state.fanficResults.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchFanficsEmpty,
-        colorScheme,
-        textTheme,
-      );
+      return _buildFanficNotFoundOptions(colorScheme, textTheme, l10n);
     }
 
     return _buildResultsGrid(
@@ -209,7 +225,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         coverUrl: fanfic.coverUrl,
         fallbackIcon: Icons.favorite,
         isFanfic: true,
-        onTap: () => context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
+        onTap: () =>
+            context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
       ),
     );
   }
@@ -238,40 +255,29 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
 
     if (state.query.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchMangasHint,
-        colorScheme,
-        textTheme,
-      );
+      return _buildEmptyState(l10n.searchMangasHint, colorScheme, textTheme);
     }
 
     if (state.mangaResults.isEmpty) {
-      return _buildEmptyState(
-        l10n.searchMangasEmpty,
-        colorScheme,
-        textTheme,
-      );
+      return _buildEmptyState(l10n.searchMangasEmpty, colorScheme, textTheme);
     }
 
-    return _buildResultsGrid(
-      state.mangaResults,
-      colorScheme,
-      textTheme,
-      (manga) {
-        final int? mId = manga.idManga;
-        final mangaId = (mId != null && mId > 0)
-            ? mId.toString()
-            : manga.malId?.toString() ?? 'unknown';
-            
-        return CatalogItemCard(
-          title: manga.title?.toString() ?? l10n.noTitle,
-          author: manga.author?.toString() ?? l10n.unknownAuthor,
-          coverUrl: manga.coverUrl,
-          fallbackIcon: Icons.auto_stories,
-          onTap: () => context.push('/item/manga/$mangaId', extra: manga),
-        );
-      }
-    );
+    return _buildResultsGrid(state.mangaResults, colorScheme, textTheme, (
+      manga,
+    ) {
+      final int? mId = manga.idManga;
+      final mangaId = (mId != null && mId > 0)
+          ? mId.toString()
+          : manga.malId?.toString() ?? 'unknown';
+
+      return CatalogItemCard(
+        title: manga.title.toString() ?? l10n.noTitle,
+        author: manga.author.toString() ?? l10n.unknownAuthor,
+        coverUrl: manga.coverUrl,
+        fallbackIcon: Icons.auto_stories,
+        onTap: () => context.push('/item/manga/$mangaId', extra: manga),
+      );
+    });
   }
 
   Widget _buildEmptyState(
@@ -297,6 +303,115 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  Widget _buildFanficNotFoundOptions(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    AppLocalizations l10n,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(
+              l10n.searchFanficsEmpty,
+              style: textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.importOtherWay,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _showLinkImportDialog,
+                icon: const Icon(Icons.link),
+                label: Text(l10n.importAo3Link),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _importManually,
+                icon: const Icon(Icons.edit),
+                label: Text(l10n.importManual),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLinkImportDialog() {
+    final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.importAo3Title),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: l10n.importAo3Hint,
+            labelText: l10n.importAo3Label,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancelButton),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _importFromAo3(controller.text);
+            },
+            child: Text(l10n.importButton),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _importFromAo3(String ao3Input) async {
+    try {
+      final repository = ref.read(fanficSearchRepositoryProvider);
+      final fanfic = await repository.importFromAo3(ao3Input);
+      if (!mounted) return;
+      context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic);
+    } catch (e) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${l10n.errorPrefix}: $e')));
+    }
+  }
+
+  void _importManually() async {
+    final newFanfic = await Navigator.push<FanfictionResponseDTO>(
+      context,
+      MaterialPageRoute(builder: (_) => const FanficEditPage()),
+    );
+
+    if (newFanfic != null && mounted) {
+      context.push('/item/fanfic/${newFanfic.idFanfic}', extra: newFanfic);
+    }
+  }
+
   Widget _buildResultsGrid<T>(
     List<T> items,
     ColorScheme colorScheme,
@@ -305,6 +420,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   ) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
+      physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         childAspectRatio: 0.65,

@@ -7,19 +7,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SecondBrainTab extends ConsumerWidget {
-  final int bookId;
+  final String itemType;
+  final int itemId;
 
-  const SecondBrainTab({super.key, required this.bookId});
+  const SecondBrainTab({super.key, required this.itemType, required this.itemId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entriesAsync = ref.watch(notesProvider(bookId));
+    final entriesAsync = ref.watch(notesProvider((itemType: itemType, itemId: itemId)));
 
     return entriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (entries) => _BrainContent(
-        bookId: bookId,
+        itemType: itemType,
+        itemId: itemId,
         entries: entries,
       ),
     );
@@ -27,10 +29,11 @@ class SecondBrainTab extends ConsumerWidget {
 }
 
 class _BrainContent extends ConsumerWidget {
-  final int bookId;
+  final String itemType;
+  final int itemId;
   final List<NoteDTO> entries;
 
-  const _BrainContent({required this.bookId, required this.entries});
+  const _BrainContent({required this.itemType, required this.itemId, required this.entries});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,21 +46,21 @@ class _BrainContent extends ConsumerWidget {
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 itemCount: entries.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) => _EntryCard(
                   entry: entries[i],
-                  bookId: bookId,
+                  itemType: itemType,
+                  itemId: itemId,
                   accent: accent,
                 ),
               ),
 
-        // FAB "Añadir"
         Positioned(
           bottom: 20,
           left: 16,
           right: 16,
           child: FilledButton.icon(
-            onPressed: () => _showAddEntrySheet(context, ref, bookId),
+            onPressed: () => _showAddEntrySheet(context, ref, itemType, itemId),
             icon: const Icon(Icons.add),
             label: const Text('Añadir cita o nota'),
             style: FilledButton.styleFrom(
@@ -75,16 +78,16 @@ class _BrainContent extends ConsumerWidget {
   }
 }
 
-// ── Tarjeta de entrada ────────────────────────────────────────────────────────
-
 class _EntryCard extends ConsumerWidget {
   final NoteDTO entry;
-  final int bookId;
+  final String itemType;
+  final int itemId;
   final Color accent;
 
   const _EntryCard({
     required this.entry,
-    required this.bookId,
+    required this.itemType,
+    required this.itemId,
     required this.accent,
   });
 
@@ -100,7 +103,7 @@ class _EntryCard extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppColors.statusAbandoned.withValues(alpha: 0.15),
+          color: AppColors.statusAbandoned.withOpacity(0.15),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(Icons.delete_outline, color: AppColors.statusAbandoned),
@@ -131,27 +134,26 @@ class _EntryCard extends ConsumerWidget {
         if (entry.id != null) {
           ref
               .read(noteNotifierProvider.notifier)
-              .deleteEntry(entry.id!, bookId);
+              .deleteEntry(entry.id!, itemType, itemId);
         }
       },
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.card(context),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border(context)),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Meta: página + fecha
             Row(
               children: [
                 if (entry.page != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.12),
+                      color: accent.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -176,11 +178,10 @@ class _EntryCard extends ConsumerWidget {
                 const Spacer(),
                 if (hasQuote)
                   Icon(Icons.format_quote_rounded,
-                      size: 16, color: accent.withValues(alpha: 0.4)),
+                      size: 16, color: accent.withOpacity(0.4)),
               ],
             ),
 
-            // Cita
             if (hasQuote) ...[
               const SizedBox(height: 10),
               Container(
@@ -202,7 +203,6 @@ class _EntryCard extends ConsumerWidget {
               ),
             ],
 
-            // Nota
             if (hasNote) ...[
               SizedBox(height: hasQuote ? 8 : 10),
               Text(
@@ -229,8 +229,6 @@ class _EntryCard extends ConsumerWidget {
   }
 }
 
-// ── Estado vacío ──────────────────────────────────────────────────────────────
-
 class _EmptyState extends StatelessWidget {
   final Color accent;
   const _EmptyState({required this.accent});
@@ -244,7 +242,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.psychology_outlined,
-                size: 56, color: accent.withValues(alpha: 0.3)),
+                size: 56, color: accent.withOpacity(0.3)),
             const SizedBox(height: 16),
             Text(
               'Tu Segundo Cerebro está vacío',
@@ -270,22 +268,21 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ── Bottom sheet "Añadir entrada" ─────────────────────────────────────────────
-
-void _showAddEntrySheet(BuildContext context, WidgetRef ref, int bookId) {
+void _showAddEntrySheet(BuildContext context, WidgetRef ref, String itemType, int itemId) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => AddEntrySheet(ref: ref, bookId: bookId),
+    builder: (_) => AddEntrySheet(ref: ref, itemType: itemType, itemId: itemId),
   );
 }
 
 class AddEntrySheet extends ConsumerStatefulWidget {
   final WidgetRef ref;
-  final int bookId;
+  final String itemType;
+  final int itemId;
 
-  const AddEntrySheet({super.key, required this.ref, required this.bookId});
+  const AddEntrySheet({super.key, required this.ref, required this.itemType, required this.itemId});
 
   @override
   ConsumerState<AddEntrySheet> createState() => _AddEntrySheetState();
@@ -325,7 +322,8 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
       await ref.read(noteNotifierProvider.notifier).addEntry(
             NoteDTO(
               userId: user.idUser,
-              bookId: widget.bookId,
+              itemType: widget.itemType,
+              itemId: widget.itemId,
               quote: quote.isEmpty ? null : quote,
               note:  note.isEmpty  ? null : note,
               page:  page,
@@ -347,7 +345,6 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
   @override
   Widget build(BuildContext context) {
     final accent = AppColors.accent(context);
-    final isDark = AppColors.isDark(context);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -362,12 +359,11 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 36, height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border(context),
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -388,7 +384,6 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // Página
             _SheetField(
               controller: _pageController,
               label: 'Página / Capítulo',
@@ -400,7 +395,6 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
             ),
             const SizedBox(height: 10),
 
-            // Cita
             _SheetField(
               controller: _quoteController,
               label: 'Cita o frase',
@@ -411,7 +405,6 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
             ),
             const SizedBox(height: 10),
 
-            // Nota
             _SheetField(
               controller: _noteController,
               label: 'Tu reflexión (opcional)',
@@ -422,7 +415,6 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // Botón guardar
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -492,7 +484,7 @@ class _SheetField extends StatelessWidget {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.border(context)),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

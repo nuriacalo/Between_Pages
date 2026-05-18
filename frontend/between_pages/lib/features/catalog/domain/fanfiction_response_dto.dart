@@ -1,24 +1,60 @@
-class FanfictionResponseDTO {
+import 'package:json_annotation/json_annotation.dart';
+
+import 'media_item.dart';
+
+part 'fanfiction_response_dto.g.dart';
+
+@JsonSerializable(includeIfNull: false)
+class FanfictionResponseDTO implements MediaItem {
+  @JsonKey(name: 'id', readValue: _readId)
   final int? idFanfic;
+
+  @JsonKey(name: 'ao3_id')
   final String? ao3Id;
-  final String? title;
-  final String? author;
+
+  @JsonKey(name: 'title')
+  final String? _title;
+
+  @JsonKey(name: 'author')
+  final String? _author;
+
+  @JsonKey(name: 'source_material')
   final String? sourceMaterial;
+
   final String? description;
+
+  @JsonKey(name: 'cover_url')
+  @override
   final String? coverUrl;
+
+  @JsonKey(defaultValue: [])
   final List<String> genres;
+
+  @JsonKey(name: 'main_ship')
   final String? mainShip;
+
   final String? theme;
+
+  @JsonKey(name: 'current_chapter')
   final int? currentChapter;
+
+  @JsonKey(name: 'total_chapters')
   final int? totalChapters;
+
+  @JsonKey(name: 'publication_status')
   final String? publicationStatus;
+
   final List<String>? tags;
+
+  /// Legacy alias used by some widgets.
+  int? get angstLevel => null;
+
 
   FanfictionResponseDTO({
     this.idFanfic,
     this.ao3Id,
-    this.title,
-    this.author,
+    String? title,
+    String? author,
     this.sourceMaterial,
     this.description,
     this.coverUrl,
@@ -29,43 +65,29 @@ class FanfictionResponseDTO {
     this.totalChapters,
     this.publicationStatus,
     this.tags,
-  });
+  })  : _title = title,
+        _author = author;
 
-  factory FanfictionResponseDTO.fromJson(Map<String, dynamic> json) {
-    return FanfictionResponseDTO(
-      idFanfic: int.tryParse(json['id']?.toString() ?? '0'),
-      ao3Id: json['ao3_id'] as String?,
-      title: json['title'] as String?,
-      author: json['author'] as String?,
-      sourceMaterial: json['source_material'] as String?,
-      description: json['description'] as String?,
-      coverUrl: json['cover_url'] as String?,
-      genres: (json['genres'] as List<dynamic>?)?.cast<String>() ?? [],
-      mainShip: json['main_ship'] as String?,
-      theme: json['theme'] as String?,
-      currentChapter: json['current_chapter'] as int?,
-      totalChapters: json['total_chapters'] as int?,
-      publicationStatus: json['publication_status'] as String?,
-      tags: (json['tags'] as List?)?.cast<String>(),
-    );
+  static Object? _readId(Map<dynamic, dynamic> json, String key) {
+    return int.tryParse(json['id']?.toString() ?? '0');
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': idFanfic,
-      'ao3_id': ao3Id,
-      'title': title,
-      'author': author,
-      'source_material': sourceMaterial,
-      'description': description,
-      'cover_url': coverUrl,
-      'genres': genres,
-      'main_ship': mainShip,
-      'theme': theme,
-      'current_chapter': currentChapter,
-      'total_chapters': totalChapters,
-      'publication_status': publicationStatus,
-      'tags': tags,
-    };
-  }
+  factory FanfictionResponseDTO.fromJson(Map<String, dynamic> json) =>
+      _$FanfictionResponseDTOFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$FanfictionResponseDTOToJson(this);
+
+  @override
+  MediaType get itemType => MediaType.fanfic;
+
+  @override
+  String get title => _title ?? 'No Title';
+
+  @override
+  String get author => _author ?? 'Unknown Author';
+
+  @override
+  String? get coverImageUrl => coverUrl;
 }
+

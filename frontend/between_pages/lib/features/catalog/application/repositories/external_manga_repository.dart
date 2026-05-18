@@ -24,7 +24,8 @@ class ExternalMangaRepository {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/external/manga/search',
+        '/external/manga/search', // Eliminamos la barra '/' inicial
+
         queryParameters: {'query': query, 'page': page, 'limit': limit},
       );
 
@@ -39,7 +40,7 @@ class ExternalMangaRepository {
   /// Endpoint: GET /api/external/manga/{malId}
   Future<MangaResponseDTO?> getMangaById(int malId) async {
     try {
-      final response = await _apiClient.get('/external/manga/$malId');
+      final response = await _apiClient.get('external/manga/$malId'); // Eliminamos la barra '/' inicial
       return MangaResponseDTO.fromJson(response.data);
     } catch (e) {
       throw Exception('Error obteniendo manga externo: $e');
