@@ -6,9 +6,17 @@ import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.catalog.repository.BookRepository;
 import com.calonuria.backend.features.catalog.repository.FanfictionRepository;
 import com.calonuria.backend.features.catalog.repository.MangaRepository;
+import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
+import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
+import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.list.dto.AddContentToListRequestDTO;
+import com.calonuria.backend.features.list.dto.ListItemResponseDTO;
 import com.calonuria.backend.features.list.dto.ReadingListDTO;
+import com.calonuria.backend.features.list.dto.ReadingListDetailResponseDTO;
 import com.calonuria.backend.features.list.dto.ReadingListRequestDTO;
+import com.calonuria.backend.features.catalog.service.BookService;
+import com.calonuria.backend.features.catalog.service.FanfictionService;
+import com.calonuria.backend.features.catalog.service.MangaService;
 import com.calonuria.backend.features.list.model.ListItem;
 import com.calonuria.backend.features.list.model.ReadingList;
 import com.calonuria.backend.features.list.repository.ListItemRepository;
@@ -33,6 +41,9 @@ public class ReadingListService {
     private final BookRepository bookRepository;
     private final MangaRepository mangaRepository;
     private final FanfictionRepository fanfictionRepository;
+    private final BookService bookService;
+    private final MangaService mangaService;
+    private final FanfictionService fanfictionService;
 
     @Transactional(readOnly = true)
     public List<ReadingListDTO> getUserLists(Long userId) {
@@ -113,6 +124,55 @@ public class ReadingListService {
         }
 
         listItemRepository.save(listItem);
+    }
+
+    @Transactional(readOnly = true)
+    public ReadingListDetailResponseDTO getListDetail(Long listId) {
+        ReadingList list = readingListRepository.findById(listId)
+                .orElseThrow(() -> new RuntimeException("Lista no encontrada con ID: " + listId));
+
+
+        List<ListItem> items = listItemRepository.findByList(list);
+        // Aseguramos orden por posición para que el frontend no dependa del orden de BD.
+        items = items.stream()
+                .sorted((a, b) -> {
+                    Integer pa = a.getPosition();
+                    Integer pb = b.getPosition();
+                    if (pa == null && pb == null) return 0;
+                    if (pa == null) return 1;
+                    if (pb == null) return -1;
+                    return pa.compareTo(pb);
+                })
+                .collect(Collectors.toList());
+
+        List<ListItemResponseDTO> mappedItems = items.stream().map(item -> {
+            ListItemResponseDTO dto = new ListItemResponseDTO();
+            dto.setId(item.getId());
+            dto.setItemType(item.getItemType());
+            dto.setPosition(item.getPosition());
+
+            // La BD guarda el tipo (BOOK/MANGA/FANFIC) y la entidad correspondiente.
+            String type = item.getItemType() != null ? item.getItemType().toUpperCase() : null;
+
+            if ("BOOK".equals(type) && item.getBook() != null) {
+                dto.setBook(bookService.mapToDTO(item.getBook()));
+            } else if ("MANGA".equals(type) && item.getManga() != null) {
+                dto.setManga(mangaService.mapToDTO(item.getManga()));
+            } else if ("FANFIC".equals(type) && item.getFanfic() != null) {
+                dto.setFanfic(fanfictionService.mapToDTO(item.getFanfic()));
+            }
+
+
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return new ReadingListDetailResponseDTO(
+                list.getId(),
+                list.getName(),
+                list.getDescription(),
+                mappedItems
+        );
     }
 
     private ReadingListDTO convertToDTO(ReadingList list) {

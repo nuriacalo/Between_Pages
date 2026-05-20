@@ -12,7 +12,7 @@ import 'package:between_pages/features/journal/presentation/pages/journal_item_e
 import 'package:between_pages/features/journal/presentation/pages/book_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
-import 'package:between_pages/features/lists/presentation/pages/reading_lists_page.dart';
+import 'package:between_pages/features/lists/presentation/pages/lists_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/list_detail_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/add_content_to_list_page.dart';
 import 'package:between_pages/features/notes/presentation/pages/notes_page.dart';
@@ -144,7 +144,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/lists',
-        builder: (context, state) => const ReadingListsPage(),
+        builder: (context, state) => const ListsPage(),
       ),
       GoRoute(
         path: '/list/:id',

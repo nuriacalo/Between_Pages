@@ -5,9 +5,7 @@ import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
 import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
-import 'package:between_pages/core/constants/api_constants.dart';
 
 class AddContentToListPage extends ConsumerStatefulWidget {
   final int listId;
@@ -38,6 +36,7 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
   }
 
   Future<void> _addItem(int contentId, String contentType) async {
+    debugPrint('[AddContentToListPage] POST payload: {contentId: $contentId, contentType: $contentType, listId: ${widget.listId}}');
     try {
       final repo = ref.read(readingListRepositoryProvider);
       await repo.addContentToList(widget.listId, contentId, contentType);
@@ -134,7 +133,7 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
                       book.coverUrl!,
                       width: 40,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, _) =>
                           const Icon(Icons.book),
                     )
                   : const Icon(Icons.book),
@@ -143,7 +142,14 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
               trailing: IconButton(
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
-                  _addItem(book.idBook ?? 0, 'BOOK');
+                final id = book.idBook;
+                  if (id == null || id == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Libro sin ID válido')),
+                    );
+                    return;
+                  }
+                  _addItem(id, 'BOOK');
                 },
               ),
             );
@@ -184,7 +190,7 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
                       manga.coverUrl!,
                       width: 40,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, _) =>
                           const Icon(Icons.image),
                     )
                   : const Icon(Icons.image),
@@ -193,7 +199,14 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
               trailing: IconButton(
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
-                  _addItem(manga.idManga ?? 0, 'MANGA');
+                  final id = manga.idManga;
+                  if (id == null || id == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Manga sin ID válido')),
+                    );
+                    return;
+                  }
+                  _addItem(id, 'MANGA');
                 },
               ),
             );
@@ -234,7 +247,7 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
                       fanfic.coverUrl!,
                       width: 40,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, _) =>
                           const Icon(Icons.article),
                     )
                   : const Icon(Icons.article),
@@ -243,7 +256,14 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
               trailing: IconButton(
                 icon: const Icon(Icons.add_circle),
                 onPressed: () {
-                  _addItem(fanfic.idFanfic ?? 0, 'FANFIC');
+                  final id = fanfic.idFanfic;
+                  if (id == null || id == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Fanfíc sin ID válido')),
+                    );
+                    return;
+                  }
+                  _addItem(id, 'FANFIC');
                 },
               ),
             );

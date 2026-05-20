@@ -84,4 +84,17 @@ public class ReadingListController {
         readingListService.addContentToList(listId, requestDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    /**
+     * Retrieves a reading list detail including its items.
+     *
+     * @param listId the unique identifier of the list
+     * @return a {@link ResponseEntity} containing the detailed list.
+     */
+    @Operation(summary = "Obtener detalle de una lista", description = "Devuelve la lista con sus elementos (ordenados por posición).")
+    @GetMapping("/{listId}")
+    public ResponseEntity<com.calonuria.backend.features.list.dto.ReadingListDetailResponseDTO> getListDetail(
+            @PathVariable Long listId) {
+        return ResponseEntity.ok(readingListService.getListDetail(listId));
+    }
 }
