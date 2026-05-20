@@ -3,6 +3,7 @@ import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:between_pages/features/auth/application/providers/api_provider.dart';
 import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 import 'package:between_pages/features/lists/domain/reading_list_request_dto.dart';
+import 'package:between_pages/features/lists/domain/add_content_to_list_request_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repositorio para gestionar las colecciones personalizadas (Reading Lists)
@@ -34,6 +35,16 @@ class ReadingListRepository {
   /// Elimina de forma permanente una lista dado su [listId].
   Future<void> deleteList(int listId) async {
     await _apiClient.delete('${ApiConstants.listDelete}$listId');
+  }
+
+  /// Añade contenido a una lista.
+  Future<void> addContentToList(int listId, int contentId, String contentType) async {
+    final endpoint = ApiConstants.listAddItem.replaceAll('{listId}', listId.toString());
+    final request = AddContentToListRequestDTO(
+      contentId: contentId,
+      contentType: contentType,
+    );
+    await _apiClient.post(endpoint, data: request.toJson());
   }
 }
 

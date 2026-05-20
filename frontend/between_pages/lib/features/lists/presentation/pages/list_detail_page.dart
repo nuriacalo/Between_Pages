@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 
-class ListDetailPage extends ConsumerWidget {
+class ListDetailPage extends ConsumerStatefulWidget {
   final ListResponseDTO list;
 
   const ListDetailPage({super.key, required this.list});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ListDetailPage> createState() => _ListDetailPageState();
+}
+
+class _ListDetailPageState extends ConsumerState<ListDetailPage> {
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(list.name),
+        title: Text(widget.list.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -28,13 +34,13 @@ class ListDetailPage extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          if (list.description != null) ...[
+          if (widget.list.description != null) ...[
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               color: colorScheme.surfaceContainerHighest,
               child: Text(
-                list.description!,
+                widget.list.description!,
                 style: textTheme.bodyLarge,
               ),
             ),
@@ -61,10 +67,8 @@ class ListDetailPage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Añadir contenido a la lista próximamente')),
-          );
-        }, // TODO: Add item to list
+          context.push('/list/${widget.list.id}/add-content');
+        },
         child: const Icon(Icons.add),
       ),
     );

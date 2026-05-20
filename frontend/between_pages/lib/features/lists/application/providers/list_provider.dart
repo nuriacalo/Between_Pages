@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Proveedor consolidado que obtiene las listas de lectura del usuario.
 /// Utiliza ReadingListRepository como repositorio único.
+// NOTE: Conservamos listProvider como provider estándar.
 final listProvider = FutureProvider<List<ListResponseDTO>>((ref) async {
   // Obtener usuario actual para extraer su ID
   final user = await ref.watch(userProfileProvider.future);

@@ -1,8 +1,9 @@
 class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    // defaultValue:'http://10.0.2.2:8080/api', // Usa 10.0.2.2 para emuladores Android, 127.0.0.1 para iOS
-    defaultValue: 'http://192.168.0.15:8080/api',
+    defaultValue:'http://10.86.122.198:8080/api', // Usa el IP de tu PC (10.86.122.198). Ajústalo según red/emulador.
+    // defaultValue: 'http://192.168.0.15:8080/api',
+
   );
 
   // JIKAN API (MyAnimeList - Unofficial)
@@ -47,6 +48,9 @@ class ApiConstants {
   static const tagsDelete = '$baseUrl/fanfiction/{fanficId}/tags/';
   static const tagsSearch = '$baseUrl/fanfiction/{fanficId}/tags/search';
 
+  // BOOKS EXTERNO (/api/external/book)
+  static const externalBookSearch = '$baseUrl/external/book/search';
+
   // MANGA EXTERNO (/api/external/manga)
   static const externalMangaSearch = '$baseUrl/external/manga/search';
   static const externalManga = '$baseUrl/external/manga';
@@ -57,7 +61,7 @@ class ApiConstants {
   static const listGet = '$baseUrl/lists/';
   static const listUpdate = '$baseUrl/lists/';
   static const listDelete = '$baseUrl/lists/';
-  static const listAddItem = '$baseUrl/lists/{listId}/items';
+  static const listAddItem = '$baseUrl/lists/{listId}/content';
   static const listRemoveItem = '$baseUrl/lists/{listId}/items';
 
   // JOURNAL - BOOKS (/api/journal/BOOK)

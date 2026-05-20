@@ -1,5 +1,6 @@
 package com.calonuria.backend.features.list.controller;
 
+import com.calonuria.backend.features.list.dto.AddContentToListRequestDTO;
 import com.calonuria.backend.features.list.dto.ReadingListDTO;
 import com.calonuria.backend.features.list.dto.ReadingListRequestDTO;
 import com.calonuria.backend.features.list.service.ReadingListService;
@@ -66,5 +67,21 @@ public class ReadingListController {
     public ResponseEntity<Void> deleteList(@PathVariable Long listId) {
         readingListService.deleteList(listId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Adds a new item (book, manga, or fanfic) to a reading list.
+     *
+     * @param listId     the unique identifier of the list
+     * @param requestDTO the payload containing the content ID and type
+     * @return a {@link ResponseEntity} with status 201 Created
+     */
+    @Operation(summary = "Añadir contenido a una lista", description = "Añade un nuevo elemento (libro, manga o fanfic) a una lista de lectura.")
+    @PostMapping("/{listId}/content")
+    public ResponseEntity<Void> addContentToList(
+            @PathVariable Long listId,
+            @Valid @RequestBody AddContentToListRequestDTO requestDTO) {
+        readingListService.addContentToList(listId, requestDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

@@ -3,15 +3,18 @@ import 'package:between_pages/features/auth/presentation/pages/login_page.dart';
 import 'package:between_pages/features/auth/presentation/pages/register_page.dart';
 import 'package:between_pages/features/catalog/presentation/pages/catalog_detail_page.dart';
 import 'package:between_pages/features/home/presentation/pages/home_page.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
-import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
+
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/book_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/reading_lists_page.dart';
+import 'package:between_pages/features/lists/presentation/pages/list_detail_page.dart';
+import 'package:between_pages/features/lists/presentation/pages/add_content_to_list_page.dart';
 import 'package:between_pages/features/notes/presentation/pages/notes_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/settings_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/profile_edit_page.dart';
@@ -142,6 +145,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/lists',
         builder: (context, state) => const ReadingListsPage(),
+      ),
+      GoRoute(
+        path: '/list/:id',
+        builder: (context, state) {
+          final listId = int.parse(state.pathParameters['id']!);
+          final list = state.extra as dynamic;
+          return ListDetailPage(list: list);
+        },
+      ),
+      GoRoute(
+        path: '/list/:id/add-content',
+        builder: (context, state) {
+          final listId = int.parse(state.pathParameters['id']!);
+          return AddContentToListPage(listId: listId);
+        },
       ),
       GoRoute(
         path: '/notes',
