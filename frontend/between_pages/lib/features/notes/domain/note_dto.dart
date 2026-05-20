@@ -5,7 +5,6 @@ part 'note_dto.g.dart';
 @JsonSerializable()
 class NoteDTO {
   final int? id;
-  final int userId;
   final String itemType;
   final int itemId;
   final String? quote;
@@ -15,7 +14,6 @@ class NoteDTO {
 
   NoteDTO({
     this.id,
-    required this.userId,
     required this.itemType,
     required this.itemId,
     this.quote,

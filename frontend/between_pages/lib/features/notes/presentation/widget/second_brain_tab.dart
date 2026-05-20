@@ -1,5 +1,4 @@
 import 'package:between_pages/core/theme/app_colors.dart';
-import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/notes/application/providers/note_provider.dart';
 import 'package:between_pages/features/notes/domain/note_dto.dart';
 import 'package:flutter/material.dart';
@@ -316,12 +315,8 @@ class _AddEntrySheetState extends ConsumerState<AddEntrySheet> {
 
     setState(() => _isSaving = true);
     try {
-      final auth = ref.read(authRepositoryProvider);
-      final user = await auth.getUserProfile();
-
       await ref.read(noteNotifierProvider.notifier).addEntry(
             NoteDTO(
-              userId: user.idUser,
               itemType: widget.itemType,
               itemId: widget.itemId,
               quote: quote.isEmpty ? null : quote,
