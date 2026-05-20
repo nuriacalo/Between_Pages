@@ -10,6 +10,17 @@ class MangaSearchRepository {
 
   MangaSearchRepository(this._apiClient);
 
+  /// Obtiene todos los mangas del catálogo.
+  Future<List<MangaResponseDTO>> getAllMangas() async {
+    try {
+      final response = await _apiClient.get(ApiConstants.manga);
+      final List<dynamic> data = response.data;
+      return data.map((json) => MangaResponseDTO.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Error obteniendo mangas: $e');
+    }
+  }
+
   /// Busca mangas por título o término de búsqueda.
   Future<List<MangaResponseDTO>> searchManga(
     String query, {
@@ -31,6 +42,33 @@ class MangaSearchRepository {
     } catch (e) {
       throw Exception('Error buscando manga: $e');
     }
+  }
+
+  /// Busca mangas en una fuente externa (ej. Jikan API a través de nuestro backend).
+  Future<List<MangaResponseDTO>> searchExternalManga(String query) async {
+    try {
+      final response = await _apiClient.get(
+        ApiConstants.externalMangaSearch,
+        queryParameters: {'query': query, 'page': 1, 'limit': 20},
+      );
+
+      final data = _extractList(response.data);
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(MangaResponseDTO.fromJson)
+          .toList();
+    } catch (e) {
+      throw Exception('Error buscando mangas externos: $e');
+    }
+  }
+
+  List<dynamic> _extractList(dynamic payload) {
+    if (payload is List) return payload;
+    if (payload is Map<String, dynamic>) {
+      final nested = payload['content'] ?? payload['items'] ?? payload['results'] ?? payload['data'];
+      if (nested is List) return nested;
+    }
+    return const [];
   }
 }
 

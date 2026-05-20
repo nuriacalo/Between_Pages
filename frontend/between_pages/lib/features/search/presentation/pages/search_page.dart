@@ -75,20 +75,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.outline,
+                          color: colorScheme.outlineVariant.withOpacity(0.3),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.outline,
+                          color: colorScheme.outlineVariant.withOpacity(0.3),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.primary,
-                          width: 2,
+                          color: colorScheme.primary.withOpacity(0.7),
+                          width: 1.5,
                         ),
                       ),
                       filled: true,
@@ -106,6 +106,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   labelColor: colorScheme.primary,
                   unselectedLabelColor: colorScheme.onSurfaceVariant,
                   indicatorColor: colorScheme.primary,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  indicatorWeight: 3.0,
+                  dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
                   tabs: [
                     Tab(icon: const Icon(Icons.book), text: l10n.tabBooks),
                     Tab(
@@ -179,7 +182,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         author: book.author.isEmpty ? l10n.unknownAuthor : book.author,
         coverUrl: book.coverUrl,
         fallbackIcon: Icons.book,
-        onTap: () => context.push('/item/book/${book.idBook}', extra: book),
+        onTap: () {
+          final bookId = ((book.idBook ?? 0) > 0)
+              ? (book.idBook ?? 0).toString()
+              : book.googleBooksId ?? 'unknown';
+          context.push('/item/book/$bookId', extra: book);
+        },
       ),
     );
   }
@@ -271,8 +279,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           : manga.malId?.toString() ?? 'unknown';
 
       return CatalogItemCard(
-        title: manga.title.toString() ?? l10n.noTitle,
-        author: manga.author.toString() ?? l10n.unknownAuthor,
+        title: manga.title ?? l10n.noTitle,
+        author: manga.author ?? l10n.unknownAuthor,
         coverUrl: manga.coverUrl,
         fallbackIcon: Icons.auto_stories,
         onTap: () => context.push('/item/manga/$mangaId', extra: manga),

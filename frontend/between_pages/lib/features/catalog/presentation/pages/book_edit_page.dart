@@ -1,17 +1,17 @@
-
-import 'package:between_pages/features/journal/domain/journal_types.dart';
-import 'package:between_pages/features/profile/application/providers/user_provider.dart';
+import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
+import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BookEditPage extends ConsumerStatefulWidget {
-  final BookResponseDTO? book; // Null para crear un nuevo libro
-
+  final BookResponseDTO? book;
   const BookEditPage({super.key, this.book});
 
   @override
@@ -19,35 +19,34 @@ class BookEditPage extends ConsumerStatefulWidget {
 }
 
 class _BookEditPageState extends ConsumerState<BookEditPage> {
+  static const _accent = AppColors.colorLibro; // 0xFF7F8C95
+
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
 
-  late TextEditingController _titleController;
-  late TextEditingController _authorController;
-  late TextEditingController _pageCountController;
-  late TextEditingController _coverUrlController;
-  late TextEditingController _isbnController;
-  late TextEditingController _publisherController;
-  late TextEditingController _publishYearController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _genreController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _authorController;
+  late final TextEditingController _pageCountController;
+  late final TextEditingController _coverUrlController;
+  late final TextEditingController _isbnController;
+  late final TextEditingController _publisherController;
+  late final TextEditingController _publishYearController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _genreController;
 
   @override
   void initState() {
     super.initState();
-    final book = widget.book;
-    _titleController = TextEditingController(text: book?.title ?? '');
-    _authorController = TextEditingController(text: book?.author ?? '');
-    _pageCountController =
-        TextEditingController(text: book?.pageCount?.toString() ?? '');
-    _coverUrlController = TextEditingController(text: book?.coverUrl ?? '');
-    _isbnController = TextEditingController(text: book?.isbn ?? '');
-    _publisherController = TextEditingController(text: book?.publisher ?? '');
-    _publishYearController =
-        TextEditingController(text: book?.publishYear?.toString() ?? '');
-    _descriptionController =
-        TextEditingController(text: book?.description ?? '');
-    _genreController = TextEditingController(text: book?.genres.join(', ') ?? '');
+    final b = widget.book;
+    _titleController       = TextEditingController(text: b?.title ?? '');
+    _authorController      = TextEditingController(text: b?.author ?? '');
+    _pageCountController   = TextEditingController(text: b?.pageCount?.toString() ?? '');
+    _coverUrlController    = TextEditingController(text: b?.coverUrl ?? '');
+    _isbnController        = TextEditingController(text: b?.isbn ?? '');
+    _publisherController   = TextEditingController(text: b?.publisher ?? '');
+    _publishYearController = TextEditingController(text: b?.publishYear?.toString() ?? '');
+    _descriptionController = TextEditingController(text: b?.description ?? '');
+    _genreController       = TextEditingController(text: b?.genres.join(', ') ?? '');
   }
 
   @override
@@ -64,146 +63,206 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
     super.dispose();
   }
 
-  Future<void> _saveBookAndJournal() async {
-    if (!_formKey.currentState!.validate() || _isSaving) {
-      return;
-    }
-
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate() || _isSaving) return;
     setState(() => _isSaving = true);
 
     try {
-      // Paso 1: Crear o actualizar el libro en el catálogo
-      final bookRepo = ref.read(bookSearchRepositoryProvider);
+      final bookRepo  = ref.read(bookSearchRepositoryProvider);
       final bookToSave = BookResponseDTO(
-        idBook: widget.book?.idBook ?? 0,
+        idBook:       widget.book?.idBook ?? 0,
         googleBooksId: widget.book?.googleBooksId ?? '',
-        title: _titleController.text,
-        author: _authorController.text,
-        pageCount: int.tryParse(_pageCountController.text),
-        coverUrl: _coverUrlController.text,
-        isbn: _isbnController.text,
-        publisher: _publisherController.text,
-        publishYear: int.tryParse(_publishYearController.text),
-        description: _descriptionController.text,
+        title:        _titleController.text.trim(),
+        author:       _authorController.text.trim(),
+        pageCount:    int.tryParse(_pageCountController.text),
+        coverUrl:     _coverUrlController.text.trim(),
+        isbn:         _isbnController.text.trim(),
+        publisher:    _publisherController.text.trim(),
+        publishYear:  int.tryParse(_publishYearController.text),
+        description:  _descriptionController.text.trim(),
         genres: _genreController.text.isNotEmpty
-            ? _genreController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+            ? _genreController.text
+                .split(',')
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty)
+                .toList()
             : [],
         bookType: widget.book?.bookType ?? 'STANDALONE',
       );
 
       final savedBook = await bookRepo.saveOrUpdateBook(bookToSave);
 
-      // Paso 2: Si es un libro nuevo, añadirlo al journal del usuario
       if (widget.book == null) {
-        final journalRepo = ref.read(bookJournalRepositoryProvider);
         final userId = ref.read(userProfileProvider).value!.idUser;
-
-        final journalDto = BookJournalRecordDTO(
-          userId: userId,
-          bookId: savedBook.idBook,
-          status: 'TBR', // Estado inicial por defecto
+        await ref.read(bookJournalRepositoryProvider).saveRaw(
+          BookJournalRecordDTO(
+            userId: userId,
+            bookId: savedBook.idBook,
+            status: 'TBR',
+          ).toJson(),
         );
-        await journalRepo.saveRaw(journalDto.toJson());
         ref.invalidate(journalProvider(JournalType.book));
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Libro guardado y añadido al diario con éxito'),
-          backgroundColor: Colors.green,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(widget.book == null
+                  ? 'Libro añadido al diario'
+                  : 'Cambios guardados'),
+            ]),
+            backgroundColor: AppColors.statusReading,
+            behavior:        SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
         Navigator.pop(context, savedBook);
       }
     } catch (e) {
       if (mounted) {
-        final errorMessage = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $errorMessage'),
+            content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}'),
             backgroundColor: Theme.of(context).colorScheme.error,
+            behavior:        SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isNew       = widget.book == null;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.book == null ? 'Añadir libro' : 'Editar libro'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isSaving ? null : _saveBookAndJournal,
-            tooltip: 'Guardar',
+        title: Text(
+          isNew ? 'Añadir libro' : 'Editar libro',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      ),
-      body: _isSaving
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  _buildTextField(_titleController, 'Título', isRequired: true),
-                  _buildTextField(_authorController, 'Autor', isRequired: true),
-                  _buildTextField(_pageCountController, 'Número de páginas',
-                      keyboardType: TextInputType.number),
-                  _buildTextField(_publishYearController, 'Año de publicación',
-                      keyboardType: TextInputType.number),
-                  _buildTextField(_coverUrlController, 'URL de la portada',
-                      keyboardType: TextInputType.url),
-                  _buildTextField(_isbnController, 'ISBN'),
-                  _buildTextField(_publisherController, 'Editorial'),
-                  _buildTextField(_genreController, 'Géneros (separados por coma)'),
-                  _buildTextField(_descriptionController, 'Descripción',
-                      maxLines: 5),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label, {
-    bool isRequired = false,
-    TextInputType? keyboardType,
-    int? maxLines = 1,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: isDark
-              ? const Color(0xFF3D2D30)
-              : const Color(0xFFFDF5F2),
         ),
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        validator: (value) {
-          if (isRequired && (value == null || value.isEmpty)) {
-            return 'Este campo es requerido';
-          }
-          return null;
-        },
-        inputFormatters: keyboardType == TextInputType.number
-            ? [FilteringTextInputFormatter.digitsOnly]
-            : null,
+        backgroundColor: colorScheme.surface,
+        elevation:       0,
+        foregroundColor: _accent,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+          children: [
+            // ── Cover preview ───────────────────────────────────────────
+            CoverPreviewHeader(
+              coverUrlController: _coverUrlController,
+              accentColor:        _accent,
+              fallbackIcon:       Icons.book_rounded,
+            ),
+            const SizedBox(height: 8),
+
+            // ── Información básica ──────────────────────────────────────
+            FormSection(
+              label:       'Información básica',
+              accentColor: _accent,
+              children: [
+                AppTextField(
+                  controller:  _titleController,
+                  label:       'Título',
+                  icon:        Icons.title_rounded,
+                  accentColor: _accent,
+                  isRequired:  true,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _authorController,
+                  label:       'Autor',
+                  icon:        Icons.person_outline_rounded,
+                  accentColor: _accent,
+                  isRequired:  true,
+                ),
+              ],
+            ),
+
+            // ── Detalles ────────────────────────────────────────────────
+            FormSection(
+              label:       'Detalles',
+              accentColor: _accent,
+              children: [
+                TwoColumnRow(
+                  left: AppTextField(
+                    controller:   _pageCountController,
+                    label:        'Páginas',
+                    icon:         Icons.auto_stories_rounded,
+                    accentColor:  _accent,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  right: AppTextField(
+                    controller:   _publishYearController,
+                    label:        'Año',
+                    icon:         Icons.calendar_today_rounded,
+                    accentColor:  _accent,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _isbnController,
+                  label:       'ISBN',
+                  icon:        Icons.qr_code_2_rounded,
+                  accentColor: _accent,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _publisherController,
+                  label:       'Editorial',
+                  icon:        Icons.business_rounded,
+                  accentColor: _accent,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _genreController,
+                  label:       'Géneros',
+                  hint:        'Fantasía, Aventura, Magia…',
+                  icon:        Icons.category_rounded,
+                  accentColor: _accent,
+                ),
+              ],
+            ),
+
+            // ── Sinopsis ────────────────────────────────────────────────
+            FormSection(
+              label:       'Sinopsis',
+              accentColor: _accent,
+              children: [
+                AppTextField(
+                  controller:  _descriptionController,
+                  label:       'Descripción',
+                  icon:        Icons.notes_rounded,
+                  accentColor: _accent,
+                  maxLines:    6,
+                ),
+              ],
+            ),
+
+            // ── Save button ─────────────────────────────────────────────
+            SaveButton(
+              label:     isNew ? 'Añadir libro' : 'Guardar cambios',
+              icon:      isNew ? Icons.add_rounded : Icons.save_rounded,
+              color:     _accent,
+              isLoading: _isSaving,
+              onTap:     _save,
+            ),
+          ],
+        ),
       ),
     );
   }

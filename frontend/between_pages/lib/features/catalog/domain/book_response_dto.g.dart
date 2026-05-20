@@ -8,7 +8,7 @@ part of 'book_response_dto.dart';
 
 BookResponseDTO _$BookResponseDTOFromJson(Map<String, dynamic> json) =>
     BookResponseDTO(
-      idBook: (json['id'] as num).toInt(),
+      idBook: (json['id'] as num?)?.toInt() ?? 0,
       googleBooksId: json['google_books_id'] as String?,
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',

@@ -1,5 +1,6 @@
 import 'package:between_pages/core/api/api_client.dart';
 import 'package:between_pages/core/constants/api_constants.dart';
+import 'package:flutter/foundation.dart';
 import 'package:between_pages/features/auth/application/providers/api_provider.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,30 @@ class BookSearchRepository {
     }
   }
 
+  /// Busca libros en una fuente externa (ej. Google Books).
+  Future<List<BookResponseDTO>> searchExternalBooks(String query) async {
+    try {
+      final response = await _apiClient.get(
+        ApiConstants.externalBookSearch,
+        queryParameters: {'q': query},
+      );
+
+      // Log para ver la respuesta cruda de la API externa
+      debugPrint('[BookSearchRepository] Raw external search response: ${response.data}');
+
+      final data = _extractList(response.data);
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(BookResponseDTO.fromJson)
+          .toList();
+    } catch (e, stacktrace) {
+      // Log del error y el stacktrace para tener más contexto
+      debugPrint('[BookSearchRepository] FATAL ERROR in searchExternalBooks: $e');
+      debugPrint('Stacktrace: $stacktrace');
+      throw Exception('Error buscando libros externos: $e');
+    }
+  }
+
   /// Obtiene los detalles de un libro específico mediante su ID de Google.
   Future<BookResponseDTO> getBookByGoogleId(String googleBooksId) async {
     try {
@@ -53,10 +78,10 @@ class BookSearchRepository {
       final data = book.toJson();
       Response response;
 
-      if (book.idBook! > 0) {
+      if ((book.idBook ?? 0) > 0) {
         // Actualiza un libro existente
         response = await _apiClient.put(
-          '${ApiConstants.book}/${book.idBook}',
+          '${ApiConstants.book}/${book.idBook ?? 0}',
           data: data,
         );
       } else {

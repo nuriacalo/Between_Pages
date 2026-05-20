@@ -4,7 +4,8 @@ import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.da
 import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
 import 'package:between_pages/features/catalog/application/providers/all_manga_provider.dart';
 import 'package:between_pages/features/catalog/application/providers/all_fanfics_provider.dart';
-import 'package:between_pages/features/library/presentation/widgets/catalog_item_card.dart';
+import 'package:between_pages/features/catalog/presentation/widgets/media_list_item.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,6 +33,9 @@ class CatalogPage extends ConsumerWidget {
             labelColor: colorScheme.primary,
             unselectedLabelColor: colorScheme.onSurfaceVariant,
             indicatorColor: colorScheme.primary,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorWeight: 3.0,
+            dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
             tabs: [
               Tab(text: l10n.tabBooks),
               Tab(text: l10n.tabMangas),
@@ -64,13 +68,10 @@ class _BooksCatalogTab extends ConsumerWidget {
         if (books.isEmpty) {
           return Center(child: Text(l10n.emptyCatalogBooks));
         }
-        return _buildGrid(
+        return _buildList(
           books.cast<BookResponseDTO>(),
-          (book) => CatalogItemCard(
-            title: book.title,
-            author: book.author,
-            coverUrl: book.coverUrl,
-            fallbackIcon: Icons.book,
+          (book) => MediaListItem(
+            item: book,
             onTap: () => context.push('/item/book/${book.idBook}', extra: book),
           ),
         );
@@ -94,15 +95,13 @@ class _MangaCatalogTab extends ConsumerWidget {
         if (mangas.isEmpty) {
           return Center(child: Text(l10n.emptyCatalogMangas));
         }
-        return _buildGrid(
+        return _buildList(
           mangas.cast<MangaResponseDTO>(),
-          (manga) => CatalogItemCard(
-            title: manga.title ?? 'Sin título',
-            author: manga.author ?? 'Autor desconocido',
-            coverUrl: manga.coverUrl,
-            fallbackIcon: Icons.auto_stories,
+          (manga) => MediaListItem(
+            item: manga,
             onTap: () => context.push('/item/manga/${manga.idManga}', extra: manga),
           ),
+
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -124,16 +123,13 @@ class _FanficsCatalogTab extends ConsumerWidget {
         if (fanfics.isEmpty) {
           return Center(child: Text(l10n.emptyCatalogFanfics));
         }
-        return _buildGrid(
+        return _buildList(
           fanfics.cast<FanfictionResponseDTO>(),
-          (fanfic) => CatalogItemCard(
-            title: fanfic.title ?? 'Sin título',
-            author: fanfic.author ?? 'Autor desconocido',
-            coverUrl: fanfic.coverUrl,
-            fallbackIcon: Icons.favorite,
-            isFanfic: true,
+          (fanfic) => MediaListItem(
+            item: fanfic,
             onTap: () => context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
           ),
+
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -142,15 +138,9 @@ class _FanficsCatalogTab extends ConsumerWidget {
   }
 }
 
-Widget _buildGrid<T>(List<T> items, Widget Function(T) itemBuilder) {
-  return GridView.builder(
-    padding: const EdgeInsets.all(16),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3,
-      childAspectRatio: 0.65,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 16,
-    ),
+Widget _buildList<T>(List<T> items, Widget Function(T) itemBuilder) {
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(vertical: 10),
     itemCount: items.length,
     itemBuilder: (context, index) => itemBuilder(items[index]),
   );

@@ -622,7 +622,7 @@ abstract class AppLocalizations {
   /// No description provided for @addedToList.
   ///
   /// In en, this message translates to:
-  /// **'added to your list'**
+  /// **'Add to list'**
   String get addedToList;
 
   /// No description provided for @startReading.
@@ -1044,6 +1044,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get notes;
+
+  /// No description provided for @emptyCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this category'**
+  String get emptyCategory;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

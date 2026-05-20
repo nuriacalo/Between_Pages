@@ -1,9 +1,9 @@
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/journal/domain/records/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -118,31 +118,42 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.fanfic == null ? 'Añadir Fanfic' : 'Editar Fanfic'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isSaving ? null : _saveFanficAndJournal,
-            tooltip: 'Guardar',
-          ),
-        ],
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(24.0),
                 children: [
-                  _buildTextField(_titleController, 'Título', isRequired: true),
-                  _buildTextField(_authorController, 'Autor', isRequired: true),
-                  _buildTextField(_sourceMaterialController, 'Fandom / Material de Origen'),
-                  _buildTextField(_totalChaptersController, 'Capítulos totales', keyboardType: TextInputType.number),
-                  _buildTextField(_coverUrlController, 'URL de la portada', keyboardType: TextInputType.url),
-                  _buildTextField(_tagsController, 'Tags (separados por coma)'),
-                  _buildTextField(_descriptionController, 'Descripción', maxLines: 5),
+                  _buildTextField(_titleController, 'Título', isRequired: true, icon: Icons.title),
+                  _buildTextField(_authorController, 'Autor', isRequired: true, icon: Icons.person_outline),
+                  _buildTextField(_sourceMaterialController, 'Fandom / Material de Origen', icon: Icons.category_outlined),
+                  _buildTextField(_totalChaptersController, 'Capítulos totales', keyboardType: TextInputType.number, icon: Icons.format_list_numbered),
+                  _buildTextField(_coverUrlController, 'URL de la portada', keyboardType: TextInputType.url, icon: Icons.image_outlined),
+                  _buildTextField(_tagsController, 'Tags (separados por coma)', icon: Icons.local_offer_outlined),
+                  _buildTextField(_descriptionController, 'Descripción', maxLines: 5, icon: Icons.description_outlined),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _isSaving ? null : _saveFanficAndJournal,
+                      icon: const Icon(Icons.save),
+                      label: const Text('Guardar Fanfic', style: TextStyle(fontSize: 16)),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -155,17 +166,34 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
     bool isRequired = false,
     TextInputType? keyboardType,
     int? maxLines = 1,
+    IconData? icon,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
+          prefixIcon: icon != null ? Icon(icon, size: 20, color: colorScheme.primary) : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: colorScheme.outlineVariant.withOpacity(0.4),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: colorScheme.primary,
+              width: 1.5,
+            ),
           ),
           filled: true,
           fillColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F5FF),

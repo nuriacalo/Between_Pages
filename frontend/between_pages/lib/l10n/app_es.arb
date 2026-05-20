@@ -86,7 +86,7 @@
     "errorPrefix": "Error",
     "startedReading": "Comenzaste a leer",
     "addedToWishlist": "Añadido a tu lista de deseos",
-    "addedToList": "añadido a tu lista",
+    "addedToList": "Añadir a lista",
     "startReading": "Comenzar a leer",
     "toRead": "Por leer",
     "reading": "Leyendo",
@@ -192,5 +192,6 @@
             "status": {}
         }
     },
-    "notes": "Notas"
+    "notes": "Notas",
+    "emptyCategory": "Nada en esta categoría"
 }

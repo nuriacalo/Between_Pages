@@ -4,7 +4,7 @@ import 'media_item.dart';
 
 part 'manga_response_dto.g.dart';
 
-@JsonSerializable(includeIfNull: false)
+@JsonSerializable()
 class MangaResponseDTO implements MediaItem {
   @JsonKey(name: 'id', readValue: _readId)
   final int? idManga;

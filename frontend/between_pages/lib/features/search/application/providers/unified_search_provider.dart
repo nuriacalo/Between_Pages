@@ -1,198 +1,93 @@
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/external_book_repository.dart';
 import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/catalog/application/repositories/manga_search_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/external_manga_repository.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Tipos de contenido para búsqueda
-enum SearchContentType { books, fanfics, manga }
+// Enum para definir el tipo de contenido que se está buscando
+enum SearchContentType { book, fanfic, manga }
 
-/// Estado de la búsqueda unificada
+// Estado para el proveedor de búsqueda unificada
 class UnifiedSearchState {
+  final bool isLoading;
+  final String? error;
   final String query;
   final SearchContentType contentType;
   final List<BookResponseDTO> bookResults;
-  final List<FanfictionResponseDTO> fanficResults;
   final List<MangaResponseDTO> mangaResults;
-  final bool isLoading;
-  final String? error;
+  final List<FanfictionResponseDTO> fanficResults;
 
-  const UnifiedSearchState({
-    this.query = '',
-    this.contentType = SearchContentType.books,
-    this.bookResults = const [],
-    this.fanficResults = const [],
-    this.mangaResults = const [],
+  UnifiedSearchState({
     this.isLoading = false,
     this.error,
+    this.query = '',
+    this.contentType = SearchContentType.book,
+    this.bookResults = const [],
+    this.mangaResults = const [],
+    this.fanficResults = const [],
   });
 
+  // Estado inicial
+  factory UnifiedSearchState.initial() => UnifiedSearchState();
+
+  // Método para crear una copia del estado con valores actualizados
   UnifiedSearchState copyWith({
+    bool? isLoading,
+    String? error,
     String? query,
     SearchContentType? contentType,
     List<BookResponseDTO>? bookResults,
-    List<FanfictionResponseDTO>? fanficResults,
     List<MangaResponseDTO>? mangaResults,
-    bool? isLoading,
-    String? error,
+    List<FanfictionResponseDTO>? fanficResults,
   }) {
     return UnifiedSearchState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error, // No se mantiene el error anterior
       query: query ?? this.query,
       contentType: contentType ?? this.contentType,
       bookResults: bookResults ?? this.bookResults,
-      fanficResults: fanficResults ?? this.fanficResults,
       mangaResults: mangaResults ?? this.mangaResults,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
+      fanficResults: fanficResults ?? this.fanficResults,
     );
   }
 }
 
-/// Notifier para manejar la búsqueda unificada
+// Notificador para la búsqueda unificada
 class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
-  final BookSearchRepository _bookRepo;
-  final ExternalBookRepository _externalBookRepo;
-  final FanficSearchRepository _fanficRepo;
-  final MangaSearchRepository _mangaRepo;
-  final ExternalMangaRepository _externalMangaRepo;
+  final BookSearchRepository _bookRepository;
+  final MangaSearchRepository _mangaRepository;
+  final FanficSearchRepository _fanficRepository;
 
+  UnifiedSearchNotifier({
+    required BookSearchRepository bookRepository,
+    required MangaSearchRepository mangaRepository,
+    required FanficSearchRepository fanficRepository,
+  })  : _bookRepository = bookRepository,
+        _mangaRepository = mangaRepository,
+        _fanficRepository = fanficRepository,
+        super(UnifiedSearchState.initial());
 
-  UnifiedSearchNotifier(
-    this._bookRepo,
-    this._externalBookRepo,
-    this._fanficRepo,
-    this._mangaRepo,
-    this._externalMangaRepo,
-  ) : super(const UnifiedSearchState());
-
-  /// Actualiza el texto de búsqueda
-  void setQuery(String query) {
-    state = state.copyWith(query: query);
-  }
-
-  /// Cambia el tipo de contenido activo
-  void setContentType(SearchContentType type) {
-    state = state.copyWith(contentType: type);
-
-    // FIX: si ya hay query activa, siempre volvemos a ejecutar la búsqueda
-    // para el nuevo tipo. Así la UI no queda vacía por un estado parcial.
-    if (state.query.isNotEmpty) {
-      search(state.query);
-    }
-  }
-
-
-  /// Ejecuta la búsqueda según el tipo de contenido activo
-  Future<void> search([String? query]) async {
-    final searchQuery = (query ?? state.query).trim();
-    if (searchQuery.isEmpty) {
-      state = state.copyWith(
-        bookResults: [],
-        fanficResults: [],
-        mangaResults: [],
-        error: null,
-      );
+  /// Ejecuta una búsqueda para la query y el tipo de contenido actual.
+  Future<void> search(String query) async {
+    if (query.isEmpty) {
+      clear();
       return;
     }
 
-    // Actualizar query en el estado si se proporcionó
-    if (query != null) {
-      state = state.copyWith(query: searchQuery, isLoading: true, error: null);
-    } else {
-      state = state.copyWith(isLoading: true, error: null);
-    }
+    state = state.copyWith(isLoading: true, error: null, query: query);
 
     try {
       switch (state.contentType) {
-        case SearchContentType.books:
-          final localResults = await _bookRepo.searchBooks(searchQuery);
-          final googleResults = await _externalBookRepo.searchBooks(searchQuery);
-
-          final localByGoogleId = <String, BookResponseDTO>{
-            for (final b in localResults)
-              if (b.googleBooksId != null && b.googleBooksId!.isNotEmpty) b.googleBooksId!: b,
-          };
-
-          final merged = <BookResponseDTO>[];
-          final seenGoogleIds = <String>{};
-
-          for (final g in googleResults) {
-            final gid = g.googleBooksId;
-            if (gid == null || gid.isEmpty) {
-              merged.add(g);
-              continue;
-            }
-
-            seenGoogleIds.add(gid);
-
-            final local = localByGoogleId[gid];
-            merged.add(local ?? g);
-          }
-
-          for (final l in localResults) {
-            final gid = l.googleBooksId;
-            if (gid == null || gid.isEmpty) {
-              merged.add(l);
-              continue;
-            }
-            if (!seenGoogleIds.contains(gid)) {
-              merged.add(l);
-            }
-          }
-
-          state = state.copyWith(bookResults: merged, isLoading: false);
-          break;
-      case SearchContentType.fanfics:
-          final isAo3Input = searchQuery.contains('archiveofourown.org/works/') || 
-                             RegExp(r'^\d{5,12}$').hasMatch(searchQuery);
-
-          if (isAo3Input) {
-            final importedFanfic = await _fanficRepo.importFromAo3(searchQuery);
-            state = state.copyWith(fanficResults: [importedFanfic], isLoading: false);
-          } else {
-            final results = await _fanficRepo.searchFanfics(searchQuery);
-            state = state.copyWith(fanficResults: results, isLoading: false);
-          }
+        case SearchContentType.book:
+          await _searchBooks(query);
           break;
         case SearchContentType.manga:
-          final localResults = await _mangaRepo.searchManga(searchQuery);
-          final externalResults = await _externalMangaRepo.searchManga(searchQuery);
-
-          final localByMalId = <int, MangaResponseDTO>{
-            for (final m in localResults)
-              if (m.malId != null) m.malId!: m,
-          };
-
-          final merged = <MangaResponseDTO>[];
-          final seenMalIds = <int>{};
-
-          for (final e in externalResults) {
-            final malId = e.malId;
-            if (malId == null) {
-              merged.add(e);
-              continue;
-            }
-
-            seenMalIds.add(malId);
-            merged.add(localByMalId[malId] ?? e);
-          }
-
-          for (final l in localResults) {
-            final malId = l.malId;
-            if (malId == null) {
-              merged.add(l);
-              continue;
-            }
-            if (!seenMalIds.contains(malId)) {
-              merged.add(l);
-            }
-          }
-
-          state = state.copyWith(mangaResults: merged, isLoading: false);
+          await _searchManga(query);
+          break;
+        case SearchContentType.fanfic:
+          await _searchFanfics(query);
           break;
       }
     } catch (e) {
@@ -200,44 +95,94 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
     }
   }
 
-  Future<bool> importFanficByLink(String link) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final importedFanfic = await _fanficRepo.importFromAo3(link);
+  /// Busca libros en la BBDD local y en la fuente externa.
+  Future<void> _searchBooks(String query) async {
+    final results = await Future.wait([
+      _bookRepository.searchBooks(query),
+      _bookRepository.searchExternalBooks(query),
+    ]);
+
+    final localResults = results[0];
+    final externalResults = results[1];
+
+    // Combinar resultados, dando prioridad a los locales y evitando duplicados.
+    final allResults = [...localResults];
+    final localIds = localResults
+        .map((b) => b.googleBooksId)
+        .where((id) => id != null && id.isNotEmpty)
+        .toSet();
+
+    for (final externalBook in externalResults) {
+      final externalId = externalBook.googleBooksId;
+      if (externalId != null &&
+          externalId.isNotEmpty && !localIds.contains(externalId)) {
+        allResults.add(externalBook);
+      }
+    }
+
+    state = state.copyWith(bookResults: allResults, isLoading: false);
+  }
+
+  /// Busca mangas en la BBDD local y en la fuente externa.
+  Future<void> _searchManga(String query) async {
+    final results = await Future.wait([
+      _mangaRepository.searchManga(query),
+      _mangaRepository.searchExternalManga(query),
+    ]);
+
+    final localResults = results[0];
+    final externalResults = results[1];
+
+    // Combinar resultados, evitando duplicados por malId.
+    final allResults = [...localResults];
+    final localIds =
+        localResults.map((m) => m.malId).where((id) => id != null).toSet();
+
+    for (final externalManga in externalResults) {
+      if (externalManga.malId != null &&
+          !localIds.contains(externalManga.malId)) {
+        allResults.add(externalManga);
+      }
+    }
+
+    state = state.copyWith(mangaResults: allResults, isLoading: false);
+  }
+
+  /// Busca fanfics (actualmente solo en la BBDD local).
+  Future<void> _searchFanfics(String query) async {
+    final results = await _fanficRepository.searchFanfics(query);
+    state = state.copyWith(fanficResults: results, isLoading: false);
+  }
+
+  /// Cambia el tipo de contenido a buscar y limpia los resultados anteriores.
+  void setContentType(SearchContentType contentType) {
+    if (state.contentType != contentType) {
       state = state.copyWith(
-        fanficResults: [importedFanfic],
-        isLoading: false,
+        contentType: contentType,
+        bookResults: [],
+        mangaResults: [],
+        fanficResults: [],
+        error: null,
       );
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+      // Si hay una query, vuelve a buscar con el nuevo tipo
+      if (state.query.isNotEmpty) {
+        search(state.query);
+      }
     }
   }
 
+  /// Limpia la query y los resultados de búsqueda.
   void clear() {
-    state = state.copyWith(
-      query: '',
-      bookResults: [],
-      fanficResults: [],
-      mangaResults: [],
-      error: null,
-    );
+    state = UnifiedSearchState.initial().copyWith(contentType: state.contentType);
   }
 }
 
+// Proveedor de Riverpod
 final unifiedSearchProvider =
     StateNotifierProvider<UnifiedSearchNotifier, UnifiedSearchState>((ref) {
-      final bookRepo = ref.watch(bookSearchRepositoryProvider);
-      final externalBookRepo = ref.watch(externalBookRepositoryProvider);
-      final fanficRepo = ref.watch(fanficSearchRepositoryProvider);
-      final mangaRepo = ref.watch(mangaSearchRepositoryProvider);
-      final externalMangaRepo = ref.watch(externalMangaRepositoryProvider);
-      return UnifiedSearchNotifier(
-        bookRepo,
-        externalBookRepo,
-        fanficRepo,
-        mangaRepo,
-        externalMangaRepo,
-      );
-    });
+  return UnifiedSearchNotifier(
+    bookRepository: ref.watch(bookSearchRepositoryProvider),
+    mangaRepository: ref.watch(mangaSearchRepositoryProvider),
+    fanficRepository: ref.watch(fanficSearchRepositoryProvider),
+  );
+});

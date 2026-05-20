@@ -270,7 +270,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get addedToWishlist => 'Engadido á túa lista de desexos';
 
   @override
-  String get addedToList => 'engadido á túa lista';
+  String get addedToList => 'Engadir a lista';
 
   @override
   String get startReading => 'Comezar a ler';
@@ -495,4 +495,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get notes => 'Notas';
+
+  @override
+  String get emptyCategory => 'Nada nesta categoría';
 }

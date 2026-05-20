@@ -5,8 +5,8 @@ part 'book_response_dto.g.dart';
 
 @JsonSerializable()
 class BookResponseDTO implements MediaItem {
-  @JsonKey(name: 'id')
-  final int idBook;
+  @JsonKey(name: 'id', defaultValue: 0)
+  final int? idBook;
 
   @JsonKey(name: 'google_books_id')
   final String? googleBooksId;
@@ -36,7 +36,7 @@ class BookResponseDTO implements MediaItem {
   final int? pageCount;
 
   BookResponseDTO({
-    required this.idBook,
+    this.idBook,
     this.googleBooksId,
     this.title = '',
     this.author = '',

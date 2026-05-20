@@ -29,14 +29,14 @@ MangaResponseDTO _$MangaResponseDTOFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$MangaResponseDTOToJson(MangaResponseDTO instance) =>
     <String, dynamic>{
-      'id': ?instance.idManga,
-      'mal_id': ?instance.malId,
-      'mal_score': ?instance.malScore,
+      'id': instance.idManga,
+      'mal_id': instance.malId,
+      'mal_score': instance.malScore,
       'genres': instance.genres,
-      'description': ?instance.description,
-      'cover_url': ?instance.coverUrl,
-      'total_chapters': ?instance.totalChapters,
-      'total_volumes': ?instance.totalVolumes,
+      'description': instance.description,
+      'cover_url': instance.coverUrl,
+      'total_chapters': instance.totalChapters,
+      'total_volumes': instance.totalVolumes,
       'title': instance.title,
       'author': instance.author,
       'source': instance.source,

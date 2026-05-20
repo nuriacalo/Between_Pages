@@ -86,7 +86,7 @@
     "errorPrefix": "Erro",
     "startedReading": "Comezaches a ler",
     "addedToWishlist": "Engadido á túa lista de desexos",
-    "addedToList": "engadido á túa lista",
+    "addedToList": "Engadir a lista",
     "startReading": "Comezar a ler",
     "toRead": "Por ler",
     "reading": "Lendo",
@@ -192,5 +192,6 @@
             "status": {}
         }
     },
-    "notes": "Notas"
+    "notes": "Notas",
+    "emptyCategory": "Nada nesta categoría"
 }

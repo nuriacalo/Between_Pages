@@ -270,7 +270,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addedToWishlist => 'Added to wishlist';
 
   @override
-  String get addedToList => 'added to your list';
+  String get addedToList => 'Add to list';
 
   @override
   String get startReading => 'Start reading';
@@ -495,4 +495,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notes => 'Notes';
+
+  @override
+  String get emptyCategory => 'Nothing in this category';
 }

@@ -86,7 +86,7 @@
     "errorPrefix": "Error",
     "startedReading": "Started reading",
     "addedToWishlist": "Added to wishlist",
-    "addedToList": "added to your list",
+    "addedToList": "Add to list",
     "startReading": "Start reading",
     "toRead": "To read",
     "reading": "Reading",
@@ -192,5 +192,6 @@
             "status": {}
         }
     },
-    "notes": "Notes"
+    "notes": "Notes",
+    "emptyCategory": "Nothing in this category"
 }
