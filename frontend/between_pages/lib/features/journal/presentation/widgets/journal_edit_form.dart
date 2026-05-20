@@ -1,12 +1,11 @@
 import 'package:between_pages/core/repositories/journal_repository.dart';
-import 'package:between_pages/features/journal/domain/base_journal_record_dto.dart';
-import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/records/base_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/journal/presentation/widgets/emoji_rating_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 /// A generic, reusable form for editing any type of journal entry (Book, Manga, Fanfic).
 /// 
@@ -152,7 +151,6 @@ class _JournalEditFormState<
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Journal actualizado con éxito')),
       );
-      context.pop();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -167,29 +165,33 @@ class _JournalEditFormState<
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Journal'),
-        actions: [
-          if (_isSaving)
-            const Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-            )
-          else
-            IconButton(
-          color: widget.accentColor,
-              icon: const Icon(Icons.save_alt_outlined),
-              onPressed: _saveJournal,
-              tooltip: 'Guardar',
-            ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(24.0),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Detalles del Journal',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              if (_isSaving)
+                const SizedBox(
+                  width: 24, height: 24, 
+                  child: CircularProgressIndicator(strokeWidth: 2.5)
+                )
+              else
+                FilledButton.icon(
+                  onPressed: _saveJournal,
+                  icon: const Icon(Icons.check_rounded, size: 18),
+                  label: const Text('Guardar'),
+                  style: FilledButton.styleFrom(backgroundColor: widget.accentColor, foregroundColor: Colors.white),
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
             // Common fields
             _buildStatusSelector(),
             _buildRereadingToggle(),
@@ -207,7 +209,6 @@ class _JournalEditFormState<
             // Notes
             _buildNotesSection(),
           ],
-        ),
       ),
     );
   }
@@ -323,23 +324,56 @@ class _JournalEditFormState<
   }
 
   Widget _buildOwnershipSelector() {
-    final ownershipOptions = ['Digital', 'Físico', 'Ninguno', 'Prestado'];
+    final ownershipOptions = [
+      (label: 'Digital', icon: Icons.phone_android_rounded),
+      (label: 'Físico', icon: Icons.auto_stories_rounded),
+      (label: 'Prestado', icon: Icons.people_alt_rounded),
+      (label: 'Ninguno', icon: Icons.block_rounded),
+    ];
+    
+    final activeColor = widget.accentColor ?? Theme.of(context).colorScheme.primary;
+    final activeBg = activeColor.withValues(alpha: 0.15);
+    final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Propiedad', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: ownershipOptions.map((ownership) {
-            return ChoiceChip(
-              label: Text(ownership),
-              selected: _ownership == ownership,
-              selectedColor: widget.accentColor?.withValues(alpha: 0.2),
-              side: _ownership == ownership && widget.accentColor != null
-                  ? BorderSide(color: widget.accentColor!)
-                  : null,
-              onSelected: (_) => setState(() => _ownership = ownership),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: ownershipOptions.map((opt) {
+            final isSelected = _ownership == opt.label;
+            return GestureDetector(
+              onTap: () => setState(() => _ownership = opt.label),
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: isSelected ? activeBg : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? activeColor : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(opt.icon, color: isSelected ? activeColor : inactiveColor, size: 24),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    opt.label,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected ? activeColor : inactiveColor,
+                    ),
+                  ),
+                ],
+              ),
             );
           }).toList(),
         ),

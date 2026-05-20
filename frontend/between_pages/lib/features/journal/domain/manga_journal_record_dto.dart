@@ -1,5 +1,5 @@
+import 'package:between_pages/features/journal/domain/records/base_journal_record_dto.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'base_journal_record_dto.dart';
 
 part 'manga_journal_record_dto.g.dart';
 

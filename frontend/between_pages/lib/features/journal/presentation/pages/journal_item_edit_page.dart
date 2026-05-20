@@ -1,9 +1,9 @@
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
-import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_edit_factory.dart';
 import 'package:between_pages/features/journal/presentation/widgets/journal_edit_form.dart';
@@ -15,8 +15,9 @@ import 'package:go_router/go_router.dart';
 class JournalItemEditPage extends ConsumerWidget {
   final BaseJournalResponseDTO journal;
   final JournalType type;
+  final bool isStandalone;
 
-  const JournalItemEditPage({super.key, required this.journal, required this.type});
+  const JournalItemEditPage({super.key, required this.journal, required this.type, this.isStandalone = true});
 
   // ── Datos extraídos del journal según tipo ──────────────────────────────────
 
@@ -75,6 +76,29 @@ class JournalItemEditPage extends ConsumerWidget {
     final specificFieldsBuilder = JournalEditFactory.getSpecificFieldsBuilder(type);
     final repository          = ref.watch(_getRepositoryProvider(type));
 
+    final form = JournalEditForm(
+          journal: journal,
+          repository: repository,
+          recordDtoBuilder: (oldJournal, updatedValues) =>
+              recordDtoBuilder(oldJournal, updatedValues, ref),
+          specificFieldsBuilder: (currentJournal, controllers) =>
+              specificFieldsBuilder(currentJournal, controllers, context),
+          accentColor: config.accent,      // <-- pasa el acento al form
+          onSave: (ref) {
+            _invalidateProviders(ref, type, journal);
+            final dbStatus = JournalStatusHelper.mapStatusToDb(journal.status);
+            if (dbStatus == 'FINISHED' && journal.status != 'FINISHED') {
+              context.push('/journal/${type.name}/diary', extra: journal);
+            } else if (isStandalone) {
+              context.pop();
+            }
+          },
+    );
+
+    if (!isStandalone) {
+      return form;
+    }
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerScrolled) => [
@@ -89,22 +113,7 @@ class JournalItemEditPage extends ConsumerWidget {
             statusColor: _statusColor,
           ),
         ],
-        body: JournalEditForm(
-          journal: journal,
-          repository: repository,
-          recordDtoBuilder: (oldJournal, updatedValues) =>
-              recordDtoBuilder(oldJournal, updatedValues, ref),
-          specificFieldsBuilder: (currentJournal, controllers) =>
-              specificFieldsBuilder(currentJournal, controllers, context),
-          accentColor: config.accent,      // <-- pasa el acento al form
-          onSave: (ref) {
-            _invalidateProviders(ref, type, journal);
-            final dbStatus = JournalStatusHelper.mapStatusToDb(journal.status);
-            if (dbStatus == 'FINISHED' && journal.status != 'FINISHED') {
-              context.push('/journal/${type.name}/diary', extra: journal);
-            }
-          },
-        ),
+        body: form,
       ),
     );
   }

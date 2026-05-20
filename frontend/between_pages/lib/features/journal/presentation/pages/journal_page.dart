@@ -1,10 +1,10 @@
 import 'package:between_pages/core/widgets/empty_state.dart';
-import 'package:between_pages/features/journal/domain/base_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
-import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/presentation/widgets/journal_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,15 +29,22 @@ class JournalPage extends StatelessWidget {
           backgroundColor: colorScheme.surface,
           actions: [
             IconButton(
-              icon: const Icon(Icons.psychology_outlined),
+              icon: const Icon(Icons.note_alt_outlined),
               tooltip: l10n.secondBrainTooltip,
-              onPressed: () => context.push('/second-brain'),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Funcionalidad en desarrollo 🚧')),
+                );
+              },
             ),
           ],
           bottom: TabBar(
             labelColor: colorScheme.primary,
             unselectedLabelColor: colorScheme.onSurfaceVariant,
             indicatorColor: colorScheme.primary,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorWeight: 3.0,
+            dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
             tabs: [
               Tab(text: l10n.tabBooks),
               Tab(text: l10n.tabMangas),

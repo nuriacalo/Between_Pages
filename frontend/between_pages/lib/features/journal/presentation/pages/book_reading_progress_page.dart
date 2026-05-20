@@ -2,11 +2,11 @@ import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/journal/application/providers/reading_stats_provider.dart';
-import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/pages/book_edit_page.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -71,7 +71,7 @@ class _BookReadingProgressPageState
       await repo.saveRaw(dto.toJson());
 
       ref.invalidate(journalProvider(JournalType.book));
-      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +136,7 @@ class _BookReadingProgressPageState
       await repo.saveOrUpdateBook(bookToSave);
       
       ref.invalidate(journalProvider(JournalType.book));
-      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -348,7 +348,7 @@ class _BookReadingProgressPageState
     );
 
     if (result != null && mounted) {
-      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook)));
+      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
       ref.invalidate(journalProvider(JournalType.book));
     }
   }
@@ -359,7 +359,7 @@ class _BookReadingProgressPageState
     final textTheme = Theme.of(context).textTheme;
     final accent = const Color(0xFFA87C80);
 
-    final updatedJournal = ref.watch(journalEntryProvider((JournalType.book, _book.idBook)));
+    final updatedJournal = ref.watch(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
     final journal = (updatedJournal as BookJournalResponseDto?) ?? _journal;
     final book = journal.book;
 
@@ -371,11 +371,6 @@ class _BookReadingProgressPageState
    return DefaultTabController(
   length: 3,
   child: Scaffold(
-    floatingActionButton: FloatingActionButton(
-      onPressed: _goToEditBookDetails,
-      tooltip: 'Editar datos del libro',
-      child: const Icon(Icons.edit),
-    ),
     body: NestedScrollView(
       headerSliverBuilder: (context, innerScrolled) => [
         SliverAppBar(
@@ -400,6 +395,7 @@ class _BookReadingProgressPageState
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white54,
             indicatorColor: Colors.white,
+            isScrollable: true,
             tabs: [
               Tab(text: 'Progreso'),
               Tab(text: 'Segundo Cerebro'),
@@ -411,8 +407,8 @@ class _BookReadingProgressPageState
       body: TabBarView(
         children: [
           _buildProgressTab(accent, currentPage, totalPages, progress, journal, colorScheme, textTheme),
-          SecondBrainTab(itemType: 'BOOK', itemId: _book.idBook),
-          JournalItemEditPage(journal: journal, type: JournalType.book),
+          SecondBrainTab(itemType: 'BOOK', itemId: _book.idBook ?? 0),
+          JournalItemEditPage(journal: journal, type: JournalType.book, isStandalone: false),
         ],
       ),
     ),

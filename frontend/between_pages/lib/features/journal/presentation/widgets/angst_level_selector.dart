@@ -47,8 +47,9 @@ class _AngstLevelSelectorState extends State<AngstLevelSelector> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = isDark ? Colors.purple[300]! : Colors.purple[700]!;
-    final inactiveColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+    final activeColor = const Color(0xFF8B6BAE); // Mismo color acento unificado del Fanfic
+    final activeBg = activeColor.withOpacity(0.15);
+    final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,9 +61,9 @@ class _AngstLevelSelectorState extends State<AngstLevelSelector> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(_angstLevels.length, (index) {
             final level = _angstLevels[index];
             final isSelected = _angstLevels.indexOf(_selectedAngst) >= index;
@@ -76,25 +77,39 @@ class _AngstLevelSelectorState extends State<AngstLevelSelector> {
               },
               child: Column(
                 children: [
-                  Icon(
-                    Icons.heart_broken,
-                    color: isSelected ? activeColor : inactiveColor,
-                    size: 36,
-                    shadows: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: activeColor.withOpacity(0.5),
-                          blurRadius: 10,
-                          spreadRadius: 2,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? activeBg
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? activeColor : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: AnimatedScale(
+                        scale: isSelected ? 1.15 : 1.0,
+                        duration: const Duration(milliseconds: 180),
+                        child: Icon(
+                          Icons.heart_broken,
+                          color: isSelected ? activeColor : inactiveColor,
+                          size: 24,
                         ),
-                    ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     _getTranslatedLevel(context, level),
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                       color: isSelected ? activeColor : inactiveColor,
                     ),
                   ),

@@ -1,8 +1,8 @@
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/pages/fanfic_edit_page.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
 import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -47,11 +47,6 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: _goToEditFanficDetails,
-          tooltip: 'Editar datos del fanfic',
-          child: const Icon(Icons.edit),
-        ),
         body: NestedScrollView(
           headerSliverBuilder: (context, innerScrolled) => [
             SliverAppBar(
@@ -82,7 +77,7 @@ class _FanficReadingProgressPageState extends ConsumerState<FanficReadingProgres
           body: TabBarView(
             children: [
               SecondBrainTab(itemType: 'FANFIC', itemId: fanfic.idFanfic ?? 0),
-              JournalItemEditPage(journal: journal, type: JournalType.fanfic),
+              JournalItemEditPage(journal: journal, type: JournalType.fanfic, isStandalone: false),
             ],
           ),
         ),

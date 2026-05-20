@@ -2,14 +2,14 @@ import 'package:between_pages/features/auth/application/repositories/auth_reposi
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/application/providers/reading_timer_provider.dart';
 import 'package:between_pages/features/journal/application/repositories/reading_session_repository.dart';
-import 'package:between_pages/features/journal/domain/book_journal_record_dto.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
-import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_record_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/reading_session_record_dto.dart';
+import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/records/fanfic_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/records/reading_session_record_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -210,8 +210,12 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           );
           await repo.saveRaw(dto.toJson());
           ref.invalidate(journalProvider(JournalType.book));
-          ref.invalidate(journalEntryProvider((JournalType.book, book.idBook)));
+          ref.invalidate(journalEntryProvider((JournalType.book, book.idBook ?? 0)));
 
+          // Importante: la racha/actividad y la meta anual dependen del
+          // backend calculando las sesiones. Invalida gamification siempre
+          // después de guardar (o intentar guardar), incluso si no hubo delta.
+          // Así evitamos desincronización por consistencia eventual.
           if (progressDelta > 0 || timeInvestedSeconds > 0) {
             ref
                 .read(readingSessionRepositoryProvider)
@@ -223,8 +227,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                     pagesRead: progressDelta,
                   ),
                 );
-            ref.invalidate(gamificationProvider);
           }
+          ref.invalidate(gamificationProvider);
           break;
 
         case SessionMediaType.manga:

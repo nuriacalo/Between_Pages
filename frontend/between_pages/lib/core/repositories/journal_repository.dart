@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:between_pages/core/api/api_client.dart';
-import 'package:between_pages/features/journal/domain/book_journal_response_dto.dart';
-import 'package:between_pages/features/journal/domain/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
-import 'package:between_pages/features/journal/domain/manga_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 

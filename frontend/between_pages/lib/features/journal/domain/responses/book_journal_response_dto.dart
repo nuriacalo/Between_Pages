@@ -67,7 +67,7 @@ class BookJournalResponseDto extends BaseJournalResponseDTO {
   UniversalSessionData toSessionData() {
     return UniversalSessionData(
       mediaType: SessionMediaType.book,
-      itemId: book.idBook,
+      itemId: book.idBook ?? 0,
       timerItemType: ReadingItemType.book,
       title: book.title,
       coverUrl: book.coverUrl,

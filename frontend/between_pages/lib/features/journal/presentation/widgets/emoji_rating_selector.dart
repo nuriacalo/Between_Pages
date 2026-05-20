@@ -80,8 +80,8 @@ class EmojiRatingSelector extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeOut,
-                    width: 44,
-                    height: 44,
+                    width: 46,
+                    height: 46,
                     decoration: BoxDecoration(
                       color: isActive
                           ? activeBg
@@ -110,28 +110,6 @@ class EmojiRatingSelector extends StatelessWidget {
                 ),
               );
             }),
-
-            // ── Botón quitar ─────────────────────────────────────────────
-            if (current > 0)
-              GestureDetector(
-                onTap: () => onChanged(0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '✕',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ],
