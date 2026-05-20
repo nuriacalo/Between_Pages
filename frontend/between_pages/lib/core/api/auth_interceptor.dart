@@ -45,6 +45,10 @@ class AuthInterceptor extends Interceptor {
     if (kDebugMode) {
       if (statusCode != null) {
         print('[AuthInterceptor] Error $statusCode: ${err.requestOptions.uri}');
+        final data = err.response?.data;
+        if (data != null) {
+          print('[AuthInterceptor] Error body: $data');
+        }
       } else {
         print(
           '[AuthInterceptor] Network error (${err.type}): ${err.message} -> ${err.requestOptions.uri}',
