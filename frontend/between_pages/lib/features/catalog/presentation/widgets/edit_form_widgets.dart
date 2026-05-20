@@ -199,9 +199,9 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha:0.12),
         child: Center(
-          child: Icon(icon, size: 34, color: color.withOpacity(0.5)),
+          child: Icon(icon, size: 34, color: color.withValues(alpha:0.5)),
         ),
       );
 }
@@ -317,7 +317,7 @@ class AppTextField extends StatelessWidget {
         labelText:   isRequired ? '$label *' : label,
         hintText:    hint,
         prefixIcon:  icon != null
-            ? Icon(icon, size: 18, color: accent.withOpacity(0.75))
+            ? Icon(icon, size: 18, color: accent.withValues(alpha:0.75))
             : null,
         filled:      true,
         fillColor:   fillColor,

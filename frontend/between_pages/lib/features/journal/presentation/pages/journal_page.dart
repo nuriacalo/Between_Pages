@@ -44,7 +44,7 @@ class JournalPage extends StatelessWidget {
             indicatorColor: colorScheme.primary,
             indicatorSize: TabBarIndicatorSize.label,
             indicatorWeight: 3.0,
-            dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
+            dividerColor: colorScheme.outlineVariant.withValues(alpha:0.3),
             tabs: [
               Tab(text: l10n.tabBooks),
               Tab(text: l10n.tabMangas),
@@ -253,7 +253,7 @@ class _StatusSection extends StatelessWidget {
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: color.withValues(alpha:0.15), borderRadius: BorderRadius.circular(12)),
               child: Text('$count', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           ],
@@ -278,7 +278,7 @@ class _JournalShimmer extends StatelessWidget {
 
     return Shimmer.fromColors(
       baseColor: baseColor,
-      highlightColor: baseColor.withOpacity(0.5),
+      highlightColor: baseColor.withValues(alpha:0.5),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 3,

@@ -470,7 +470,7 @@ class _BookReadingProgressPageState
               label: const Text('Editar journal completo'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: accent,
-                side: BorderSide(color: accent.withOpacity(0.4)),
+                side: BorderSide(color: accent.withValues(alpha:0.4)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -496,7 +496,7 @@ class _BookReadingProgressPageState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha:0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -512,10 +512,10 @@ class _BookReadingProgressPageState
                           imageUrl: coverUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha:0.1),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha:0.1),
                             child: const Icon(
                               Icons.book,
                               color: Colors.white54,
@@ -524,7 +524,7 @@ class _BookReadingProgressPageState
                           ),
                         )
                       : Container(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha:0.1),
                           child: const Icon(
                             Icons.book,
                             color: Colors.white54,
@@ -555,9 +555,9 @@ class _BookReadingProgressPageState
               CircularProgressIndicator(
                 value: 1,
                 strokeWidth: 14,
-                backgroundColor: accent.withOpacity(0.1),
+                backgroundColor: accent.withValues(alpha:0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  accent.withOpacity(0.1),
+                  accent.withValues(alpha:0.1),
                 ),
               ),
               TweenAnimationBuilder<double>(
@@ -737,7 +737,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF3D2D30) : const Color(0xFFFDF5F2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withOpacity(0.15)),
+        border: Border.all(color: accent.withValues(alpha:0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -430,7 +430,7 @@ class _GoalCard extends StatelessWidget {
                   ),
                 ),
                 Icon(Icons.edit_rounded,
-                    size: 11, color: colorScheme.primary.withOpacity(0.45)),
+                    size: 11, color: colorScheme.primary.withValues(alpha:0.45)),
               ],
             ),
             const SizedBox(height: 6),
@@ -460,7 +460,7 @@ class _GoalCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 6,
-                backgroundColor: colorScheme.primary.withOpacity(0.12),
+                backgroundColor: colorScheme.primary.withValues(alpha:0.12),
                 valueColor:
                     AlwaysStoppedAnimation<Color>(colorScheme.primary),
               ),
@@ -554,7 +554,7 @@ class _StreakCard extends StatelessWidget {
                 width: 18,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: active ? streakColor : streakColor.withOpacity(0.12),
+                  color: active ? streakColor : streakColor.withValues(alpha:0.12),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 alignment: Alignment.center,
@@ -602,7 +602,7 @@ class _HeroReadingCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF4A3538) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.35)),
+          border: Border.all(color: color.withValues(alpha:0.35)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -656,7 +656,7 @@ class _HeroReadingCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: item.progress,
                       minHeight: 5,
-                      backgroundColor: color.withOpacity(0.15),
+                      backgroundColor: color.withValues(alpha:0.15),
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
                   ),
@@ -854,10 +854,10 @@ class _Chip extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? color : color.withOpacity(0.08),
+          color: active ? color : color.withValues(alpha:0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? color : color.withOpacity(0.3),
+            color: active ? color : color.withValues(alpha:0.3),
           ),
         ),
         child: Text(
@@ -897,7 +897,7 @@ class _CarouselCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha:0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -925,7 +925,7 @@ class _CarouselCard extends StatelessWidget {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
+                        color: Colors.black.withValues(alpha:0.55),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -949,7 +949,7 @@ class _CarouselCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: item.progress,
                   minHeight: 3,
-                  backgroundColor: color.withOpacity(0.15),
+                  backgroundColor: color.withValues(alpha:0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
               ),
@@ -1017,7 +1017,7 @@ class _Cover extends StatelessWidget {
                     imageUrl: coverUrl!,
                     fit: BoxFit.cover,
                     placeholder: (_, _) => Container(
-                      color: color.withOpacity(0.12),
+                      color: color.withValues(alpha:0.12),
                       child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
@@ -1049,9 +1049,9 @@ class _CoverFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha:0.1),
         child: Center(
-          child: Icon(icon, size: 30, color: color.withOpacity(0.5)),
+          child: Icon(icon, size: 30, color: color.withValues(alpha:0.5)),
         ),
       );
 }

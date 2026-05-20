@@ -90,7 +90,7 @@ class _ReadingGoalCardState extends State<ReadingGoalCard> {
                       style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     progressColor: isGoalMet ? Colors.amber : theme.colorScheme.primary,
-                    backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+                    backgroundColor: theme.colorScheme.primary.withValues(alpha:0.2),
                     circularStrokeCap: CircularStrokeCap.round,
                     animation: true,
                   ),

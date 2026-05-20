@@ -1,60 +1,119 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // ── MODO CLARO ────────────────────────────────
-  static const lightBackground    = Color(0xFFF5E6E0);
-  static const lightSurface       = Color(0xFFFDF5F2);
-  static const lightCard          = Color(0xFFFFFFFF);
-  static const lightBorder        = Color(0xFFF1C5C1);
-  static const lightTextPrimary   = Color(0xFF524D5F);
+  // ─────────────────────────────────────────────
+  // LIGHT MODE
+  // ─────────────────────────────────────────────
+
+  /// Fondo principal cálido tipo papel
+  static const lightBackground = Color(0xFFF5E6E0);
+
+  /// Superficies secundarias
+  static const lightSurface = Color(0xFFFDF5F2);
+
+  /// Cards ligeramente crema (menos blanco puro)
+  static const lightCard = Color(0xFFFFFAF8);
+
+  /// Bordes suaves tipo papel envejecido
+  static const lightBorder = Color(0xFFE9D7D2);
+
+  /// Texto principal
+  static const lightTextPrimary = Color(0xFF524D5F);
+
+  /// Texto secundario
   static const lightTextSecondary = Color(0xFF8C8098);
-  static const lightAccent        = Color(0xFFA87C80);
-  static const lightIcons         = Color(0xFF7F8C95);
-  static const lightEmphasis      = Color(0xFFE8A87C);
 
-  // ── MODO OSCURO ───────────────────────────────
-  static const darkBackground     = Color(0xFF2C2025);
-  static const darkSurface        = Color(0xFF3D2D30);
-  static const darkCard           = Color(0xFF4A3538);
-  static const darkBorder         = Color(0xFF5C4448);
-  static const darkTextPrimary    = Color(0xFFF5E6E0);
-  static const darkTextSecondary  = Color(0xFFB89FA3);
-  static const darkAccent         = Color(0xFFD4A0A4);
-  static const darkIcons          = Color(0xFF9FB3BC);
-  static const darkEmphasis       = Color(0xFFE8C49A);
+  /// Color principal dusty rose
+  static const lightAccent = Color(0xFFA87C80);
 
-  // ── ESTADOS (iguales en ambos modos) ─────────
-  static const statusReading   = Color(0xFF7BAE8E);
-  static const statusPending   = Color(0xFFE8C47A);
-  static const statusFinished  = Color(0xFFA87C80);
+  /// Iconos / elementos neutros
+  static const lightIcons = Color(0xFF7F8C95);
+
+  /// Énfasis cálido
+  static const lightEmphasis = Color(0xFFE8A87C);
+
+  // ─────────────────────────────────────────────
+  // DARK MODE
+  // ─────────────────────────────────────────────
+
+  /// Fondo principal oscuro cálido
+  static const darkBackground = Color(0xFF2C2025);
+
+  /// Superficies secundarias
+  static const darkSurface = Color(0xFF3D2D30);
+
+  /// Cards con un poco más de contraste
+  static const darkCard = Color(0xFF523D41);
+
+  /// Bordes suaves oscuros
+  static const darkBorder = Color(0xFF5C4448);
+
+  /// Texto principal
+  static const darkTextPrimary = Color(0xFFF5E6E0);
+
+  /// Texto secundario
+  static const darkTextSecondary = Color(0xFFB89FA3);
+
+  /// Accent oscuro
+  static const darkAccent = Color(0xFFD4A0A4);
+
+  /// Iconos
+  static const darkIcons = Color(0xFF9FB3BC);
+
+  /// Énfasis cálido oscuro
+  static const darkEmphasis = Color(0xFFE8C49A);
+
+/// Color profundo para acciones principales
+static const darkAnchor = Color(0xFFD4A0A4);
+
+  // ─────────────────────────────────────────────
+  // STATUS COLORS
+  // ─────────────────────────────────────────────
+
+  static const statusReading = Color(0xFF7BAE8E);
+  static const statusPending = Color(0xFFE8C47A);
+  static const statusFinished = Color(0xFFA87C80);
   static const statusAbandoned = Color(0xFFB07070);
 
-  // ── TIPO DE CONTENIDO ─────────────────────────
-  static const colorLibro  = Color(0xFF7F8C95);
-  static const colorFanfic = Color(0xFFD4A0A4);
-  static const colorManga  = Color(0xFFE8A87C);
+  // ─────────────────────────────────────────────
+  // CONTENT TYPES
+  // ─────────────────────────────────────────────
 
-  // ── HELPERS DINÁMICOS ─────────────────────────
+  static const colorLibro = Color(0xFF7F8C95);
+  static const colorFanfic = Color(0xFFD4A0A4);
+  static const colorManga = Color(0xFFE8A87C);
+
+  // ─────────────────────────────────────────────
+  // HELPERS DINÁMICOS
+  // ─────────────────────────────────────────────
+
   static bool isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 
   static Color background(BuildContext context) =>
       isDark(context) ? darkBackground : lightBackground;
+
   static Color surface(BuildContext context) =>
       isDark(context) ? darkSurface : lightSurface;
+
   static Color card(BuildContext context) =>
       isDark(context) ? darkCard : lightCard;
+
   static Color border(BuildContext context) =>
       isDark(context) ? darkBorder : lightBorder;
+
   static Color textPrimary(BuildContext context) =>
       isDark(context) ? darkTextPrimary : lightTextPrimary;
+
   static Color textSecondary(BuildContext context) =>
       isDark(context) ? darkTextSecondary : lightTextSecondary;
+
   static Color accent(BuildContext context) =>
       isDark(context) ? darkAccent : lightAccent;
+
   static Color icons(BuildContext context) =>
       isDark(context) ? darkIcons : lightIcons;
+
   static Color emphasis(BuildContext context) =>
       isDark(context) ? darkEmphasis : lightEmphasis;
 }
-

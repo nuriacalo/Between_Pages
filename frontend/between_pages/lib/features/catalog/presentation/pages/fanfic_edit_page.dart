@@ -1,15 +1,17 @@
+import 'package:between_pages/core/theme/app_colors.dart';
+import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/records/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
-import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
-import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FanficEditPage extends ConsumerStatefulWidget {
   final FanfictionResponseDTO? fanfic;
-
   const FanficEditPage({super.key, this.fanfic});
 
   @override
@@ -17,28 +19,34 @@ class FanficEditPage extends ConsumerStatefulWidget {
 }
 
 class _FanficEditPageState extends ConsumerState<FanficEditPage> {
+  static const _accent = AppColors.colorFanfic; // 0xFFD4A0A4
+
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
 
-  late TextEditingController _titleController;
-  late TextEditingController _authorController;
-  late TextEditingController _sourceMaterialController;
-  late TextEditingController _totalChaptersController;
-  late TextEditingController _coverUrlController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _tagsController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _authorController;
+  late final TextEditingController _sourceMaterialController;
+  late final TextEditingController _totalChaptersController;
+  late final TextEditingController _coverUrlController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _tagsController;
+  late final TextEditingController _mainShipController;
+  late final TextEditingController _themeController;
 
   @override
   void initState() {
     super.initState();
-    final fanfic = widget.fanfic;
-    _titleController = TextEditingController(text: fanfic?.title ?? '');
-    _authorController = TextEditingController(text: fanfic?.author ?? '');
-    _sourceMaterialController = TextEditingController(text: fanfic?.sourceMaterial ?? '');
-    _totalChaptersController = TextEditingController(text: fanfic?.totalChapters?.toString() ?? '');
-    _coverUrlController = TextEditingController(text: fanfic?.coverUrl ?? '');
-    _descriptionController = TextEditingController(text: fanfic?.description ?? '');
-    _tagsController = TextEditingController(text: (fanfic?.tags ?? []).join(', '));
+    final f = widget.fanfic;
+    _titleController          = TextEditingController(text: f?.title ?? '');
+    _authorController         = TextEditingController(text: f?.author ?? '');
+    _sourceMaterialController = TextEditingController(text: f?.sourceMaterial ?? '');
+    _totalChaptersController  = TextEditingController(text: f?.totalChapters?.toString() ?? '');
+    _coverUrlController       = TextEditingController(text: f?.coverUrl ?? '');
+    _descriptionController    = TextEditingController(text: f?.description ?? '');
+    _tagsController           = TextEditingController(text: (f?.tags ?? []).join(', '));
+    _mainShipController       = TextEditingController(text: f?.mainShip ?? '');
+    _themeController          = TextEditingController(text: f?.theme ?? '');
   }
 
   @override
@@ -50,162 +58,215 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
     _coverUrlController.dispose();
     _descriptionController.dispose();
     _tagsController.dispose();
+    _mainShipController.dispose();
+    _themeController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveFanficAndJournal() async {
-    if (!_formKey.currentState!.validate() || _isSaving) {
-      return;
-    }
-
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate() || _isSaving) return;
     setState(() => _isSaving = true);
 
     try {
-      final fanficRepo = ref.read(fanficSearchRepositoryProvider);
+      final repo = ref.read(fanficSearchRepositoryProvider);
       final fanficToSave = FanfictionResponseDTO(
-        idFanfic: widget.fanfic?.idFanfic ?? 0,
-        ao3Id: widget.fanfic?.ao3Id,
-        title: _titleController.text,
-        author: _authorController.text,
-        sourceMaterial: _sourceMaterialController.text,
-        totalChapters: int.tryParse(_totalChaptersController.text),
-        coverUrl: _coverUrlController.text,
-        description: _descriptionController.text,
-        tags: _tagsController.text.isNotEmpty
-            ? _tagsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
-            : [],
+        idFanfic:          widget.fanfic?.idFanfic ?? 0,
+        ao3Id:             widget.fanfic?.ao3Id,
+        title:             _titleController.text.trim(),
+        author:            _authorController.text.trim(),
+        sourceMaterial:    _sourceMaterialController.text.trim(),
+        totalChapters:     int.tryParse(_totalChaptersController.text),
+        coverUrl:          _coverUrlController.text.trim(),
+        description:       _descriptionController.text.trim(),
         publicationStatus: widget.fanfic?.publicationStatus ?? 'ONGOING',
+        mainShip:          _mainShipController.text.trim().isEmpty
+            ? null
+            : _mainShipController.text.trim(),
+        theme: _themeController.text.trim().isEmpty
+            ? null
+            : _themeController.text.trim(),
+        tags: _tagsController.text.isNotEmpty
+            ? _tagsController.text
+                .split(',')
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty)
+                .toList()
+            : [],
       );
 
-      final savedFanfic = await fanficRepo.saveOrUpdateFanfic(fanficToSave);
+      final saved = await repo.saveOrUpdateFanfic(fanficToSave);
 
       if (widget.fanfic == null) {
-        final journalRepo = ref.read(fanficJournalRepositoryProvider);
         final userId = ref.read(userProfileProvider).value!.idUser;
-
-        final journalDto = FanficJournalRecordDTO(
-          userId: userId,
-          fanficId: savedFanfic.idFanfic ?? 0,
-          status: 'TBR',
+        await ref.read(fanficJournalRepositoryProvider).saveRaw(
+          FanficJournalRecordDTO(
+            userId:   userId,
+            fanficId: saved.idFanfic ?? 0,
+            status:   'TBR',
+          ).toJson(),
         );
-        await journalRepo.saveRaw(journalDto.toJson());
         ref.invalidate(journalProvider(JournalType.fanfic));
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Fanfic guardado y añadido al diario con éxito'),
-          backgroundColor: Colors.green,
-        ));
-        Navigator.pop(context, savedFanfic);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(widget.fanfic == null
+                  ? 'Fanfic añadido al diario'
+                  : 'Cambios guardados'),
+            ]),
+            backgroundColor: AppColors.statusReading,
+            behavior:        SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        Navigator.pop(context, saved);
       }
     } catch (e) {
       if (mounted) {
-        final errorMessage = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $errorMessage'),
+            content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}'),
             backgroundColor: Theme.of(context).colorScheme.error,
+            behavior:        SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isNew       = widget.fanfic == null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.fanfic == null ? 'Añadir Fanfic' : 'Editar Fanfic'),
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-      ),
-      body: _isSaving
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(24.0),
-                children: [
-                  _buildTextField(_titleController, 'Título', isRequired: true, icon: Icons.title),
-                  _buildTextField(_authorController, 'Autor', isRequired: true, icon: Icons.person_outline),
-                  _buildTextField(_sourceMaterialController, 'Fandom / Material de Origen', icon: Icons.category_outlined),
-                  _buildTextField(_totalChaptersController, 'Capítulos totales', keyboardType: TextInputType.number, icon: Icons.format_list_numbered),
-                  _buildTextField(_coverUrlController, 'URL de la portada', keyboardType: TextInputType.url, icon: Icons.image_outlined),
-                  _buildTextField(_tagsController, 'Tags (separados por coma)', icon: Icons.local_offer_outlined),
-                  _buildTextField(_descriptionController, 'Descripción', maxLines: 5, icon: Icons.description_outlined),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _isSaving ? null : _saveFanficAndJournal,
-                      icon: const Icon(Icons.save),
-                      label: const Text('Guardar Fanfic', style: TextStyle(fontSize: 16)),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label, {
-    bool isRequired = false,
-    TextInputType? keyboardType,
-    int? maxLines = 1,
-    IconData? icon,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: icon != null ? Icon(icon, size: 20, color: colorScheme.primary) : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+        title: Text(
+          isNew ? 'Añadir fanfic' : 'Editar fanfic',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.4),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.primary,
-              width: 1.5,
-            ),
-          ),
-          filled: true,
-          fillColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F5FF),
         ),
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        validator: (value) {
-          if (isRequired && (value == null || value.isEmpty)) {
-            return 'Este campo es requerido';
-          }
-          return null;
-        },
+        backgroundColor: colorScheme.surface,
+        elevation:       0,
+        foregroundColor: _accent,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+          children: [
+            // ── Cover preview ───────────────────────────────────────────
+            CoverPreviewHeader(
+              coverUrlController: _coverUrlController,
+              accentColor:        _accent,
+              fallbackIcon:       Icons.favorite_rounded,
+            ),
+            const SizedBox(height: 8),
+
+            // ── Información básica ──────────────────────────────────────
+            FormSection(
+              label:       'Información básica',
+              accentColor: _accent,
+              children: [
+                AppTextField(
+                  controller:  _titleController,
+                  label:       'Título',
+                  icon:        Icons.title_rounded,
+                  accentColor: _accent,
+                  isRequired:  true,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _authorController,
+                  label:       'Autor / Handle',
+                  icon:        Icons.person_outline_rounded,
+                  accentColor: _accent,
+                  isRequired:  true,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _sourceMaterialController,
+                  label:       'Fandom / Material de origen',
+                  hint:        'ej. Harry Potter, LOTR…',
+                  icon:        Icons.auto_awesome_rounded,
+                  accentColor: _accent,
+                ),
+              ],
+            ),
+
+            // ── Detalles ────────────────────────────────────────────────
+            FormSection(
+              label:       'Detalles',
+              accentColor: _accent,
+              children: [
+                AppTextField(
+                  controller:   _totalChaptersController,
+                  label:        'Capítulos totales',
+                  icon:         Icons.format_list_numbered_rounded,
+                  accentColor:  _accent,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _mainShipController,
+                  label:       'Ship principal',
+                  hint:        'ej. Dramione, Zutara…',
+                  icon:        Icons.favorite_border_rounded,
+                  accentColor: _accent,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _themeController,
+                  label:       'Tema / Género',
+                  hint:        'ej. Angst, Fluff, Dark…',
+                  icon:        Icons.category_rounded,
+                  accentColor: _accent,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _tagsController,
+                  label:       'Tags',
+                  hint:        'Slow burn, Enemies to lovers…',
+                  icon:        Icons.local_offer_rounded,
+                  accentColor: _accent,
+                ),
+              ],
+            ),
+
+            // ── Sinopsis ────────────────────────────────────────────────
+            FormSection(
+              label:       'Sinopsis',
+              accentColor: _accent,
+              children: [
+                AppTextField(
+                  controller:  _descriptionController,
+                  label:       'Descripción',
+                  icon:        Icons.notes_rounded,
+                  accentColor: _accent,
+                  maxLines:    6,
+                ),
+              ],
+            ),
+
+            // ── Save button ─────────────────────────────────────────────
+            SaveButton(
+              label:     isNew ? 'Añadir fanfic' : 'Guardar cambios',
+              icon:      isNew ? Icons.add_rounded : Icons.save_rounded,
+              color:     _accent,
+              isLoading: _isSaving,
+              onTap:     _save,
+            ),
+          ],
+        ),
       ),
     );
   }

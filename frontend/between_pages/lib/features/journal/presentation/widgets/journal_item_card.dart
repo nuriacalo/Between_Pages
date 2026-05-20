@@ -60,7 +60,7 @@ class JournalItemCard extends ConsumerWidget { // Converted to ConsumerWidget
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
+                  color: Colors.black.withValues(alpha:0.18),
                   blurRadius: 14,
                   offset: const Offset(0, 4),
                 ),

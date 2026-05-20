@@ -27,7 +27,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Divider(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha:0.2),
           ),
         ),
       ],
@@ -72,7 +72,7 @@ class _SecondBrainCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.15),
+                  color: accent.withValues(alpha:0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.psychology_outlined, color: accent, size: 20),
@@ -94,7 +94,7 @@ class _SecondBrainCard extends StatelessWidget {
                       'Tus notas y citas de este libro',
                       style: TextStyle(
                         fontSize: 11,
-                        color: accent.withOpacity(0.7),
+                        color: accent.withValues(alpha:0.7),
                       ),
                     ),
                   ],
@@ -109,9 +109,9 @@ class _SecondBrainCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: accent.withOpacity(0.12),
+                      color: accent.withValues(alpha:0.12),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: accent.withOpacity(0.25)),
+                      border: Border.all(color: accent.withValues(alpha:0.25)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -122,7 +122,7 @@ class _SecondBrainCard extends StatelessWidget {
                           'Escanear',
                           style: TextStyle(
                             fontSize: 12,
-                            color: accent.withOpacity(0.85),
+                            color: accent.withValues(alpha:0.85),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -153,11 +153,11 @@ class _SecondBrainCard extends StatelessWidget {
             minLines: 3,
             decoration: InputDecoration(
               hintText: 'Guarda frases que te han marcado...',
-              hintStyle: TextStyle(color: accent.withOpacity(0.4), fontSize: 13),
+              hintStyle: TextStyle(color: accent.withValues(alpha:0.4), fontSize: 13),
               filled: true,
               fillColor: isDark
                   ? const Color(0xFF16152A)
-                  : Colors.white.withOpacity(0.7),
+                  : Colors.white.withValues(alpha:0.7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -205,7 +205,7 @@ void _showComingSoonSheet(BuildContext context) {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFF7C6FC4).withOpacity(0.12),
+                color: const Color(0xFF7C6FC4).withValues(alpha:0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

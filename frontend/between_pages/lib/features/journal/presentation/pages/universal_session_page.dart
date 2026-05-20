@@ -330,7 +330,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
     final accent = widget.data.accentColor;
     final bgContainer = isDark
         ? const Color(0xFF1E1E1E)
-        : accent.withOpacity(0.05);
+        : accent.withValues(alpha:0.05);
 
     return Scaffold(
       backgroundColor: bgContainer,
@@ -365,7 +365,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: accent.withOpacity(0.4),
+                        color: accent.withValues(alpha:0.4),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),

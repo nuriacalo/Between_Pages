@@ -102,7 +102,7 @@ class _EntryCard extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppColors.statusAbandoned.withOpacity(0.15),
+          color: AppColors.statusAbandoned.withValues(alpha:0.15),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(Icons.delete_outline, color: AppColors.statusAbandoned),
@@ -152,7 +152,7 @@ class _EntryCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: accent.withOpacity(0.12),
+                      color: accent.withValues(alpha:0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -177,7 +177,7 @@ class _EntryCard extends ConsumerWidget {
                 const Spacer(),
                 if (hasQuote)
                   Icon(Icons.format_quote_rounded,
-                      size: 16, color: accent.withOpacity(0.4)),
+                      size: 16, color: accent.withValues(alpha:0.4)),
               ],
             ),
 
@@ -241,7 +241,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.psychology_outlined,
-                size: 56, color: accent.withOpacity(0.3)),
+                size: 56, color: accent.withValues(alpha:0.3)),
             const SizedBox(height: 16),
             Text(
               'Tu Segundo Cerebro está vacío',

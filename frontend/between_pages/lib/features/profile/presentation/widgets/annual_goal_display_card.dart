@@ -97,7 +97,7 @@ class AnnualGoalDisplayCard extends ConsumerWidget {
                   color: isGoalMet ? Colors.amber : colorScheme.primary,
                 ),
                 progressColor: isGoalMet ? Colors.amber : colorScheme.primary,
-                backgroundColor: colorScheme.primary.withOpacity(0.2),
+                backgroundColor: colorScheme.primary.withValues(alpha:0.2),
                 circularStrokeCap: CircularStrokeCap.round,
                 animation: true,
               ),

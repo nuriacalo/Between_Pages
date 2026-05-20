@@ -40,7 +40,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: theme.dividerColor.withOpacity(0.1),
+              color: theme.dividerColor.withValues(alpha:0.1),
               width: 1.0,
             ),
           ),

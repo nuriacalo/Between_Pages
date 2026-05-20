@@ -35,7 +35,7 @@ class CatalogPage extends ConsumerWidget {
             indicatorColor: colorScheme.primary,
             indicatorSize: TabBarIndicatorSize.label,
             indicatorWeight: 3.0,
-            dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
+            dividerColor: colorScheme.outlineVariant.withValues(alpha:0.3),
             tabs: [
               Tab(text: l10n.tabBooks),
               Tab(text: l10n.tabMangas),

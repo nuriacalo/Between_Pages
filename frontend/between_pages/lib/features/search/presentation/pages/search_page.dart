@@ -75,19 +75,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.outlineVariant.withOpacity(0.3),
+                          color: colorScheme.outlineVariant.withValues(alpha:0.3),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.outlineVariant.withOpacity(0.3),
+                          color: colorScheme.outlineVariant.withValues(alpha:0.3),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.primary.withOpacity(0.7),
+                          color: colorScheme.primary.withValues(alpha:0.7),
                           width: 1.5,
                         ),
                       ),
@@ -108,7 +108,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   indicatorColor: colorScheme.primary,
                   indicatorSize: TabBarIndicatorSize.label,
                   indicatorWeight: 3.0,
-                  dividerColor: colorScheme.outlineVariant.withOpacity(0.3),
+                  dividerColor: colorScheme.outlineVariant.withValues(alpha:0.3),
                   tabs: [
                     Tab(icon: const Icon(Icons.book), text: l10n.tabBooks),
                     Tab(

@@ -48,8 +48,8 @@ class _AngstLevelSelectorState extends State<AngstLevelSelector> {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = const Color(0xFF8B6BAE); // Mismo color acento unificado del Fanfic
-    final activeBg = activeColor.withOpacity(0.15);
-    final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4);
+    final activeBg = activeColor.withValues(alpha:0.15);
+    final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha:0.4);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

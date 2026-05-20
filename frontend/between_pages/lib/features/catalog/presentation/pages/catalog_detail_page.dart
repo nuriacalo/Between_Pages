@@ -23,9 +23,11 @@ import 'package:between_pages/features/lists/application/providers/list_provider
 import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
 import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
+import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -194,6 +196,17 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           );
       }
       _invalidateJournals();
+
+      // Al añadir un item al diario, registramos actividad para la racha
+      try {
+        await ref.read(readingStatsRepositoryProvider).recordActivity();
+        // Si tienes un provider para la racha, invalídalo aquí para que se refresque.
+        // ref.invalidate(streakProvider);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error al registrar actividad: $e');
+        }
+      }
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       final msg = switch (status) {
@@ -240,6 +253,17 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           );
       }
       _invalidateJournals();
+
+      // Al actualizar el estado, también registramos actividad.
+      try {
+        await ref.read(readingStatsRepositoryProvider).recordActivity();
+        // Si tienes un provider para la racha, invalídalo aquí.
+        // ref.invalidate(streakProvider);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error al registrar actividad: $e');
+        }
+      }
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -545,7 +569,7 @@ final lists = ref.read(listProvider);
         // 2. Blur filter
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-          child:  Container(color: Colors.black.withOpacity(0.48)),
+          child:  Container(color: Colors.black.withValues(alpha:0.48)),
         ),
 
         // 3. Gradient to help the body content read against the header
@@ -559,7 +583,7 @@ final lists = ref.read(listProvider);
                 end:   Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.35),
+                  Colors.black.withValues(alpha:0.35),
                 ],
               ),
             ),
@@ -578,9 +602,9 @@ final lists = ref.read(listProvider);
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color:        Colors.white.withOpacity(0.15),
+                    color:        Colors.white.withValues(alpha:0.15),
                     borderRadius: BorderRadius.circular(20),
-                    border:       Border.all(color: Colors.white.withOpacity(0.3)),
+                    border:       Border.all(color: Colors.white.withValues(alpha:0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -607,7 +631,7 @@ final lists = ref.read(listProvider);
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color:       Colors.black.withOpacity(0.45),
+                        color:       Colors.black.withValues(alpha:0.45),
                         blurRadius:  24,
                         offset:      const Offset(0, 10),
                       ),
@@ -623,7 +647,7 @@ final lists = ref.read(listProvider);
                               imageUrl:    _data.coverUrl!,
                               fit:         BoxFit.cover,
                               placeholder: (_, _) => Container(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha:0.1),
                               ),
                               errorWidget: (_, _, _) => _HeaderFallback(
                                 icon: _typeIcon,
@@ -657,7 +681,7 @@ final lists = ref.read(listProvider);
                   maxLines:  1,
                   overflow:  TextOverflow.ellipsis,
                   style: TextStyle(
-                    color:    Colors.white.withOpacity(0.82),
+                    color:    Colors.white.withValues(alpha:0.82),
                     fontSize: 14,
                   ),
                 ),
@@ -676,7 +700,7 @@ final lists = ref.read(listProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     final subtleStyle = OutlinedButton.styleFrom(
-      side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.45)),
+      side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha:0.45)),
     );
 
     final buttons = <Widget>[];
@@ -822,7 +846,7 @@ class _HeaderFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha:0.08),
         child: Center(child: Icon(icon, size: 48, color: Colors.white38)),
       );
 }
@@ -850,9 +874,9 @@ class _StatusRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color:        color.withOpacity(0.12),
+            color:        color.withValues(alpha:0.12),
             borderRadius: BorderRadius.circular(20),
-            border:       Border.all(color: color.withOpacity(0.35)),
+            border:       Border.all(color: color.withValues(alpha:0.35)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -908,9 +932,9 @@ class _GenresSection extends StatelessWidget {
                 .map((g) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
-                        color:        accent.withOpacity(0.1),
+                        color:        accent.withValues(alpha:0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border:       Border.all(color: accent.withOpacity(0.28)),
+                        border:       Border.all(color: accent.withValues(alpha:0.28)),
                       ),
                       child: Text(
                         g,
@@ -990,7 +1014,7 @@ class _InfoSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         children: [
-                          Icon(row.icon, size: 16, color: typeColor.withOpacity(0.75)),
+                          Icon(row.icon, size: 16, color: typeColor.withValues(alpha:0.75)),
                           const SizedBox(width: 10),
                           Text(
                             row.label,
