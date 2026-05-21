@@ -26,6 +26,7 @@ dependencies:
   percent_indicator: ^4.2.3
   flutter_speed_dial: ^7.0.0
   confetti: ^0.7.0
+  equatable: ^2.0.8
 
 dev_dependencies:
   flutter_test:
