@@ -1,7 +1,9 @@
 package com.calonuria.backend.features.user.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -13,6 +15,8 @@ import java.time.LocalDate;
  */
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "reading_activity", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "activity_date"})
 })
@@ -38,4 +42,9 @@ public class ReadingActivity {
      */
     @Column(name = "activity_date", nullable = false)
     private LocalDate activityDate;
+
+    public ReadingActivity(User user, LocalDate activityDate) {
+        this.user = user;
+        this.activityDate = activityDate;
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.util.StringUtils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,18 +34,19 @@ public class GoogleBooksService {
     public List<BookResponseDTO> searchBooks(String title) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder
                 .fromHttpUrl(GOOGLE_BOOKS_API_URL)
-                .queryParam("q", "intitle:" + title)
-                .queryParam("maxResults", 10);
+                .queryParam("q", title)
+                .queryParam("maxResults", 10)
+                .queryParam("printType", "books");
 
         if (StringUtils.hasText(googleBooksConfig.getApiKey())) {
             urlBuilder.queryParam("key", googleBooksConfig.getApiKey());
         }
 
-        String url = urlBuilder.build().encode().toUriString();
+        URI uri = urlBuilder.build().encode().toUri();
         List<BookResponseDTO> results = new ArrayList<>();
 
         try {
-            String jsonResponse = restTemplate.getForObject(url, String.class);
+            String jsonResponse = restTemplate.getForObject(uri, String.class);
             if (!StringUtils.hasText(jsonResponse)) {
                 log.warn("Google Books devolvió una respuesta vacía para el título '{}'", title);
                 return results;
@@ -72,10 +74,10 @@ public class GoogleBooksService {
         if (StringUtils.hasText(googleBooksConfig.getApiKey())) {
             urlBuilder.queryParam("key", googleBooksConfig.getApiKey());
         }
-        String url = urlBuilder.build().encode().toUriString();
+        URI uri = urlBuilder.build().encode().toUri();
 
         try {
-            String json = restTemplate.getForObject(url, String.class);
+            String json = restTemplate.getForObject(uri, String.class);
             JsonNode root = objectMapper.readTree(json);
             return mapGoogleBookToDTO(root);
         } catch (Exception e) {

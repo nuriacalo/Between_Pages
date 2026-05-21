@@ -1,5 +1,6 @@
 package com.calonuria.backend.features.user.service;
 
+import com.calonuria.backend.features.user.dto.AnnualGoalProgressDTO;
 import com.calonuria.backend.features.user.dto.ReadingGoalDTO;
 import com.calonuria.backend.features.user.dto.ReadingStreakDTO;
 import com.calonuria.backend.features.user.model.ReadingActivity;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -195,5 +197,18 @@ public class ReadingStatsService {
                 log.warn("Activity for date {} already exists for user ID {}", today, userId);
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public AnnualGoalProgressDTO getAnnualGoalProgress(Long userId) {
+        int currentYear = Year.now().getValue();
+
+        int finishedCount = readingGoalRepository.countFinishedItemsByYear(userId, currentYear);
+
+        int targetAmount = readingGoalRepository.findByUser_IdAndGoalYear(userId, currentYear)
+                .map(ReadingGoal::getTargetAmount)
+                .orElse(0);
+
+        return new AnnualGoalProgressDTO(currentYear, targetAmount, finishedCount);
     }
 }
