@@ -72,6 +72,7 @@ class BookJournalResponseDto extends BaseJournalResponseDTO {
       title: book.title,
       coverUrl: book.coverUrl,
       currentProgress: currentPage ?? 0,
+      totalProgress: book.pageCount,
       progressPrompt: '¿En qué página te has quedado?',
       accentColor: const Color(0xFFA87C80),
       rawJournal: this,

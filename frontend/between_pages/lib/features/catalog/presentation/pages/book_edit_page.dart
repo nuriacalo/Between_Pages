@@ -1,5 +1,6 @@
 import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
+import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
@@ -101,8 +102,11 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
             status: 'TBR',
           ).toJson(),
         );
-        ref.invalidate(journalProvider(JournalType.book));
+        ref.invalidate(allJournalsProvider);
       }
+
+      // Invalidamos el catálogo para que refleje el nuevo libro o edición
+      ref.invalidate(allBooksProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +120,7 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
             ]),
             backgroundColor: AppColors.statusReading,
             behavior:        SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
         Navigator.pop(context, savedBook);
@@ -128,7 +132,7 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
             content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior:        SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }

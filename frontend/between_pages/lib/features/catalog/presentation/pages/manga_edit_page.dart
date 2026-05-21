@@ -1,5 +1,6 @@
 import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
+import 'package:between_pages/features/catalog/application/providers/all_manga_provider.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
@@ -97,8 +98,11 @@ class _MangaEditPageState extends ConsumerState<MangaEditPage> {
             status:  'TBR',
           ).toJson(),
         );
-        ref.invalidate(journalProvider(JournalType.manga));
+        ref.invalidate(allJournalsProvider);
       }
+
+      // Invalidamos el catálogo para que refleje el nuevo manga o edición
+      ref.invalidate(allMangaProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +116,7 @@ class _MangaEditPageState extends ConsumerState<MangaEditPage> {
             ]),
             backgroundColor: AppColors.statusReading,
             behavior:        SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
         Navigator.pop(context, saved);
@@ -124,7 +128,7 @@ class _MangaEditPageState extends ConsumerState<MangaEditPage> {
             content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior:        SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }

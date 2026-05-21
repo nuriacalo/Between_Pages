@@ -84,10 +84,10 @@ class JournalItemEditPage extends ConsumerWidget {
           specificFieldsBuilder: (currentJournal, controllers) =>
               specificFieldsBuilder(currentJournal, controllers, context),
           accentColor: config.accent,      // <-- pasa el acento al form
-          onSave: (ref) {
+          onSave: (ref, newStatus) {
             _invalidateProviders(ref, type, journal);
-            final dbStatus = JournalStatusHelper.mapStatusToDb(journal.status);
-            if (dbStatus == 'FINISHED' && journal.status != 'FINISHED') {
+            final oldDbStatus = JournalStatusHelper.mapStatusToDb(journal.status);
+            if (newStatus == 'FINISHED' && oldDbStatus != 'FINISHED') {
               context.push('/journal/${type.name}/diary', extra: journal);
             } else if (isStandalone) {
               context.pop();

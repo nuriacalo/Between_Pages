@@ -23,20 +23,6 @@ class ListDetailPage extends ConsumerWidget {
 
   const ListDetailPage({super.key, required this.list});
 
-  MediaItem? _toMediaItem(ListItemResponseDTO item) {
-    final type = item.itemType.toUpperCase();
-    switch (type) {
-      case 'BOOK':
-        return item.book;
-      case 'MANGA':
-        return item.manga;
-      case 'FANFIC':
-        return item.fanfic;
-      default:
-        return null;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(listDetailProvider(list.id));
@@ -89,7 +75,7 @@ class ListDetailPage extends ConsumerWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = detail.items[index];
-                      final mediaItem = _toMediaItem(item);
+                      final mediaItem = item.mediaItem;
 
                       if (mediaItem == null) {
                         return Card(
@@ -156,7 +142,7 @@ class _EmptyList extends StatelessWidget {
         Icon(
           Icons.playlist_add_check_rounded,
           size: 64,
-          color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+          color: colorScheme.onSurfaceVariant.withValues(alpha:0.4),
         ),
         const SizedBox(height: 16),
         Text(

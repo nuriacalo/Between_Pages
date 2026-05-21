@@ -70,6 +70,19 @@ class MangaSearchRepository {
     }
     return const [];
   }
+
+  /// Guarda o actualiza un Manga en la base de datos local
+  Future<MangaResponseDTO> saveOrUpdateManga(MangaResponseDTO manga) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.manga, 
+        data: manga.toJson(),
+      );
+      return MangaResponseDTO.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Error guardando o actualizando manga: $e');
+    }
+  }
 }
 
 final mangaSearchRepositoryProvider = Provider<MangaSearchRepository>((ref) {

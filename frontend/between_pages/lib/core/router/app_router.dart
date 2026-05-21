@@ -10,6 +10,8 @@ import 'package:between_pages/features/journal/domain/responses/manga_journal_re
 
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/book_reading_progress_page.dart';
+import 'package:between_pages/features/journal/presentation/pages/manga_reading_progress_page.dart';
+import 'package:between_pages/features/journal/presentation/pages/fanfic_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/lists_page.dart';
@@ -69,7 +71,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           final item = state.extra as dynamic;
           return CatalogDetailPage(item: item, type: itemType);
-
         },
       ),
       GoRoute(
@@ -111,7 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/journal/fanfic/edit',
         builder: (context, state) {
           final journal = state.extra as FanficJournalResponseDTO;
-          return JournalItemEditPage(journal: journal, type: JournalType.fanfic);
+          return JournalItemEditPage(
+            journal: journal,
+            type: JournalType.fanfic,
+          );
         },
       ),
       GoRoute(
@@ -129,23 +133,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/journal/manga/session',
+        path: '/journal/manga/progress',
         builder: (context, state) {
           final journal = state.extra as MangaJournalResponseDTO;
-          return UniversalSessionPage(data: journal.toSessionData());
+          return MangaReadingProgressPage(journal: journal);
         },
       ),
       GoRoute(
-        path: '/journal/fanfic/session',
+        path: '/journal/fanfic/progress',
         builder: (context, state) {
           final journal = state.extra as FanficJournalResponseDTO;
-          return UniversalSessionPage(data: journal.toSessionData());
+          return FanficReadingProgressPage(journal: journal);
         },
       ),
-      GoRoute(
-        path: '/lists',
-        builder: (context, state) => const ListsPage(),
-      ),
+      GoRoute(path: '/lists', builder: (context, state) => const ListsPage()),
       GoRoute(
         path: '/list/:id',
         builder: (context, state) {
@@ -162,11 +163,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/notes',
-        builder: (context, state) {
-          final bookId = state.extra as int;
-          return NotesPage(bookId: bookId);
-        },
+        path: '/notes/:itemType/:itemId',
+        builder: (context, state) => NotesPage(
+          itemType: state.pathParameters['itemType']!.toUpperCase(),
+          itemId: int.parse(state.pathParameters['itemId']!),
+        ),
       ),
       GoRoute(
         path: '/settings',

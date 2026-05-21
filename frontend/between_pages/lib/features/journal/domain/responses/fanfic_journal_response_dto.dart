@@ -73,6 +73,7 @@ class FanficJournalResponseDTO extends BaseJournalResponseDTO {
       title: fanfic.title ?? 'Sin título',
       coverUrl: fanfic.coverUrl,
       currentProgress: currentChapter ?? 0,
+      totalProgress: fanfic.totalChapters,
       progressPrompt: '¿En qué capítulo te has quedado?',
       accentColor: const Color(0xFFD4A0A4),
       rawJournal: this,

@@ -25,6 +25,7 @@ class JournalEditFactory {
           final book = (journal as BookJournalResponseDto).book;
           final userId = ref.read(userProfileProvider).value!.idUser;
           return BookJournalRecordDTO(
+            id: journal.id,
             userId: userId,
             bookId: book.idBook,
             googleBooksId: book.googleBooksId,
@@ -32,20 +33,20 @@ class JournalEditFactory {
             rating: updatedValues['rating'] as int?,
             tearDrops: updatedValues['tearDrops'] as int?,
             spiceFlames: updatedValues['spiceFlames'] as int?,
-            personalNotes: updatedValues['personalNotes'] as String?,
+            personalNotes: (updatedValues['personalNotes'] as String?)?.trim().isEmpty == true ? null : updatedValues['personalNotes'] as String?,
             startDate: journal.startDate,
             endDate: updatedValues['endDate'] as String?,
             ownership: updatedValues['ownership'] as String?,
             rereading: journal.rereading,
             currentPage: int.tryParse(updatedValues['currentPage'] ?? '') ??
                 journal.currentPage,
-            favoriteQuotes: updatedValues['favoriteQuotes'] as String?,
-            seriesName: updatedValues['seriesName'] as String?,
+            favoriteQuotes: (updatedValues['favoriteQuotes'] as String?)?.trim().isEmpty == true ? null : updatedValues['favoriteQuotes'] as String?,
+            seriesName: (updatedValues['seriesName'] as String?)?.trim().isEmpty == true ? null : updatedValues['seriesName'] as String?,
             seriesOrder: updatedValues['seriesOrder'] != null &&
                     (updatedValues['seriesOrder'] as String).isNotEmpty
                 ? double.tryParse(updatedValues['seriesOrder'])
                 : null,
-            loanedTo: updatedValues['loanedTo'] as String?,
+            loanedTo: (updatedValues['loanedTo'] as String?)?.trim().isEmpty == true ? null : updatedValues['loanedTo'] as String?,
           );
         };
 
@@ -57,6 +58,7 @@ class JournalEditFactory {
               ? 'PHYSICAL'
               : (updatedValues['readingFormat'] == 'Digital' ? 'DIGITAL' : null);
           return MangaJournalRecordDTO(
+            id: journal.id,
             userId: userId,
             mangaId: manga?.idManga,
             malId: manga?.malId,
@@ -64,16 +66,16 @@ class JournalEditFactory {
             rating: updatedValues['rating'] as int?,
             tearDrops: updatedValues['tearDrops'] as int?,
             spiceFlames: updatedValues['spiceFlames'] as int?,
-            personalNotes: updatedValues['personalNotes'] as String?,
+            personalNotes: (updatedValues['personalNotes'] as String?)?.trim().isEmpty == true ? null : updatedValues['personalNotes'] as String?,
             startDate: journal.startDate,
             endDate: updatedValues['endDate'] as String?,
             ownership: updatedValues['ownership'] as String?,
             rereading: journal.rereading,
-            currentChapter: updatedValues['currentChapter'] as int?,
-            currentVolume: updatedValues['currentVolume'] as int?,
-            readingFormat: dbFormat ?? updatedValues['readingFormat'] as String?,
-            favoriteCharacter: updatedValues['favoriteCharacter'] as String?,
-            favoriteArc: updatedValues['favoriteArc'] as String?,
+            currentChapter: int.tryParse(updatedValues['currentChapter'] ?? '') ?? journal.currentChapter,
+            currentVolume: int.tryParse(updatedValues['currentVolume'] ?? '') ?? journal.currentVolume,
+            readingFormat: dbFormat,
+            favoriteCharacter: (updatedValues['favoriteCharacter'] as String?)?.trim().isEmpty == true ? null : updatedValues['favoriteCharacter'] as String?,
+            favoriteArc: (updatedValues['favoriteArc'] as String?)?.trim().isEmpty == true ? null : updatedValues['favoriteArc'] as String?,
           );
         };
 
@@ -82,6 +84,7 @@ class JournalEditFactory {
           final fanfic = (journal as FanficJournalResponseDTO).fanfic;
           final userId = ref.read(userProfileProvider).value!.idUser;
           return FanficJournalRecordDTO(
+            id: journal.id,
             userId: userId,
             fanficId: fanfic.idFanfic ?? 0,
             ao3Id: fanfic.ao3Id,
@@ -89,18 +92,18 @@ class JournalEditFactory {
             rating: updatedValues['rating'] as int?,
             tearDrops: updatedValues['tearDrops'] as int?,
             spiceFlames: updatedValues['spiceFlames'] as int?,
-            personalNotes: updatedValues['personalNotes'] as String?,
+            personalNotes: (updatedValues['personalNotes'] as String?)?.trim().isEmpty == true ? null : updatedValues['personalNotes'] as String?,
             startDate: journal.startDate,
             endDate: updatedValues['endDate'] as String?,
             rereading: journal.rereading,
             currentChapter:
                 int.tryParse(updatedValues['currentChapter'] ?? '') ??
                     journal.currentChapter,
-            mainShip: updatedValues['mainShip'] as String?,
-            secondaryShips: updatedValues['secondaryShips'] as String?,
-            angstLevel: updatedValues['angstLevel'] as String?,
-            shipLoyalty: updatedValues['shipLoyalty'] as String?,
-            canonType: updatedValues['canonType'] as String?,
+            mainShip: (updatedValues['mainShip'] as String?)?.trim().isEmpty == true ? null : updatedValues['mainShip'] as String?,
+            secondaryShips: (updatedValues['secondaryShips'] as String?)?.trim().isEmpty == true ? null : updatedValues['secondaryShips'] as String?,
+            angstLevel: (updatedValues['angstLevel'] as String?)?.trim().isEmpty == true ? null : updatedValues['angstLevel'] as String?,
+            shipLoyalty: (updatedValues['shipLoyalty'] as String?)?.trim().isEmpty == true ? null : updatedValues['shipLoyalty'] as String?,
+            canonType: (updatedValues['canonType'] as String?)?.trim().isEmpty == true ? null : updatedValues['canonType'] as String?,
           );
         };
     }

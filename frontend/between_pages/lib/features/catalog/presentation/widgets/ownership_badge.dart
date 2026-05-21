@@ -44,8 +44,8 @@ class OwnershipBadge extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.65),
-          borderRadius: BorderRadius.circular(6),
+          color: Colors.black.withValues(alpha:0.65),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.white24, width: 0.5),
         ),
         child: Row(

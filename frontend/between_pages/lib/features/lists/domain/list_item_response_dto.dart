@@ -1,6 +1,7 @@
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/media_item.dart';
 
 class ListItemResponseDTO {
   final int id;
@@ -38,4 +39,15 @@ class ListItemResponseDTO {
         'manga': manga?.toJson(),
         'fanfic': fanfic?.toJson(),
       };
+
+  /// Devuelve el objeto de contenido (Book, Manga o Fanfic) como un [MediaItem] genérico.
+  /// Simplifica el acceso al contenido sin tener que hacer un switch/case externo.
+  MediaItem? get mediaItem {
+    switch (itemType.toUpperCase()) {
+      case 'BOOK': return book;
+      case 'MANGA': return manga;
+      case 'FANFIC': return fanfic;
+      default: return null;
+    }
+  }
 }

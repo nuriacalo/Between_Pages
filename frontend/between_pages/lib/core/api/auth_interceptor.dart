@@ -56,8 +56,12 @@ class AuthInterceptor extends Interceptor {
       }
     }
 
-    // Solo intentamos refresh en errores de autenticación (no en 403 de permisos)
-    if (statusCode == 401) {
+    // --- Lógica de renovación de token ---
+    // Intentamos renovar el token en dos casos:
+    // 1. Error 401 Unauthorized (token expirado o inválido).
+    // 2. Error 403 Forbidden en el endpoint '/api/auth/me'. A veces, los backends
+    //    devuelven 403 en lugar de 401 para tokens expirados. Lo tratamos como tal.
+    if (statusCode == 401 || (statusCode == 403 && err.requestOptions.path.endsWith('/auth/me'))) {
       if (_isRefreshing) {
         // Esperar a que termine el refresh actual y reintentar
         _pendingRequests.add(() => _retryRequest(err, handler));

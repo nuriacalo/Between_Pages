@@ -128,10 +128,10 @@ class FeedPage extends ConsumerWidget {
         await context.push('/journal/book/progress', extra: item.journal);
         ref.invalidate(journalProvider(JournalType.book));
       case _ContentType.manga:
-        await context.push('/journal/manga/session', extra: item.journal);
+        await context.push('/journal/manga/progress', extra: item.journal);
         ref.invalidate(journalProvider(JournalType.manga));
       case _ContentType.fanfic:
-        await context.push('/journal/fanfic/session', extra: item.journal);
+        await context.push('/journal/fanfic/progress', extra: item.journal);
         ref.invalidate(journalProvider(JournalType.fanfic));
     }
 

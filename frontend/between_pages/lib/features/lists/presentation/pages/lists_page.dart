@@ -31,7 +31,7 @@ class ListsPage extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.list_alt_rounded, size: 64, color: colorScheme.onSurfaceVariant.withOpacity(0.4)),
+                      Icon(Icons.list_alt_rounded, size: 64, color: colorScheme.onSurfaceVariant.withValues(alpha:0.4)),
                       const SizedBox(height: 16),
                       Text('No tienes listas', style: textTheme.headlineSmall),
                       const SizedBox(height: 8),
@@ -82,7 +82,7 @@ class _ListCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha:0.3)),
       ),
       child: InkWell(
         onTap: () => context.push('/list/${list.id}', extra: list),

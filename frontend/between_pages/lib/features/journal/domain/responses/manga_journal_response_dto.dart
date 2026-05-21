@@ -70,8 +70,10 @@ class MangaJournalResponseDTO extends BaseJournalResponseDTO {
       title: manga?.title ?? 'Sin título',
       coverUrl: manga?.coverUrl,
       currentProgress: currentChapter ?? 0,
+      totalProgress: manga?.totalChapters,
       progressPrompt: '¿En qué capítulo/volumen te has quedado?',
       accentColor: const Color(0xFF6B7280),
+
       rawJournal: this,
     );
   }

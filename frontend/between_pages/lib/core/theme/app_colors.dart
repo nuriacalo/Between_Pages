@@ -32,6 +32,9 @@ class AppColors {
   /// Énfasis cálido
   static const lightEmphasis = Color(0xFFE8A87C);
 
+  ///Color vibrante para acciones de logout o destructivas
+  static const logoutColor = Color(0xFFC85C5C);
+
   // ─────────────────────────────────────────────
   // DARK MODE
   // ─────────────────────────────────────────────
@@ -63,8 +66,11 @@ class AppColors {
   /// Énfasis cálido oscuro
   static const darkEmphasis = Color(0xFFE8C49A);
 
-/// Color profundo para acciones principales
-static const darkAnchor = Color(0xFFD4A0A4);
+  /// Color profundo para acciones principales
+  static const darkAnchor = Color(0xFFD4A0A4);
+
+  ///Color vibrante para acciones de logout o destructivas
+  static const logoutDarkColor = Color(0xFFD97B7B);
 
   // ─────────────────────────────────────────────
   // STATUS COLORS
@@ -116,4 +122,7 @@ static const darkAnchor = Color(0xFFD4A0A4);
 
   static Color emphasis(BuildContext context) =>
       isDark(context) ? darkEmphasis : lightEmphasis;
+
+  static Color logout(BuildContext context) =>
+      isDark(context) ? logoutDarkColor : logoutColor;
 }

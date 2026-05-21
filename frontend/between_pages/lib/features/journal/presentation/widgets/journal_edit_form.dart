@@ -33,7 +33,7 @@ class JournalEditForm<
       specificFieldsBuilder;
   
   /// Callback triggered immediately after a successful save operation.
-  final Function(WidgetRef) onSave;
+  final Function(WidgetRef, String) onSave;
   
   /// Optional accent color to theme the form specific to the media type.
   final Color? accentColor;
@@ -144,7 +144,7 @@ class _JournalEditFormState<
 
       await widget.repository.saveRaw(dto.toJson());
 
-      widget.onSave(ref);
+      widget.onSave(ref, dbStatus);
 
       if (!mounted) return;
 

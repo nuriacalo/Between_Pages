@@ -1,14 +1,16 @@
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
-import 'package:between_pages/features/journal/application/providers/reading_stats_provider.dart';
+import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
+import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
+import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:between_pages/features/catalog/presentation/pages/book_edit_page.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
-import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
-import 'package:between_pages/features/notes/presentation/widget/second_brain_tab.dart';
+import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
+import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,6 +53,7 @@ class _BookReadingProgressPageState
       final user = await auth.getUserProfile();
 
       final dto = BookJournalRecordDTO(
+        id: _journal.id,
         userId: user.idUser,
         bookId: _book.idBook,
         googleBooksId: _book.googleBooksId != null && _book.googleBooksId!.isNotEmpty ? _book.googleBooksId : null,
@@ -69,6 +72,16 @@ class _BookReadingProgressPageState
       );
 
       await repo.saveRaw(dto.toJson());
+
+      // Registra la actividad para la racha y refresca los datos de gamificación
+      // para que el feed se actualice.
+      try {
+        await ref.read(readingStatsRepositoryProvider).recordActivity();
+        ref.invalidate(gamificationProvider);
+      } catch (e) {
+        debugPrint('Error al registrar actividad: $e');
+      }
+
 
       ref.invalidate(journalProvider(JournalType.book));
       ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
@@ -368,52 +381,32 @@ class _BookReadingProgressPageState
     final progress = ((totalPages ?? 0) > 0)
         ? (currentPage / totalPages!).clamp(0.0, 1.0) : 0.0;
 
-   return DefaultTabController(
-  length: 3,
-  child: Scaffold(
-    body: NestedScrollView(
-      headerSliverBuilder: (context, innerScrolled) => [
-        SliverAppBar(
-                expandedHeight: 320,
-                pinned: true,
-                backgroundColor: accent,
-                foregroundColor: Colors.white,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(
-                    book.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  background: _buildHeader(accent, book.coverUrl),
+    return Scaffold(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerScrolled) => [
+          SliverAppBar(
+            expandedHeight: 320,
+            pinned: true,
+            backgroundColor: accent,
+            foregroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                book.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            indicatorColor: Colors.white,
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Progreso'),
-              Tab(text: 'Segundo Cerebro'),
-              Tab(text: 'Editar'),
-            ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              background: _buildHeader(accent, book.coverUrl),
+            ),
           ),
-        ),
-      ],
-      body: TabBarView(
-        children: [
-          _buildProgressTab(accent, currentPage, totalPages, progress, journal, colorScheme, textTheme),
-          SecondBrainTab(itemType: 'BOOK', itemId: _book.idBook ?? 0),
-          JournalItemEditPage(journal: journal, type: JournalType.book, isStandalone: false),
         ],
+        body: _buildProgressTab(accent, currentPage, totalPages, progress, journal, colorScheme, textTheme),
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildProgressTab(Color accent, int currentPage, int? totalPages, double progress, BookJournalResponseDto journal, ColorScheme colorScheme, TextTheme textTheme) {
@@ -623,8 +616,8 @@ class _BookReadingProgressPageState
     return Consumer(
       builder: (context, ref, child) {
         final remainingForStats = remaining ?? 0;
-        final statsParams = ReadingStatsParams(
-          bookId: journal.book.idBook,
+        final statsParams = ItemStatsParams(
+          itemId: journal.book.idBook,
           remainingPages: remainingForStats,
         );
         final statsAsync = ref.watch(itemReadingStatsProvider(statsParams));

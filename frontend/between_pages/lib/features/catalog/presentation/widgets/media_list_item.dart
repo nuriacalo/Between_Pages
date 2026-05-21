@@ -231,7 +231,7 @@ class _Cover extends StatelessWidget {
                       imageUrl:    coverUrl!,
                       fit:         BoxFit.cover,
                       placeholder: (_, _) => Container(
-                        color: accent.withValues(alpha:0.12),
+                        color: accent.withValues(alpha: 0.12),
                       ),
                       errorWidget: (_, _, _) => _Fallback(
                         accent: accent, icon: fallback,
@@ -261,9 +261,9 @@ class _Fallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: accent.withValues(alpha:0.1),
+        color: accent.withValues(alpha: 0.1),
         child: Center(
-          child: Icon(icon, size: 24, color: accent.withValues(alpha:0.45)),
+          child: Icon(icon, size: 24, color: accent.withValues(alpha: 0.45)),
         ),
       );
 }
@@ -277,9 +277,9 @@ class _GenreChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
-          color:        color.withValues(alpha:0.1),
+          color:        color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border:       Border.all(color: color.withValues(alpha:0.28)),
+          border:       Border.all(color: color.withValues(alpha: 0.28)),
         ),
         child: Text(
           label,
@@ -301,7 +301,7 @@ class _ExtraRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, size: 11, color: color.withValues(alpha:0.7)),
+          Icon(icon, size: 11, color: color.withValues(alpha: 0.7)),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
@@ -310,7 +310,7 @@ class _ExtraRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize:   10,
-                color:      color.withValues(alpha:0.85),
+                color:      color.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),

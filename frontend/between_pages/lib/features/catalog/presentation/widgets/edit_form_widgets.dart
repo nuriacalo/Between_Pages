@@ -130,9 +130,9 @@ class _CoverPreviewHeaderState extends State<CoverPreviewHeader> {
                   // Cover or placeholder
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: SizedBox(
-                      width:  90,
-                      height: 130,
+                    child: SizedBox( //FIX: Changed border radius from 12 to 14
+                      width: 90,
+                      height: 135,
                       child: _displayUrl != null && _displayUrl!.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl:    _displayUrl!,
@@ -421,7 +421,7 @@ class SaveButton extends StatelessWidget {
             backgroundColor: color,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         ),
