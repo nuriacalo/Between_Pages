@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_secure_storage-9.2.4/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.23/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.21/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/sqflite_android-2.4.2+3/android" />
+    <file type="web" url="file://$PROJECT_DIR$/frontend/between_pages/android" />
+    <file type="web" url="file://$USER_HOME$/development/flutter/flutter/packages/flutter_tools/gradle" />
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>

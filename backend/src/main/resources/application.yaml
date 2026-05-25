@@ -24,6 +24,9 @@ spring:
     enabled: ${FLYWAY_ENABLED:true}
     locations: classpath:db/migration
     baseline-on-migrate: true
+    repair-on-migrate: true
+    user: ${DB_USERNAME:nuriacalo}
+    password: ${DB_PASSWORD:}
 
 google:
   books:
