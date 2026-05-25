@@ -1,5 +1,6 @@
 package com.calonuria.backend.features.user.service;
 
+import com.calonuria.backend.features.session.repository.ReadingSessionRepository;
 import com.calonuria.backend.features.user.dto.AnnualGoalProgressDTO;
 import com.calonuria.backend.features.user.dto.GamificationStatsDTO;
 import com.calonuria.backend.features.user.dto.GoalRequestDTO;
@@ -22,7 +23,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -33,6 +36,7 @@ public class ReadingStatsService {
     private final ReadingGoalRepository readingGoalRepository;
     private final ReadingActivityRepository readingActivityRepository;
     private final UserRepository userRepository;
+    private final ReadingSessionRepository readingSessionRepository;
 
     @Transactional
     public ReadingGoalDTO getOrCreateReadingGoal(Long userId) {
@@ -242,5 +246,18 @@ public class ReadingStatsService {
         }
 
         return streak;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getItemReadingStats(Long userId, Long itemId) {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("speedPagesPerHour", 0.0);
+        stats.put("estimatedTimeRemainingSeconds", 0);
+
+        long totalDurationSeconds = readingSessionRepository.findTotalDurationSecondsByItemId(userId, itemId)
+                .orElse(0L);
+        stats.put("totalDurationSeconds", totalDurationSeconds);
+
+        return stats;
     }
 }

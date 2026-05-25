@@ -18,6 +18,10 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("-source", "17", "-target", "17"))
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.between_pages"

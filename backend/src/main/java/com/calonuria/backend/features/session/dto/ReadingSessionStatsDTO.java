@@ -20,4 +20,7 @@ public class ReadingSessionStatsDTO {
 
     @Schema(description = "Tiempo estimado restante en segundos para remainingPages", example = "7200")
     private Long estimatedTimeRemainingSeconds;
+
+    @Schema(description = "Tiempo total de lectura en segundos", example = "10800")
+    private Long totalDurationSeconds;
 }

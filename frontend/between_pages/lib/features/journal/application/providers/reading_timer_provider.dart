@@ -59,6 +59,10 @@ class ReadingTimerNotifier extends StateNotifier<ReadingTimerState> {
     _timer?.cancel();
     state = const ReadingTimerState();
   }
+
+  void addSeconds(int secondsToAdd) {
+    state = state.copyWith(elapsedSeconds: state.elapsedSeconds + secondsToAdd);
+  }
 }
 
 final readingTimerProvider = StateNotifierProvider<ReadingTimerNotifier, ReadingTimerState>((ref) {

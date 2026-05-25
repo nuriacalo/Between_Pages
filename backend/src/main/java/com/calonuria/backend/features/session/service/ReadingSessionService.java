@@ -81,6 +81,10 @@ public class ReadingSessionService {
 
         long estimatedSeconds = (long) Math.ceil((remainingPages / avgSpeed) * 3600);
 
-        return new ReadingSessionStatsDTO(avgSpeed, estimatedSeconds);
+        Long totalDurationSeconds = readingSessionRepository
+                .findTotalDurationSeconds(userId, bookId, mangaId, fanficId)
+                .orElse(0L);
+
+        return new ReadingSessionStatsDTO(avgSpeed, estimatedSeconds, totalDurationSeconds);
     }
 }

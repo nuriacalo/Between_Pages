@@ -9,10 +9,8 @@ import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
-import 'package:between_pages/features/journal/presentation/pages/book_reading_progress_page.dart';
-import 'package:between_pages/features/journal/presentation/pages/manga_reading_progress_page.dart';
-import 'package:between_pages/features/journal/presentation/pages/fanfic_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
+import 'package:between_pages/features/journal/presentation/pages/universal_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/lists_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/create_list_page.dart'; // Verifica que el archivo exista con este nombre

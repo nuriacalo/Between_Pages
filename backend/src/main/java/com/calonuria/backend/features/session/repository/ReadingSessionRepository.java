@@ -54,4 +54,19 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
     @Query("SELECT AVG(CAST(rs.pagesRead AS double) / (CAST(rs.durationSeconds AS double) / 3600)) " +
            "FROM ReadingSession rs WHERE rs.user.id = :userId")
     Optional<Double> findAverageSpeedGlobal(@Param("userId") Long userId);
+
+    /**
+     * Calcula la duración total de lectura en segundos para un item específico.
+     */
+    @Query("SELECT SUM(rs.durationSeconds) FROM ReadingSession rs WHERE rs.user.id = :userId " +
+           "AND (:bookId IS NULL OR rs.book.id = :bookId) " +
+           "AND (:mangaId IS NULL OR rs.manga.id = :mangaId) " +
+           "AND (:fanficId IS NULL OR rs.fanfic.id = :fanficId)")
+    Optional<Long> findTotalDurationSeconds(@Param("userId") Long userId,
+                                            @Param("bookId") Long bookId,
+                                            @Param("mangaId") Long mangaId,
+                                            @Param("fanficId") Long fanficId);
+
+    @Query("SELECT SUM(rs.durationSeconds) FROM ReadingSession rs WHERE rs.user.id = :userId AND (rs.book.id = :itemId OR rs.manga.id = :itemId OR rs.fanfic.id = :itemId)")
+    Optional<Long> findTotalDurationSecondsByItemId(@Param("userId") Long userId, @Param("itemId") Long itemId);
 }

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/app_colors.dart'; 
 
 class BetweenPagesLogo extends StatelessWidget {
   final double fontSize;
-  final bool useSvg;
+  final bool useImage;
 
   const BetweenPagesLogo({
     super.key, 
     this.fontSize = 28.0,
-    // Pon esto a 'true' cuando hayas añadido el archivo SVG a tus assets
-    this.useSvg = false, 
+    this.useImage = false, 
   });
 
   @override
@@ -18,16 +16,15 @@ class BetweenPagesLogo extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Aquí decidimos si mostrar el SVG o un icono temporal
-        if (useSvg)
-          SvgPicture.asset(
-            'assets/icons/between_pages_icon.svg', // Asegúrate de que la ruta coincida
+children: [
+        if (useImage)
+          Image.asset(
+            'assets/img/logo.png',
             height: fontSize * 1.3,
           )
         else
           Icon(
-            Icons.menu_book_rounded, // Icono más parecido al de tu captura
+            Icons.menu_book_rounded, 
             color: AppColors.accent(context),
             size: fontSize * 1.2,
           ),
@@ -35,29 +32,34 @@ class BetweenPagesLogo extends StatelessWidget {
         const SizedBox(width: 8.0),
         
         // Tipografía del logo
-        Text.rich(
-          TextSpan(
-            children: [
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text.rich(
               TextSpan(
-                text: 'Between',
-                style: TextStyle(
-                  fontFamily: 'Lora',
-                  fontWeight: FontWeight.w700, // Negrita para el "Between"
-                  color: AppColors.textPrimary(context),
-                  fontSize: fontSize,
-                ),
+                children: [
+                  TextSpan(
+                    text: 'Between',
+                    style: TextStyle(
+                      fontFamily: 'Lora',
+                      fontWeight: FontWeight.w700, // Negrita para el "Between"
+                      color: AppColors.textPrimary(context),
+                      fontSize: fontSize,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'Pages',
+                    style: TextStyle(
+                      fontFamily: 'Lora',
+                      fontWeight: FontWeight.w500, 
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.accent(context),
+                      fontSize: fontSize,
+                    ),
+                  ),
+                ],
               ),
-              TextSpan(
-                text: 'Pages',
-                style: TextStyle(
-                  fontFamily: 'Lora',
-                  fontWeight: FontWeight.w500, 
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.accent(context),
-                  fontSize: fontSize,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ],

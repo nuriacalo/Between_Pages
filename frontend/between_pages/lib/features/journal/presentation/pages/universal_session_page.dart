@@ -8,10 +8,10 @@ import 'package:between_pages/features/journal/domain/manga_journal_record_dto.d
 import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/records/fanfic_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/records/reading_session_record_dto.dart';
+import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
 import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
-// FIX: updated import from second_brain_tab.dart → notes_tab.dart
 import 'package:between_pages/features/notes/presentation/widget/notes_tab.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
@@ -57,8 +57,9 @@ class UniversalSessionPage extends ConsumerStatefulWidget {
       _UniversalSessionPageState();
 }
 
-class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
+class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> with WidgetsBindingObserver {
   bool _isSaving = false;
+  DateTime? _backgroundTime;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -84,6 +85,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.data.itemId > 0) {
         ref
@@ -91,6 +93,29 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
             .start(widget.data.itemId, widget.data.timerItemType);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // Si el cronómetro está corriendo, guardamos la hora en la que se apaga la pantalla o se minimiza
+      if (ref.read(readingTimerProvider).isRunning && _backgroundTime == null) {
+        _backgroundTime = DateTime.now();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // Al volver, si estaba corriendo, sumamos el tiempo que ha pasado en segundo plano
+      if (_backgroundTime != null && ref.read(readingTimerProvider).isRunning) {
+        final difference = DateTime.now().difference(_backgroundTime!);
+        ref.read(readingTimerProvider.notifier).addSeconds(difference.inSeconds);
+        _backgroundTime = null;
+      }
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -344,9 +369,15 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           ),
         );
         
-        // Registramos la actividad de hoy explícitamente para que la racha se incremente
-        await ref.read(readingStatsRepositoryProvider).recordActivity();
-        ref.invalidate(gamificationProvider);
+        // Registramos la actividad para la racha SOLO si se leyó al menos una página
+        // La racha debe ser consecutiva con progreso real, no solo con tiempo invertido
+        if (progressDelta > 0) {
+          await ref.read(readingStatsRepositoryProvider).recordActivity();
+          ref.invalidate(gamificationProvider);
+        }
+
+        // Invalidamos la caché de estadísticas para que el "Tiempo invertido" se refresque en la UI al instante
+        ref.invalidate(itemReadingStatsProvider);
       }
 
       ref.read(readingTimerProvider.notifier).reset();
@@ -418,7 +449,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                   accent:   _accent,
                   type:     widget.data.mediaType,
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 12),
 
                 // ── Title ────────────────────────────────────────────
                 Padding(
@@ -514,7 +545,6 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
                     const SizedBox(width: 20),
 
                     // Add note
-                    // FIX: renamed from 'brain' — icon updated to match NotesTab
                     FloatingActionButton(
                       heroTag:         'notes',
                       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
@@ -544,14 +574,6 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
       ),
     );
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Note sheet
-  // FIX: was calling AddEntrySheet(ref: ref, ...) — both the class name and
-  //      the ref parameter were changed when we improved notes_tab.dart.
-  //      Now uses AddNoteSheet without the redundant ref parameter.
-  // ─────────────────────────────────────────────────────────────────────────
-
   void _openAddNoteSheet() {
     showModalBottomSheet<void>(
       context:            context,

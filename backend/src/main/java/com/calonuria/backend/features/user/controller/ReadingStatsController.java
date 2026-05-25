@@ -121,12 +121,8 @@ public class ReadingStatsController {
     public ResponseEntity<Map<String, Object>> getItemReadingStats(
             Principal principal,
             @PathVariable Long itemId) {
-        // Solo validamos que el token sea correcto
-        getUserByEmail(principal.getName());
-        
-        Map<String, Object> stats = new java.util.HashMap<>();
-        stats.put("speedPagesPerHour", 0.0);
-        stats.put("estimatedTimeRemainingSeconds", 0);
+        User user = getUserByEmail(principal.getName());
+        Map<String, Object> stats = readingStatsService.getItemReadingStats(user.getId(), itemId);
         return ResponseEntity.ok(stats);
     }
 }

@@ -1,4 +1,5 @@
 import 'package:between_pages/core/widgets/empty_state.dart';
+import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/ownership_badge.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
@@ -82,7 +83,7 @@ class FeedPage extends ConsumerWidget {
           progress: p,
           progressLabel: 'Pág. $cur',
           progressPercent: '${(p * 100).round()}%',
-          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+          updatedAt: _parseDate(raw.updatedAt),
         ),
       );
     }
@@ -102,7 +103,7 @@ class FeedPage extends ConsumerWidget {
           progress: p,
           progressLabel: 'Cap. $cur',
           progressPercent: '${(p * 100).round()}%',
-          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+          updatedAt: _parseDate(raw.updatedAt),
         ),
       );
     }
@@ -121,7 +122,7 @@ class FeedPage extends ConsumerWidget {
           progress: p,
           progressLabel: 'Cap. $cur',
           progressPercent: '${(p * 100).round()}%',
-          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+          updatedAt: _parseDate(raw.updatedAt),
         ),
       );
     }
@@ -623,19 +624,57 @@ class _StreakCard extends StatelessWidget {
 
 // ─── 2. _HeroReadingCard: solo el botón dispara onTap ────────────────────
 
-class _HeroReadingCard extends StatelessWidget {
+class _HeroReadingCard extends ConsumerWidget {
   final _ReadingItem item;
   final VoidCallback onTap;
   const _HeroReadingCard({required this.item, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = _typeColor(item.type);
     final icon = _typeIcon(item.type);
     final label = _typeLabel(item.type);
+
+    // Obtener estadísticas de tiempo para el badge
+    int? itemId;
+    int remainingForStats = 0;
+    
+    if (item.type == _ContentType.book) {
+      final b = item.journal as BookJournalResponseDto;
+      itemId = b.book.idBook;
+      final total = b.book.pageCount ?? 0;
+      final cur = b.currentPage ?? 0;
+      remainingForStats = (total - cur).clamp(0, total);
+    } else if (item.type == _ContentType.manga) {
+      final m = item.journal as MangaJournalResponseDTO;
+      itemId = m.manga?.idManga;
+      final total = m.manga?.totalChapters ?? 0;
+      final cur = m.currentChapter ?? 0;
+      remainingForStats = (total - cur).clamp(0, total);
+    } else if (item.type == _ContentType.fanfic) {
+      final f = item.journal as FanficJournalResponseDTO;
+      itemId = f.fanfic.idFanfic;
+      final total = f.fanfic.totalChapters ?? 0;
+      final cur = f.currentChapter ?? 0;
+      remainingForStats = (total - cur).clamp(0, total);
+    }
+
+    final statsParams = ItemStatsParams(
+      itemId: itemId,
+      remainingPages: remainingForStats,
+    );
+    final statsAsync = ref.watch(itemReadingStatsProvider(statsParams));
+    final totalTimeSecs = statsAsync.value?['totalDurationSeconds'] as int?;
+    
+    String? totalTimeLabel;
+    if (totalTimeSecs != null && totalTimeSecs > 0) {
+      final th = totalTimeSecs ~/ 3600;
+      final tm = (totalTimeSecs % 3600) ~/ 60;
+      totalTimeLabel = th > 0 ? '${th}h ${tm}m' : '${tm}m';
+    }
 
     // ← Sin GestureDetector envolviendo toda la tarjeta
     return Container(
@@ -675,8 +714,8 @@ class _HeroReadingCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    // ← badge "Última sesión"
-                    if (item.updatedAt != null)
+                    // ← badge "Tiempo invertido"
+                    if (totalTimeLabel != null)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -686,12 +725,20 @@ class _HeroReadingCard extends StatelessWidget {
                           color: color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          _relativeDate(item.updatedAt!),
-                          style: textTheme.labelSmall?.copyWith(
-                            color: color,
-                            fontSize: 9,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_outlined, size: 10, color: color),
+                            const SizedBox(width: 3),
+                            Text(
+                              totalTimeLabel,
+                              style: textTheme.labelSmall?.copyWith(
+                                color: color,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -1204,11 +1251,9 @@ class _EditReadingGoalDialogState extends State<EditReadingGoalDialog> {
 
 // ─── Helper: fecha relativa para el badge de la hero card ─────────────────
 
-String _relativeDate(DateTime dt) {
-  final diff = DateTime.now().difference(dt);
-  if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes}m';
-  if (diff.inHours < 24) return 'Hace ${diff.inHours}h';
-  if (diff.inDays == 1) return 'Ayer';
-  if (diff.inDays < 7) return 'Hace ${diff.inDays}d';
-  return '${dt.day}/${dt.month}';
+DateTime? _parseDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty) return null;
+  // Nos aseguramos de que se interprete como UTC (añadiendo 'Z' si falta)
+  final str = dateStr.endsWith('Z') ? dateStr : '${dateStr}Z';
+  return DateTime.tryParse(str)?.toLocal();
 }

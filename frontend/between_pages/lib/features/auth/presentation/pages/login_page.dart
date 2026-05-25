@@ -132,21 +132,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo tipográfico en lugar del icono genérico
-                  const Center(child: BetweenPagesLogo(fontSize: 34.0)),
-                  const SizedBox(height: 32),
-                  
-                  // Título de bienvenida
-                  Text(
-                    l10n.loginWelcomeBack,
-                    style: textTheme.headlineSmall?.copyWith(
-                      color: AppColors.textPrimary(context),
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 40),
+                  // Logo visual
+                  const Center(child: BetweenPagesLogo(fontSize: 34.0, useImage: true)),
+                  const SizedBox(height: 48),
 
                   // Input Email
                   TextFormField(
@@ -196,10 +184,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                         onChanged: (value) => setState(() => _rememberMe = value ?? false),
                       ),
-                      Text(
+                    Expanded(
+                      child: Text(
                         l10n.loginRememberMe,
                         style: TextStyle(color: AppColors.textSecondary(context)),
                       ),
+                    ),
                     ],
                   ),
                   const SizedBox(height: 32),

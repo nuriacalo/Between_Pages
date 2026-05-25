@@ -94,7 +94,7 @@ class _NotesContent extends ConsumerWidget {
                 backgroundColor: accent,
                 foregroundColor: Colors.white,
                 padding:         const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder( //FIX: Changed border radius from 14 to 12
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ), 
               ),
@@ -147,7 +147,6 @@ class _NoteCard extends ConsumerWidget {
         child: const Icon(Icons.delete_outline_rounded,
             color: Colors.white, size: 22),
       ),
-      // FIX: use the dialog's own BuildContext for Navigator.pop
       confirmDismiss: (_) => showDialog<bool>(
         context: context,
         builder: (dialogCtx) => AlertDialog(
@@ -416,9 +415,6 @@ void _openAddSheet(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AddNoteSheet
-//
-// FIX: extends ConsumerStatefulWidget so it gets its own `ref` automatically.
-//      No need to pass `ref` as a constructor parameter.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class AddNoteSheet extends ConsumerStatefulWidget {
