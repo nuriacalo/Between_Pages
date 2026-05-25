@@ -21,6 +21,7 @@ public abstract class BaseJournalService<T extends BaseJournal, R, D extends Bas
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public abstract R saveProgress(D dto);
 
     protected abstract R mapToDTO(T journal);
@@ -76,6 +77,7 @@ public abstract class BaseJournalService<T extends BaseJournal, R, D extends Bas
     }
 
     @Override
+    @Transactional
     public void deleteJournal(Long journalId) {
         journalRepository.deleteById(journalId);
     }

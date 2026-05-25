@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,13 +44,13 @@ public class JikanService {
                 .queryParam("page", page)
                 .queryParam("limit", Math.min(limit, 25)); // Jikan max: 25
 
-        String url = urlBuilder.build().encode().toUriString();
+        URI uri = urlBuilder.build().encode().toUri();
         log.info("Buscando manga en Jikan: {}", title);
 
         List<MangaResponseDTO> results = new ArrayList<>();
         
         try {
-            String json = restTemplate.getForObject(url, String.class);
+            String json = restTemplate.getForObject(uri, String.class);
             JsonNode root = new ObjectMapper().readTree(json);
             JsonNode data = root.path("data");
 

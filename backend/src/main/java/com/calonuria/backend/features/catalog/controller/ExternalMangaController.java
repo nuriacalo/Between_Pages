@@ -41,7 +41,7 @@ public class ExternalMangaController {
     })
     public ResponseEntity<List<MangaResponseDTO>> searchManga(
             @Parameter(description = "Título del manga a buscar") 
-            @RequestParam String query,
+            @RequestParam(name = "q") String query,
             @Parameter(description = "Página de resultados (default: 1)")
             @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Resultados por página (max: 25)")

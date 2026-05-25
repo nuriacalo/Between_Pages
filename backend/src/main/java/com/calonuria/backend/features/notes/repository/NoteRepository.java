@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface NoteRepository extends JpaRepository<Note, Long> {
     List<Note> findByItemTypeAndItemIdAndUserId(String itemType, Long itemId, Long userId);
+    List<Note> findByUserIdOrderByCreatedAtDesc(Long userId);
 }
