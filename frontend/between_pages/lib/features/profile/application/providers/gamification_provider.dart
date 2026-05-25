@@ -1,5 +1,5 @@
 import 'package:between_pages/features/profile/domain/gamification_stats_dto.dart';
-import 'package:between_pages/features/profile/application/repositories/gamification_repository.dart';
+import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// An [AsyncNotifier] responsible for managing the user's gamification state.
@@ -12,7 +12,7 @@ class GamificationNotifier extends AsyncNotifier<GamificationStatsDTO> {
   /// Fetches the user's gamification stats from the repository on initialization.
   @override
   Future<GamificationStatsDTO> build() async {
-    return ref.watch(gamificationRepositoryProvider).getStats();
+    return ref.watch(readingStatsRepositoryProvider).getGamificationStats();
   }
 
   /// Updates the user's annual reading goal (target amount of books to read this year).
@@ -38,7 +38,7 @@ class GamificationNotifier extends AsyncNotifier<GamificationStatsDTO> {
     // 2. Guardamos en el backend
     try {
       final currentYear = DateTime.now().year;
-      await ref.read(gamificationRepositoryProvider).updateGoal(currentYear, newGoal);
+      await ref.read(readingStatsRepositoryProvider).updateReadingGoal(newGoal, currentYear);
     } catch (e) {
       // Si falla la red, revertimos al estado anterior sin que el usuario note cuelgues
       if (previousState != null) state = AsyncData(previousState);

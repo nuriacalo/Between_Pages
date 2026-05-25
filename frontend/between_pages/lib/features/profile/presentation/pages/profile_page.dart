@@ -80,15 +80,6 @@ class ProfilePage extends ConsumerWidget {
                 textTheme: textTheme,
               ),
             ),
-            title: userProfileAsync.valueOrNull != null
-                ? Text(
-                    userProfileAsync.value!.name,
-                    style: textTheme.titleMedium?.copyWith(
-                      color: AppColors.textPrimary(context),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
           ),
 
           SliverToBoxAdapter(

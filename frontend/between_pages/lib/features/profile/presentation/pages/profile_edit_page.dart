@@ -306,20 +306,23 @@ class _DangerZone extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border:       Border.all(color: colorScheme.error.withValues(alpha: 0.25)),
           ),
-          child: ListTile(
-            shape:   RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            leading: Icon(Icons.delete_outline_rounded, color: colorScheme.error),
-            title: Text(
-              'Eliminar cuenta',
-              style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w600),
+          child: Material(
+            type: MaterialType.transparency,
+            child: ListTile(
+              shape:   RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              leading: Icon(Icons.delete_outline_rounded, color: colorScheme.error),
+              title: Text(
+                'Eliminar cuenta',
+                style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                'Esta acción es irreversible',
+                style: TextStyle(fontSize: 12, color: colorScheme.error.withValues(alpha: 0.65)),
+              ),
+              trailing: Icon(Icons.chevron_right_rounded,
+                  color: colorScheme.error.withValues(alpha: 0.5)),
+              onTap: () => _confirmDelete(context),
             ),
-            subtitle: Text(
-              'Esta acción es irreversible',
-              style: TextStyle(fontSize: 12, color: colorScheme.error.withValues(alpha: 0.65)),
-            ),
-            trailing: Icon(Icons.chevron_right_rounded,
-                color: colorScheme.error.withValues(alpha: 0.5)),
-            onTap: () => _confirmDelete(context),
           ),
         ),
       ],

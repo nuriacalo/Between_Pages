@@ -3,6 +3,7 @@ import 'package:between_pages/core/constants/api_constants.dart';
 import 'package:between_pages/features/auth/application/providers/api_provider.dart';
 import 'package:between_pages/features/profile/domain/reading_streak_dto.dart';
 import 'package:between_pages/features/profile/domain/reading_goal_dto.dart';
+import 'package:between_pages/features/profile/domain/gamification_stats_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repositorio para gestionar las estadísticas de lectura del usuario.
@@ -51,8 +52,12 @@ class ReadingStatsRepository {
   }
 
   /// Actualiza o establece la meta de lectura anual.
-  Future<void> updateReadingGoal(int targetAmount) async {
-    await _apiClient.post(ApiConstants.readingStatsGoal, data: {'targetAmount': targetAmount});
+  Future<void> updateReadingGoal(int targetAmount, [int? year]) async {
+    final data = <String, dynamic>{'targetAmount': targetAmount};
+    if (year != null) {
+      data['year'] = year;
+    }
+    await _apiClient.post(ApiConstants.readingStatsGoal, data: data);
   }
 
   /// Obtiene estadísticas de lectura para un item específico (velocidad, etc.).
@@ -67,6 +72,33 @@ class ReadingStatsRepository {
       // para no romper la UI.
       return {};
     }
+  }
+
+  /// Obtiene las estadísticas combinadas (Racha y Meta).
+  /// Mantenido por retrocompatibilidad temporal con GamificationStatsDTO.
+  Future<GamificationStatsDTO> getGamificationStats() async {
+    int annualGoal = 12;
+    int currentStreak = 0;
+    List<bool> weekActivity = List.filled(7, false);
+
+    // Intentamos cargar la meta actual
+    try {
+      final goal = await getReadingGoal();
+      if (goal != null && goal.targetAmount != null) annualGoal = goal.targetAmount!;
+    } catch (_) {}
+
+    // Intentamos cargar la racha de lectura
+    try {
+      final streak = await getReadingStreak();
+      if (streak.currentStreak != null) currentStreak = streak.currentStreak!;
+      if (streak.weekActivity != null) weekActivity = streak.weekActivity!;
+    } catch (_) {}
+
+    return GamificationStatsDTO(
+      annualGoal: annualGoal,
+      currentStreak: currentStreak,
+      weekActivity: weekActivity,
+    );
   }
 }
 
