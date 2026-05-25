@@ -63,7 +63,7 @@ public class Manga {
      * Conjunto de géneros asociados al manga.
      * Mapeado a través de la tabla de unión "manga_genre".
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "manga_genre",
             joinColumns = @JoinColumn(name = "manga_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))

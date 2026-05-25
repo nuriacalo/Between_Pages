@@ -19,7 +19,7 @@ public class MangaJournal extends BaseJournal {
     /**
      * Manga asociado al diario.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manga_id", nullable = false)
     private Manga manga;
 

@@ -19,7 +19,7 @@ public class FanficJournal extends BaseJournal {
     /**
      * Fanfiction asociado al diario.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fanfic_id", nullable = false)
     private Fanfiction fanfic;
 
