@@ -29,6 +29,7 @@ class _ReadingItem {
   final double progress; // 0.0 – 1.0
   final String progressLabel; // e.g. "Pág. 423"
   final String progressPercent; // e.g. "62%"
+  final DateTime? updatedAt;
 
   const _ReadingItem({
     required this.type,
@@ -39,6 +40,7 @@ class _ReadingItem {
     required this.progress,
     required this.progressLabel,
     required this.progressPercent,
+    this.updatedAt,
   });
 }
 
@@ -70,16 +72,19 @@ class FeedPage extends ConsumerWidget {
       final pages = raw.book.pageCount ?? 1;
       final cur = raw.currentPage ?? 0;
       final p = (cur / (pages > 0 ? pages : 1)).clamp(0.0, 1.0);
-      items.add(_ReadingItem(
-        type: _ContentType.book,
-        journal: raw,
-        title: raw.book.title,
-        coverUrl: raw.book.coverUrl,
-        ownership: raw.ownership,
-        progress: p,
-        progressLabel: 'Pág. $cur',
-        progressPercent: '${(p * 100).round()}%',
-      ));
+      items.add(
+        _ReadingItem(
+          type: _ContentType.book,
+          journal: raw,
+          title: raw.book.title,
+          coverUrl: raw.book.coverUrl,
+          ownership: raw.ownership,
+          progress: p,
+          progressLabel: 'Pág. $cur',
+          progressPercent: '${(p * 100).round()}%',
+          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+        ),
+      );
     }
 
     for (final raw in mangas.whereType<MangaJournalResponseDTO>()) {
@@ -87,16 +92,19 @@ class FeedPage extends ConsumerWidget {
       final total = raw.manga?.totalChapters ?? 1;
       final cur = raw.currentChapter ?? 0;
       final p = (cur / (total > 0 ? total : 1)).clamp(0.0, 1.0);
-      items.add(_ReadingItem(
-        type: _ContentType.manga,
-        journal: raw,
-        title: raw.manga?.title ?? 'Sin título',
-        coverUrl: raw.manga?.coverUrl,
-        ownership: raw.ownership,
-        progress: p,
-        progressLabel: 'Cap. $cur',
-        progressPercent: '${(p * 100).round()}%',
-      ));
+      items.add(
+        _ReadingItem(
+          type: _ContentType.manga,
+          journal: raw,
+          title: raw.manga?.title ?? 'Sin título',
+          coverUrl: raw.manga?.coverUrl,
+          ownership: raw.ownership,
+          progress: p,
+          progressLabel: 'Cap. $cur',
+          progressPercent: '${(p * 100).round()}%',
+          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+        ),
+      );
     }
 
     for (final raw in fanfics.whereType<FanficJournalResponseDTO>()) {
@@ -104,17 +112,32 @@ class FeedPage extends ConsumerWidget {
       final total = raw.fanfic.totalChapters ?? 1;
       final cur = raw.currentChapter ?? 0;
       final p = (cur / (total > 0 ? total : 1)).clamp(0.0, 1.0);
-      items.add(_ReadingItem(
-        type: _ContentType.fanfic,
-        journal: raw,
-        title: raw.fanfic.title ?? 'Sin título',
-        coverUrl: raw.fanfic.coverUrl,
-        progress: p,
-        progressLabel: 'Cap. $cur',
-        progressPercent: '${(p * 100).round()}%',
-      ));
+      items.add(
+        _ReadingItem(
+          type: _ContentType.fanfic,
+          journal: raw,
+          title: raw.fanfic.title ?? 'Sin título',
+          coverUrl: raw.fanfic.coverUrl,
+          progress: p,
+          progressLabel: 'Cap. $cur',
+          progressPercent: '${(p * 100).round()}%',
+          updatedAt: raw.updatedAt != null ? DateTime.tryParse(raw.updatedAt!) : null,
+        ),
+      );
     }
-
+    items.sort((a, b) {
+      final ta = a.updatedAt;
+      final tb = b.updatedAt;
+      
+      if (ta != null && tb != null) {
+        return tb.compareTo(ta); // más reciente primero
+      } else if (ta != null) {
+        return -1;
+      } else if (tb != null) {
+        return 1;
+      }
+      return b.journal.id.compareTo(a.journal.id); // Fallback: por ID (los creados más recientemente primero)
+    });
     return items;
   }
 
@@ -150,19 +173,23 @@ class FeedPage extends ConsumerWidget {
 
     // Providers
     final allJournalsAsync = ref.watch(allJournalsProvider);
-    final booksAsync =
-        allJournalsAsync.whenData((j) => j[JournalType.book] ?? []);
-    final mangasAsync =
-        allJournalsAsync.whenData((j) => j[JournalType.manga] ?? []);
-    final fanficsAsync =
-        allJournalsAsync.whenData((j) => j[JournalType.fanfic] ?? []);
+    final booksAsync = allJournalsAsync.whenData(
+      (j) => j[JournalType.book] ?? [],
+    );
+    final mangasAsync = allJournalsAsync.whenData(
+      (j) => j[JournalType.manga] ?? [],
+    );
+    final fanficsAsync = allJournalsAsync.whenData(
+      (j) => j[JournalType.fanfic] ?? [],
+    );
 
     final gamification = ref.watch(gamificationProvider).valueOrNull;
     final goal = gamification?.annualGoal ?? 12;
     final currentStreak = gamification?.currentStreak ?? 0;
     final weekActivity = gamification?.weekActivity ?? List.filled(7, false);
 
-    final finishedBooks = booksAsync.whenOrNull(
+    final finishedBooks =
+        booksAsync.whenOrNull(
           data: (list) => list
               .whereType<BookJournalResponseDto>()
               .where((b) => b.status.isFinished)
@@ -178,7 +205,8 @@ class FeedPage extends ConsumerWidget {
     );
 
     final isLoading = allJournalsAsync.isLoading;
-    final allEmpty = !isLoading &&
+    final allEmpty =
+        !isLoading &&
         (booksAsync.valueOrNull?.isEmpty ?? true) &&
         (mangasAsync.valueOrNull?.isEmpty ?? true) &&
         (fanficsAsync.valueOrNull?.isEmpty ?? true);
@@ -328,8 +356,9 @@ class FeedPage extends ConsumerWidget {
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(48),
-                  child:
-                      Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
               ),
 
@@ -347,22 +376,22 @@ class FeedPage extends ConsumerWidget {
 
 // Colours per content type – pull from your AppColors / CustomColors if preferred
 Color _typeColor(_ContentType t) => switch (t) {
-      _ContentType.book => const Color(0xFF7F8C95),
-      _ContentType.manga => const Color(0xFFE8A87C),
-      _ContentType.fanfic => const Color(0xFFD4A0A4),
-    };
+  _ContentType.book => const Color(0xFF7F8C95),
+  _ContentType.manga => const Color(0xFFE8A87C),
+  _ContentType.fanfic => const Color(0xFFD4A0A4),
+};
 
 IconData _typeIcon(_ContentType t) => switch (t) {
-      _ContentType.book => Icons.book_rounded,
-      _ContentType.manga => Icons.menu_book_rounded,
-      _ContentType.fanfic => Icons.favorite_rounded,
-    };
+  _ContentType.book => Icons.book_rounded,
+  _ContentType.manga => Icons.menu_book_rounded,
+  _ContentType.fanfic => Icons.favorite_rounded,
+};
 
 String _typeLabel(_ContentType t) => switch (t) {
-      _ContentType.book => 'Libro',
-      _ContentType.manga => 'Manga',
-      _ContentType.fanfic => 'Fanfic',
-    };
+  _ContentType.book => 'Libro',
+  _ContentType.manga => 'Manga',
+  _ContentType.fanfic => 'Fanfic',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // _SectionAccent  (coloured left bar)
@@ -374,13 +403,13 @@ class _SectionAccent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 4,
-        height: 18,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      );
+    width: 4,
+    height: 18,
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(2),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -391,8 +420,11 @@ class _GoalCard extends StatelessWidget {
   final int booksRead;
   final int goal;
   final VoidCallback onEdit;
-  const _GoalCard(
-      {required this.booksRead, required this.goal, required this.onEdit});
+  const _GoalCard({
+    required this.booksRead,
+    required this.goal,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -413,13 +445,16 @@ class _GoalCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Label row
             Row(
               children: [
-                Icon(Icons.emoji_events_rounded,
-                    size: 13, color: colorScheme.primary),
+                Icon(
+                  Icons.emoji_events_rounded,
+                  size: 13,
+                  color: colorScheme.primary,
+                ),
                 const SizedBox(width: 5),
                 Expanded(
                   child: Text(
@@ -429,8 +464,11 @@ class _GoalCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.edit_rounded,
-                    size: 11, color: colorScheme.primary.withValues(alpha:0.45)),
+                Icon(
+                  Icons.edit_rounded,
+                  size: 11,
+                  color: colorScheme.primary.withValues(alpha: 0.45),
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -460,9 +498,8 @@ class _GoalCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 6,
-                backgroundColor: colorScheme.primary.withValues(alpha:0.12),
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
               ),
             ),
             const SizedBox(height: 4),
@@ -508,13 +545,16 @@ class _StreakCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Label
           Row(
             children: [
-              const Icon(Icons.local_fire_department_rounded,
-                  size: 13, color: streakColor),
+              const Icon(
+                Icons.local_fire_department_rounded,
+                size: 13,
+                color: streakColor,
+              ),
               const SizedBox(width: 5),
               Text(
                 'Racha',
@@ -554,7 +594,9 @@ class _StreakCard extends StatelessWidget {
                 width: 18,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: active ? streakColor : streakColor.withValues(alpha:0.12),
+                  color: active
+                      ? streakColor
+                      : streakColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 alignment: Alignment.center,
@@ -563,9 +605,7 @@ class _StreakCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 7,
                     fontWeight: FontWeight.bold,
-                    color: active
-                        ? Colors.white
-                        : colorScheme.onSurfaceVariant,
+                    color: active ? Colors.white : colorScheme.onSurfaceVariant,
                   ),
                 ),
               );
@@ -581,6 +621,8 @@ class _StreakCard extends StatelessWidget {
 // _HeroReadingCard  (the primary in-progress item)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── 2. _HeroReadingCard: solo el botón dispara onTap ────────────────────
+
 class _HeroReadingCard extends StatelessWidget {
   final _ReadingItem item;
   final VoidCallback onTap;
@@ -595,94 +637,109 @@ class _HeroReadingCard extends StatelessWidget {
     final icon = _typeIcon(item.type);
     final label = _typeLabel(item.type);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF4A3538) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha:0.35)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cover
-            _Cover(
-              coverUrl: item.coverUrl,
-              color: color,
-              icon: icon,
-              ownership: item.ownership,
-              width: 82,
-              height: 118,
-            ),
-            const SizedBox(width: 14),
-            // Body
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Type eyebrow
-                  Row(
-                    children: [
-                      Icon(icon, size: 11, color: color),
-                      const SizedBox(width: 4),
-                      Text(
-                        label.toUpperCase(),
-                        style: textTheme.labelSmall?.copyWith(
-                          color: color,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                        ),
+    // ← Sin GestureDetector envolviendo toda la tarjeta
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF4A3538) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _Cover(
+            coverUrl: item.coverUrl,
+            color: color,
+            icon: icon,
+            ownership: item.ownership,
+            width: 82,
+            height: 118,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon, size: 11, color: color),
+                    const SizedBox(width: 4),
+                    Text(
+                      label.toUpperCase(),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  // Title
-                  Text(
-                    item.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
                     ),
+                    const Spacer(),
+                    // ← badge "Última sesión"
+                    if (item.updatedAt != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          _relativeDate(item.updatedAt!),
+                          style: textTheme.labelSmall?.copyWith(
+                            color: color,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
                   ),
-                  const SizedBox(height: 12),
-                  // Progress bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: LinearProgressIndicator(
-                      value: item.progress,
-                      minHeight: 5,
-                      backgroundColor: color.withValues(alpha:0.15),
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: item.progress,
+                    minHeight: 5,
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      item.progressLabel,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  // Progress labels
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item.progressLabel,
-                        style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                    Text(
+                      item.progressPercent,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        item.progressPercent,
-                        style: textTheme.labelSmall?.copyWith(
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  // CTA button
-                  Container(
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // ← Solo este botón es tappable
+                GestureDetector(
+                  onTap: onTap,
+                  child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 9),
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
@@ -700,15 +757,19 @@ class _HeroReadingCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_rounded, size: 13, color: colorScheme.onPrimary),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 13,
+                          color: colorScheme.onPrimary,
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -839,11 +900,12 @@ class _Chip extends StatelessWidget {
   final bool active;
   final Color color;
   final VoidCallback onTap;
-  const _Chip(
-      {required this.label,
-      required this.active,
-      required this.color,
-      required this.onTap});
+  const _Chip({
+    required this.label,
+    required this.active,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -854,18 +916,18 @@ class _Chip extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? color : color.withValues(alpha:0.08),
+          color: active ? color : color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? color : color.withValues(alpha:0.3),
+            color: active ? color : color.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: active ? Colors.white : color,
-                fontWeight: FontWeight.bold,
-              ),
+            color: active ? Colors.white : color,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -897,7 +959,7 @@ class _CarouselCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha:0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -919,22 +981,35 @@ class _CarouselCard extends StatelessWidget {
                 ),
                 if (item.progressPercent.isNotEmpty)
                   Positioned(
-                    bottom: 6,
-                    right: 6,
+                    top: 6,
+                    left: 6,
                     child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha:0.55),
-                        borderRadius: BorderRadius.circular(6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
                       ),
-                      child: Text(
-                        item.progressPercent,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            size: 8,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Leyendo',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -949,7 +1024,7 @@ class _CarouselCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: item.progress,
                   minHeight: 3,
-                  backgroundColor: color.withValues(alpha:0.15),
+                  backgroundColor: color.withValues(alpha: 0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
               ),
@@ -961,7 +1036,9 @@ class _CarouselCard extends StatelessWidget {
                 item.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(height: 2),
@@ -1017,7 +1094,7 @@ class _Cover extends StatelessWidget {
                     imageUrl: coverUrl!,
                     fit: BoxFit.cover,
                     placeholder: (_, _) => Container(
-                      color: color.withValues(alpha:0.12),
+                      color: color.withValues(alpha: 0.12),
                       child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
@@ -1049,11 +1126,11 @@ class _CoverFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: color.withValues(alpha:0.1),
-        child: Center(
-          child: Icon(icon, size: 30, color: color.withValues(alpha:0.5)),
-        ),
-      );
+    color: color.withValues(alpha: 0.1),
+    child: Center(
+      child: Icon(icon, size: 30, color: color.withValues(alpha: 0.5)),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1096,11 +1173,13 @@ class _EditReadingGoalDialogState extends State<EditReadingGoalDialog> {
                 icon: const Icon(Icons.remove_circle_outline),
                 onPressed: _value > 1 ? () => setState(() => _value--) : null,
               ),
-              Text('$_value',
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  )),
+              Text(
+                '$_value',
+                style: textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              ),
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
                 onPressed: () => setState(() => _value++),
@@ -1121,4 +1200,15 @@ class _EditReadingGoalDialogState extends State<EditReadingGoalDialog> {
       ],
     );
   }
+}
+
+// ─── Helper: fecha relativa para el badge de la hero card ─────────────────
+
+String _relativeDate(DateTime dt) {
+  final diff = DateTime.now().difference(dt);
+  if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes}m';
+  if (diff.inHours < 24) return 'Hace ${diff.inHours}h';
+  if (diff.inDays == 1) return 'Ayer';
+  if (diff.inDays < 7) return 'Hace ${diff.inDays}d';
+  return '${dt.day}/${dt.month}';
 }
