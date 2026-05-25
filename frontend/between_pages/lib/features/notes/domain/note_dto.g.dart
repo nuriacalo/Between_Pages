@@ -19,11 +19,11 @@ NoteDTO _$NoteDTOFromJson(Map<String, dynamic> json) => NoteDTO(
 );
 
 Map<String, dynamic> _$NoteDTOToJson(NoteDTO instance) => <String, dynamic>{
-  'id': instance.id,
+  'id': ?instance.id,
   'itemType': instance.itemType,
   'itemId': instance.itemId,
-  'quote': instance.quote,
-  'note': instance.note,
-  'page': instance.page,
-  'createdAt': instance.createdAt?.toIso8601String(),
+  'quote': ?instance.quote,
+  'note': ?instance.note,
+  'page': ?instance.page,
+  'createdAt': ?instance.createdAt?.toIso8601String(),
 };

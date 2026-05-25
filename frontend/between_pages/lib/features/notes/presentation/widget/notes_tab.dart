@@ -71,7 +71,7 @@ class _NotesContent extends ConsumerWidget {
             : ListView.separated(
                 padding:          const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 itemCount:        notes.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder:      (_, i) => _NoteCard(
                   note:     notes[i],
                   itemType: itemType,

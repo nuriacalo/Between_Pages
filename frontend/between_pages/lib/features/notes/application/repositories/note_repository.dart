@@ -25,6 +25,14 @@ class NoteRepository {
         .toList();
   }
 
+  /// Fetches all global notes for the current user.
+  Future<List<NoteDTO>> getAllNotes() async {
+    final response = await _apiClient.get('/notes/all');
+    return (response.data as List)
+        .map((e) => NoteDTO.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   /// Creates a new note. The backend assigns the id.
   Future<NoteDTO> addNote(NoteDTO note) async {
     final response = await _apiClient.post('/notes', data: note.toJson());
