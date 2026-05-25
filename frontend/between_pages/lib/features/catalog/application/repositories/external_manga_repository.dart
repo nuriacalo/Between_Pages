@@ -26,7 +26,7 @@ class ExternalMangaRepository {
       final response = await _apiClient.get(
         '/external/manga/search', // Eliminamos la barra '/' inicial
 
-        queryParameters: {'query': query, 'page': page, 'limit': limit},
+        queryParameters: {'q': query, 'page': page, 'limit': limit},
       );
 
       final List<dynamic> data = response.data ?? [];

@@ -4,7 +4,6 @@ import 'package:between_pages/features/catalog/application/providers/all_books_p
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter/material.dart';

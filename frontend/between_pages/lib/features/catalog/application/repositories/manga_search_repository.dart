@@ -49,7 +49,7 @@ class MangaSearchRepository {
     try {
       final response = await _apiClient.get(
         ApiConstants.externalMangaSearch,
-        queryParameters: {'query': query, 'page': 1, 'limit': 20},
+        queryParameters: {'q': query, 'page': 1, 'limit': 20},
       );
 
       final data = _extractList(response.data);

@@ -1167,8 +1167,9 @@ class _InfoSection extends StatelessWidget {
 
     final desc = data.description;
 
-    if (rows.isEmpty && (desc == null || desc.isEmpty))
+    if (rows.isEmpty && (desc == null || desc.isEmpty)) {
       return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

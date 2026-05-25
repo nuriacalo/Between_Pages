@@ -1,3 +1,5 @@
+import 'package:between_pages/core/theme/app_colors.dart';
+import 'package:between_pages/core/widgets/app_tab_bar.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
@@ -11,45 +13,82 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 
-class CatalogPage extends ConsumerWidget {
+// Cambia StatelessWidget → StatefulWidget con SingleTickerProviderStateMixin
+class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<CatalogPage> createState() => _CatalogPageState();
+}
+
+class _CatalogPageState extends State<CatalogPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  static const _tabAccents = [
+    AppColors.colorLibro,
+    AppColors.colorManga,
+    AppColors.colorFanfic,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.catalogTitle,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: colorScheme.surface,
-          bottom: TabBar(
-            labelColor: colorScheme.primary,
-            unselectedLabelColor: colorScheme.onSurfaceVariant,
-            indicatorColor: colorScheme.primary,
-            indicatorSize: TabBarIndicatorSize.label,
-            indicatorWeight: 3.0,
-            dividerColor: colorScheme.outlineVariant.withValues(alpha:0.3),
-            tabs: [
-              Tab(text: l10n.tabBooks),
-              Tab(text: l10n.tabMangas),
-              Tab(text: l10n.tabFanfics),
-            ],
+    return Scaffold(
+      backgroundColor: AppColors.background(context),
+      appBar: AppBar(
+        backgroundColor: AppColors.surface(context),
+        title: Text(
+          l10n.catalogTitle,
+          style: textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary(context),
           ),
         ),
-        body: TabBarView(
-          children: [
-            _BooksCatalogTab(),
-            _MangaCatalogTab(),
-            _FanficsCatalogTab(),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(46),
+          child: AnimatedBuilder(
+            animation: _tabController.animation!,
+            builder: (context, _) {
+              final value = _tabController.animation!.value;
+              final Color accent;
+              if (value <= 0.0) {
+                accent = _tabAccents[0];
+              } else if (value <= 1.0) {
+                accent = Color.lerp(_tabAccents[0], _tabAccents[1], value)!;
+              } else {
+                accent = Color.lerp(_tabAccents[1], _tabAccents[2], value - 1.0)!;
+              }
+              return AppTabBar(
+                controller: _tabController,
+                accent: accent,
+                l10n: l10n,
+              );
+            },
+          ),
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _BooksCatalogTab(),
+          _MangaCatalogTab(),
+          _FanficsCatalogTab(),
+        ],
       ),
     );
   }
@@ -99,9 +138,9 @@ class _MangaCatalogTab extends ConsumerWidget {
           mangas.cast<MangaResponseDTO>(),
           (manga) => MediaListItem(
             item: manga,
-            onTap: () => context.push('/item/manga/${manga.idManga}', extra: manga),
+            onTap: () =>
+                context.push('/item/manga/${manga.idManga}', extra: manga),
           ),
-
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -127,9 +166,9 @@ class _FanficsCatalogTab extends ConsumerWidget {
           fanfics.cast<FanfictionResponseDTO>(),
           (fanfic) => MediaListItem(
             item: fanfic,
-            onTap: () => context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
+            onTap: () =>
+                context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
           ),
-
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

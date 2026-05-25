@@ -4,7 +4,6 @@ import 'package:between_pages/features/catalog/application/providers/all_manga_p
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
-import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -95,6 +94,7 @@ class _MangaEditPageState extends ConsumerState<MangaEditPage> {
           MangaJournalRecordDTO(
             userId:  userId,
             mangaId: saved.idManga,
+            malId:   saved.malId,
             status:  'TBR',
           ).toJson(),
         );
