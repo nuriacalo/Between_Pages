@@ -37,6 +37,7 @@ class BookJournalResponseDto extends BaseJournalResponseDTO {
     this.seriesName,
     this.seriesOrder,
     super.loanedTo,
+    super.updatedAt,
   }) : super(
           coverUrl: book.coverUrl,
           title: book.title,

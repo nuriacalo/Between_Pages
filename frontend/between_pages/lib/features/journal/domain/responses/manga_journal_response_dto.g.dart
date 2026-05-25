@@ -29,6 +29,7 @@ MangaJournalResponseDTO _$MangaJournalResponseDTOFromJson(
   rereading: json['rereading'] as bool?,
   ownership: json['ownership'] as String?,
   loanedTo: json['loanedTo'] as String?,
+  updatedAt: json['updatedAt'] as String?,
 );
 
 Map<String, dynamic> _$MangaJournalResponseDTOToJson(
@@ -47,6 +48,7 @@ Map<String, dynamic> _$MangaJournalResponseDTOToJson(
   'ownership': instance.ownership,
   'readingFormat': instance.readingFormat,
   'loanedTo': instance.loanedTo,
+  'updatedAt': instance.updatedAt,
   'manga': instance.manga?.toJson(),
   'currentChapter': instance.currentChapter,
   'currentVolume': instance.currentVolume,

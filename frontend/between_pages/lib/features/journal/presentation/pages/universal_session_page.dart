@@ -14,6 +14,7 @@ import 'package:between_pages/features/journal/domain/responses/manga_journal_re
 // FIX: updated import from second_brain_tab.dart → notes_tab.dart
 import 'package:between_pages/features/notes/presentation/widget/notes_tab.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
+import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -283,17 +284,6 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           );
           ref.invalidate(journalProvider(JournalType.book));
           ref.invalidate(journalEntryProvider((JournalType.book, book.idBook ?? 0)));
-          if (progressDelta > 0 || elapsedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(
-              ReadingSessionRecordDTO(
-                userId:          user.idUser,
-                bookId:          book.idBook,
-                durationSeconds: elapsedSeconds,
-                pagesRead:       progressDelta,
-              ),
-            );
-          }
-          ref.invalidate(gamificationProvider);
 
         case SessionMediaType.manga:
           final journal = widget.data.rawJournal as MangaJournalResponseDTO;
@@ -303,6 +293,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
               id:                journal.id,
               userId:            user.idUser,
               mangaId:           manga?.idManga,
+              malId:             manga?.malId,
               status:            journal.status,
               currentChapter:    newProgress,
               rating:            journal.rating,
@@ -316,17 +307,6 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           );
           ref.invalidate(journalProvider(JournalType.manga));
           ref.invalidate(journalEntryProvider((JournalType.manga, manga?.idManga ?? 0)));
-          if (progressDelta > 0 || elapsedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(
-              ReadingSessionRecordDTO(
-                userId:          user.idUser,
-                mangaId:         manga?.idManga,
-                durationSeconds: elapsedSeconds,
-                pagesRead:       progressDelta,
-              ),
-            );
-            ref.invalidate(gamificationProvider);
-          }
 
         case SessionMediaType.fanfic:
           final journal = widget.data.rawJournal as FanficJournalResponseDTO;
@@ -349,17 +329,24 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> {
           );
           ref.invalidate(journalProvider(JournalType.fanfic));
           ref.invalidate(journalEntryProvider((JournalType.fanfic, fanfic.idFanfic ?? 0)));
-          if (progressDelta > 0 || elapsedSeconds > 0) {
-            ref.read(readingSessionRepositoryProvider).saveSession(
-              ReadingSessionRecordDTO(
-                userId:          user.idUser,
-                fanficId:        fanfic.idFanfic,
-                durationSeconds: elapsedSeconds,
-                pagesRead:       progressDelta,
-              ),
-            );
-            ref.invalidate(gamificationProvider);
-          }
+      }
+
+      // Unificamos el guardado de la sesión y la racha fuera del switch para no repetirlo
+      if (progressDelta > 0 || elapsedSeconds > 0) {
+        ref.read(readingSessionRepositoryProvider).saveSession(
+          ReadingSessionRecordDTO(
+            userId:          user.idUser,
+            bookId:          widget.data.mediaType == SessionMediaType.book ? widget.data.itemId : null,
+            mangaId:         widget.data.mediaType == SessionMediaType.manga ? widget.data.itemId : null,
+            fanficId:        widget.data.mediaType == SessionMediaType.fanfic ? widget.data.itemId : null,
+            durationSeconds: elapsedSeconds,
+            pagesRead:       progressDelta,
+          ),
+        );
+        
+        // Registramos la actividad de hoy explícitamente para que la racha se incremente
+        await ref.read(readingStatsRepositoryProvider).recordActivity();
+        ref.invalidate(gamificationProvider);
       }
 
       ref.read(readingTimerProvider.notifier).reset();
@@ -729,9 +716,9 @@ class _Cover extends StatelessWidget {
               ? CachedNetworkImage(
                   imageUrl:    coverUrl!,
                   fit:         BoxFit.cover,
-                  placeholder: (_, __) =>
+                  placeholder: (_, _) =>
                       Container(color: accent.withValues(alpha:0.12)),
-                  errorWidget: (_, __, ___) => _CoverFallback(
+                  errorWidget: (_, _, _) => _CoverFallback(
                     accent: accent,
                     icon:   _fallbackIcon,
                   ),

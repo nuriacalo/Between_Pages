@@ -29,6 +29,7 @@ FanficJournalResponseDTO _$FanficJournalResponseDTOFromJson(
   personalNotes: json['personalNotes'] as String?,
   startDate: json['startDate'] as String?,
   endDate: json['endDate'] as String?,
+  updatedAt: json['updatedAt'] as String?,
 );
 
 Map<String, dynamic> _$FanficJournalResponseDTOToJson(
@@ -44,6 +45,7 @@ Map<String, dynamic> _$FanficJournalResponseDTOToJson(
   'tearDrops': instance.tearDrops,
   'spiceFlames': instance.spiceFlames,
   'rereading': instance.rereading,
+  'updatedAt': instance.updatedAt,
   'fanfic': instance.fanfic.toJson(),
   'currentChapter': instance.currentChapter,
   'mainShip': instance.mainShip,

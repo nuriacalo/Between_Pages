@@ -12,6 +12,7 @@ abstract class BaseJournalResponseDTO {
   final String? ownership;
   final String? readingFormat;
   final String? loanedTo;
+  final String? updatedAt;
 
   // Campos que las clases hijas deben implementar
   final String? coverUrl;
@@ -32,6 +33,7 @@ abstract class BaseJournalResponseDTO {
     this.ownership,
     this.readingFormat,
     this.loanedTo,
+    this.updatedAt,
     this.coverUrl,
     this.title,
     this.author,

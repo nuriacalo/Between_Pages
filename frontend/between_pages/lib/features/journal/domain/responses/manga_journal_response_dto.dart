@@ -35,6 +35,7 @@ class MangaJournalResponseDTO extends BaseJournalResponseDTO {
     super.rereading,
     super.ownership,
     super.loanedTo,
+    super.updatedAt,
   }) : super(
           coverUrl: manga?.coverUrl,
           title: manga?.title,

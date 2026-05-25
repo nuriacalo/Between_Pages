@@ -2,6 +2,7 @@ import 'package:between_pages/core/repositories/journal_repository.dart';
 import 'package:between_pages/features/journal/domain/records/base_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
 import 'package:between_pages/features/journal/presentation/widgets/emoji_rating_selector.dart';
 import 'package:flutter/material.dart';
@@ -144,6 +145,8 @@ class _JournalEditFormState<
 
       await widget.repository.saveRaw(dto.toJson());
 
+      ref.invalidate(allJournalsProvider);
+
       widget.onSave(ref, dbStatus);
 
       if (!mounted) return;
@@ -170,26 +173,9 @@ class _JournalEditFormState<
       child: ListView(
         padding: const EdgeInsets.all(24.0),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Detalles del Journal',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              if (_isSaving)
-                const SizedBox(
-                  width: 24, height: 24, 
-                  child: CircularProgressIndicator(strokeWidth: 2.5)
-                )
-              else
-                FilledButton.icon(
-                  onPressed: _saveJournal,
-                  icon: const Icon(Icons.check_rounded, size: 18),
-                  label: const Text('Guardar'),
-                  style: FilledButton.styleFrom(backgroundColor: widget.accentColor, foregroundColor: Colors.white),
-                ),
-            ],
+          Text(
+            'Detalles del Journal',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
             // Common fields
@@ -208,6 +194,31 @@ class _JournalEditFormState<
 
             // Notes
             _buildNotesSection(),
+            const SizedBox(height: 32),
+
+            // Save button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _isSaving ? null : _saveJournal,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.check_rounded),
+                label: const Text('Guardar', style: TextStyle(fontSize: 15)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: widget.accentColor ?? Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
       ),
     );
@@ -325,14 +336,12 @@ class _JournalEditFormState<
 
   Widget _buildOwnershipSelector() {
     final ownershipOptions = [
-      (label: 'Digital', icon: Icons.phone_android_rounded),
-      (label: 'Físico', icon: Icons.auto_stories_rounded),
-      (label: 'Prestado', icon: Icons.people_alt_rounded),
-      (label: 'Ninguno', icon: Icons.block_rounded),
+      (label: 'Digital', icon: Icons.phone_android_rounded, color: Colors.blueAccent),
+      (label: 'Físico', icon: Icons.auto_stories_rounded, color: Colors.brown.shade400),
+      (label: 'Prestado', icon: Icons.people_alt_rounded, color: Colors.orange.shade600),
+      (label: 'Ninguno', icon: Icons.block_rounded, color: Colors.grey),
     ];
     
-    final activeColor = widget.accentColor ?? Theme.of(context).colorScheme.primary;
-    final activeBg = activeColor.withValues(alpha: 0.15);
     final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4);
 
     return Column(
@@ -344,6 +353,8 @@ class _JournalEditFormState<
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: ownershipOptions.map((opt) {
             final isSelected = _ownership == opt.label;
+            final activeColor = opt.color;
+            final activeBg = activeColor.withValues(alpha: 0.15);
             return GestureDetector(
               onTap: () => setState(() => _ownership = opt.label),
               child: Column(

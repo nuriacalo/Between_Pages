@@ -38,6 +38,7 @@ class FanficJournalResponseDTO extends BaseJournalResponseDTO {
     super.personalNotes,
     super.startDate,
     super.endDate,
+    super.updatedAt,
   }) : super(
           coverUrl: fanfic.coverUrl,
           title: fanfic.title,

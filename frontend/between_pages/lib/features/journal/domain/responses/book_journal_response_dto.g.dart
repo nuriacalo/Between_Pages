@@ -30,6 +30,7 @@ BookJournalResponseDto _$BookJournalResponseDtoFromJson(
   seriesName: json['seriesName'] as String?,
   seriesOrder: (json['seriesOrder'] as num?)?.toDouble(),
   loanedTo: json['loanedTo'] as String?,
+  updatedAt: json['updatedAt'] as String?,
 );
 
 Map<String, dynamic> _$BookJournalResponseDtoToJson(
@@ -48,6 +49,7 @@ Map<String, dynamic> _$BookJournalResponseDtoToJson(
   'ownership': instance.ownership,
   'readingFormat': instance.readingFormat,
   'loanedTo': instance.loanedTo,
+  'updatedAt': instance.updatedAt,
   'book': instance.book.toJson(),
   'currentPage': instance.currentPage,
   'emotions': instance.emotions,
