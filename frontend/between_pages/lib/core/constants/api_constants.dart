@@ -2,7 +2,7 @@ class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     // Usa la IP de tu red local (192.168.0.15). Ajústalo si cambia tu red.
-    defaultValue: 'http://192.168.0.15:8080/api',
+    defaultValue: 'http://10.86.122.198:8080/api',
   );
 
   // JIKAN API (MyAnimeList - Unofficial)

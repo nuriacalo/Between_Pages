@@ -1,9 +1,12 @@
-import 'package:between_pages/features/auth/application/controllers/auth_controller.dart';
-import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+// Asegúrate de que las rutas de importación coinciden con tu estructura de carpetas
+import 'package:between_pages/core/theme/app_colors.dart';
+import 'package:between_pages/core/widgets/between_pages_logo.dart';
+import 'package:between_pages/features/auth/application/controllers/auth_controller.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -26,196 +29,275 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
+  // Método para mostrar el pop-up de "En desarrollo"
+  void _showComingSoonDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.build_circle_outlined, color: AppColors.accent(context)),
+            const SizedBox(width: 8),
+            Text(
+              'En desarrollo', 
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Esta funcionalidad de inicio de sesión social estará disponible en próximas actualizaciones. ¡Estamos trabajando en ello!',
+          style: TextStyle(color: AppColors.textSecondary(context)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(), // Cierra el pop-up
+            child: Text(
+              'Entendido', 
+              style: TextStyle(
+                color: AppColors.accent(context),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Extraemos el esquema de colores y textos del tema
-    final colorSchema = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
 
-    // Obtenemos las traducciones tipadas
-    final l10n = AppLocalizations.of(context)!;
-
-    //Usamos ref.listen para reaccionar a los cambios y mostrar un mensaje (SnackBar) si el login falla.
+    // Escuchamos el estado de autenticación para mostrar errores
     ref.listen<AsyncValue<void>>(authControllerProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(error.toString()),
-              backgroundColor: colorSchema.error,
+              backgroundColor: AppColors.logout(context),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
         },
       );
     });
-    // LEER ESTADO ACTUAL
+
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
 
+    // Estilos comunes para los inputs utilizando tu clase AppColors
+    final inputDecoration = InputDecoration(
+      filled: true,
+      fillColor: AppColors.surface(context),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppColors.border(context), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppColors.accent(context), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppColors.logout(context), width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppColors.logout(context), width: 2),
+      ),
+      labelStyle: TextStyle(color: AppColors.textSecondary(context)),
+      prefixIconColor: AppColors.icons(context),
+    );
+
     return Scaffold(
+      backgroundColor: AppColors.background(context),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(Icons.book, size: 80, color: colorSchema.primary),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.loginWelcomeBack,
-                      style: textTheme.headlineMedium?.copyWith(
-                        color: colorSchema.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo tipográfico en lugar del icono genérico
+                  const Center(child: BetweenPagesLogo(fontSize: 34.0)),
+                  const SizedBox(height: 32),
+                  
+                  // Título de bienvenida
+                  Text(
+                    l10n.loginWelcomeBack,
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: AppColors.textPrimary(context),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
-                    const SizedBox(height: 32),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: l10n.loginEmail,
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        filled: true,
-                        fillColor: colorSchema.surface,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colorSchema.outline),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colorSchema.primary, width: 2),
-                        ),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.validationRequired;
-                        }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                          return l10n.validationEmail;
-                        }
-                        return null;
-                      },
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Input Email
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: AppColors.textPrimary(context)),
+                    decoration: inputDecoration.copyWith(
+                      labelText: l10n.loginEmail,
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: l10n.loginPassword,
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        filled: true,
-                        fillColor: colorSchema.surface,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colorSchema.outline),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colorSchema.primary, width: 2),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return l10n.validationRequired;
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return l10n.validationEmail;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Input Contraseña
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    style: TextStyle(color: AppColors.textPrimary(context)),
+                    decoration: inputDecoration.copyWith(
+                      labelText: l10n.loginPassword,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        color: AppColors.icons(context),
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return l10n.validationRequired;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Checkbox Recordarme
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        activeColor: AppColors.accent(context),
+                        side: BorderSide(color: AppColors.border(context), width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        onChanged: (value) => setState(() => _rememberMe = value ?? false),
+                      ),
+                      Text(
+                        l10n.loginRememberMe,
+                        style: TextStyle(color: AppColors.textSecondary(context)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botón Principal de Iniciar Sesión
+                  ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            if (_formKey.currentState!.validate()) {
+                              ref.read(authControllerProvider.notifier).login(
+                                    _emailController.text,
+                                    _passwordController.text,
+                                  );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent(context),
+                      foregroundColor: AppColors.lightSurface,
+                      minimumSize: const Size(double.infinity, 56),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                          )
+                        : Text(
+                            l10n.loginButton,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Enlace a Registro
+                  TextButton(
+                    onPressed: () => context.push('/register'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.accent(context),
+                    ),
+                    child: Text(
+                      l10n.loginNoAccount,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Divisor visual (O inicia sesión con)
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: AppColors.border(context))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          l10n.loginOr,
+                          style: TextStyle(color: AppColors.textSecondary(context)),
                         ),
                       ),
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.validationRequired;
-                        }
-                        return null;
-                      },
+                      Expanded(child: Divider(color: AppColors.border(context))),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botones Sociales con Pop-up integrado
+                  OutlinedButton.icon(
+                    icon: Icon(Icons.g_mobiledata, size: 28, color: AppColors.textPrimary(context)),
+                    label: Text(
+                      'Google',
+                      style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _rememberMe,
-                          onChanged: (value) {
-                            setState(() {
-                              _rememberMe = value ?? false;
-                            });
-                          },
-                        ),
-                        Text(l10n.loginRememberMe),
-                      ],
+                    onPressed: () => _showComingSoonDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                      side: BorderSide(color: AppColors.border(context), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                ref
-                                    .read(authControllerProvider.notifier)
-                                    .login(
-                                      _emailController.text,
-                                      _passwordController.text,
-                                    );
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorSchema.primary,
-                        foregroundColor: colorSchema.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              l10n.loginButton,
-                              style: const TextStyle(fontSize: 16),
-                            ),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    icon: Icon(Icons.menu_book, color: AppColors.textPrimary(context)),
+                    label: Text(
+                      'Goodreads',
+                      style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => context.push('/register'),
-                      child: Text(
-                        l10n.loginNoAccount,
-                      ),
+                    onPressed: () => _showComingSoonDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                      side: BorderSide(color: AppColors.border(context), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Text(l10n.loginOr),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.g_mobiledata, size: 28),
-                      label: const Text('Google'),
-                      onPressed: () {}, // TODO: Implementar plugin google_sign_in
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.menu_book),
-                      label: const Text('Goodreads'),
-                      onPressed: () {}, // TODO: Conexión futura a Goodreads
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
           ),
         ),
       ),

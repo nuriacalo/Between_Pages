@@ -15,9 +15,11 @@ import 'package:between_pages/features/journal/presentation/pages/fanfic_reading
 import 'package:between_pages/features/journal/presentation/pages/diary_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/lists_page.dart';
+import 'package:between_pages/features/lists/presentation/pages/create_list_page.dart'; // Verifica que el archivo exista con este nombre
 import 'package:between_pages/features/lists/presentation/pages/list_detail_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/add_content_to_list_page.dart';
 import 'package:between_pages/features/notes/presentation/pages/notes_page.dart';
+import 'package:between_pages/features/notes/presentation/pages/global_notes_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/settings_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/profile_edit_page.dart';
 import 'package:flutter/material.dart';
@@ -148,6 +150,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/lists', builder: (context, state) => const ListsPage()),
       GoRoute(
+        path: '/lists/create',
+        builder: (context, state) => const CreateListPage(), // Cambia esto si tu clase se llama diferente
+      ),
+      GoRoute(
         path: '/list/:id',
         builder: (context, state) {
           final listId = int.parse(state.pathParameters['id']!);
@@ -161,6 +167,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final listId = int.parse(state.pathParameters['id']!);
           return AddContentToListPage(listId: listId);
         },
+      ),
+      GoRoute(
+        path: '/global-notes',
+        builder: (context, state) => const GlobalNotesPage(),
       ),
       GoRoute(
         path: '/notes/:itemType/:itemId',

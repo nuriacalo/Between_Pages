@@ -1,3 +1,4 @@
+import 'package:between_pages/core/widgets/between_pages_logo.dart';
 import 'package:between_pages/features/auth/application/controllers/auth_controller.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -69,115 +70,120 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(Icons.person_add, size: 80, color: colorSchema.primary),
-                    Text(
-                      l10n.newAccount,
-                      style: textTheme.headlineMedium?.copyWith(
-                        color: colorSchema.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const BetweenPagesLogo(
+                    fontSize: 32.0,
+                  ), 
+                  const SizedBox(
+                    height: 24,
+                  ), 
+                  Text(
+                    l10n.newAccount,
+                    style: textTheme.headlineMedium?.copyWith(
+                      color: colorSchema.primary,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 32),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: l10n.registerName,
-                        prefixIcon: const Icon(Icons.person_outline),
-                      ),
-                      keyboardType: TextInputType.name,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.validationRequired;
-                        }
-                        return null;
-                      },
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.registerName,
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: l10n.registerEmail,
-                        prefixIcon: const Icon(Icons.email_outlined),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.validationRequired;
-                        }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                          return l10n.validationEmail;
-                        }
-                        return null;
-                      },
+                    keyboardType: TextInputType.name,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.validationRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: l10n.registerEmail,
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: l10n.registerPassword,
-                        prefixIcon: const Icon(Icons.lock_outline),
-                      ),
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.validationRequired;
-                        }
-                        if (value.length < 6) {
-                          return l10n.validationPasswordLength;
-                        }
-                        return null;
-                      },
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return l10n.validationRequired;
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return l10n.validationEmail;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: l10n.registerPassword,
+                      prefixIcon: const Icon(Icons.lock_outline),
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                ref
-                                    .read(authControllerProvider.notifier)
-                                    .register(
-                                      _nameController.text,
-                                      _emailController.text,
-                                      _passwordController.text,
-                                    );
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              l10n.registerButton,
-                              style: const TextStyle(fontSize: 16),
-                            ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return l10n.validationRequired;
+                      }
+                      if (value.length < 6) {
+                        return l10n.validationPasswordLength;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            if (_formKey.currentState!.validate()) {
+                              ref
+                                  .read(authControllerProvider.notifier)
+                                  .register(
+                                    _nameController.text,
+                                    _emailController.text,
+                                    _passwordController.text,
+                                  );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/login');
-                        }
-                      },
-                      child: Text(l10n.registerAlreadyHaveAccount),
-                    ),
-                  ],
-                ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            l10n.registerButton,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/login');
+                      }
+                    },
+                    child: Text(l10n.registerAlreadyHaveAccount),
+                  ),
+                ],
               ),
+            ),
           ),
         ),
       ),
