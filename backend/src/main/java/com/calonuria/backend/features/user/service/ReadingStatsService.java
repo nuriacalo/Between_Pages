@@ -1,6 +1,8 @@
 package com.calonuria.backend.features.user.service;
 
 import com.calonuria.backend.features.user.dto.AnnualGoalProgressDTO;
+import com.calonuria.backend.features.user.dto.GamificationStatsDTO;
+import com.calonuria.backend.features.user.dto.GoalRequestDTO;
 import com.calonuria.backend.features.user.dto.ReadingGoalDTO;
 import com.calonuria.backend.features.user.dto.ReadingStreakDTO;
 import com.calonuria.backend.features.user.model.ReadingActivity;
@@ -9,6 +11,7 @@ import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.ReadingActivityRepository;
 import com.calonuria.backend.features.user.repository.ReadingGoalRepository;
 import com.calonuria.backend.features.user.repository.UserRepository;
+import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,12 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Servicio para gestionar estadísticas de lectura del usuario:
- * - Meta anual de lectura
- * - Racha de lectura
- * - Actividad semanal
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -37,13 +34,6 @@ public class ReadingStatsService {
     private final ReadingActivityRepository readingActivityRepository;
     private final UserRepository userRepository;
 
-    /**
-     * Obtiene la meta de lectura del usuario para el año actual.
-     * Si no existe, crea una meta por defecto de 12 libros.
-     *
-     * @param userId ID del usuario
-     * @return DTO con la meta de lectura
-     */
     @Transactional
     public ReadingGoalDTO getOrCreateReadingGoal(Long userId) {
         int currentYear = LocalDate.now().getYear();
@@ -57,7 +47,6 @@ public class ReadingStatsService {
             return new ReadingGoalDTO(goal.getId(), goal.getGoalYear(), goal.getTargetAmount());
         }
 
-        // Crear meta por defecto de 12 libros para usuarios nuevos
         ReadingGoal newGoal = new ReadingGoal();
         newGoal.setUser(user);
         newGoal.setGoalYear(currentYear);
@@ -68,20 +57,12 @@ public class ReadingStatsService {
             return new ReadingGoalDTO(saved.getId(), saved.getGoalYear(), saved.getTargetAmount());
         } catch (DataIntegrityViolationException e) {
             log.warn("Reading goal for year {} already exists for user ID {}", currentYear, userId);
-            // Fetch the existing one that caused the conflict
             ReadingGoal goal = readingGoalRepository.findByUserAndGoalYear(user, currentYear)
                     .orElseThrow(() -> new RuntimeException("Unexpected error fetching reading goal"));
             return new ReadingGoalDTO(goal.getId(), goal.getGoalYear(), goal.getTargetAmount());
         }
     }
 
-    /**
-     * Actualiza la meta de lectura del usuario.
-     *
-     * @param userId ID del usuario
-     * @param targetAmount nueva cantidad objetivo
-     * @return DTO con la meta actualizada
-     */
     @Transactional
     public ReadingGoalDTO updateReadingGoal(Long userId, Integer targetAmount) {
         int currentYear = LocalDate.now().getYear();
@@ -106,23 +87,15 @@ public class ReadingStatsService {
         }
     }
 
-    /**
-     * Calcula la racha de lectura actual y la actividad de la última semana.
-     *
-     * @param userId ID del usuario
-     * @return DTO con racha y actividad semanal
-     */
     @Transactional(readOnly = true)
     public ReadingStreakDTO calculateReadingStreak(Long userId) {
         LocalDate today = LocalDate.now();
         LocalDate weekStart = today.with(DayOfWeek.MONDAY);
         LocalDate weekEnd = today.with(DayOfWeek.SUNDAY);
 
-        // Obtener actividad de la última semana
         List<ReadingActivity> weekActivities = readingActivityRepository
                 .findByUserIdAndActivityDateBetween(userId, weekStart, weekEnd);
 
-        // Construir array de actividad diaria (lunes = índice 0)
         List<Boolean> weekActivity = new ArrayList<>(7);
         for (int i = 0; i < 7; i++) {
             weekActivity.add(false);
@@ -130,34 +103,24 @@ public class ReadingStatsService {
 
         for (ReadingActivity activity : weekActivities) {
             DayOfWeek dayOfWeek = activity.getActivityDate().getDayOfWeek();
-            int index = dayOfWeek.getValue() - 1; // Monday=1 -> index=0
+            int index = dayOfWeek.getValue() - 1; 
             if (index >= 0 && index < 7) {
                 weekActivity.set(index, true);
             }
         }
 
-        // Calcular racha actual
         int currentStreak = calculateStreak(userId, today);
 
-        // Contar días activos totales
         long totalActiveDays = readingActivityRepository.countByUserIdAndActivityDateBetween(
                 userId, today.minusYears(1), today);
 
         return new ReadingStreakDTO(currentStreak, weekActivity, totalActiveDays);
     }
 
-    /**
-     * Calcula la racha actual de días consecutivos con actividad de lectura.
-     *
-     * @param userId ID del usuario
-     * @param today fecha actual
-     * @return número de días consecutivos
-     */
     private int calculateStreak(Long userId, LocalDate today) {
         int streak = 0;
         LocalDate checkDate = today;
 
-        // Retroceder día por día mientras haya actividad
         while (true) {
             boolean hasActivity = readingActivityRepository.existsByUserIdAndActivityDate(userId, checkDate);
             if (hasActivity) {
@@ -171,23 +134,12 @@ public class ReadingStatsService {
         return streak;
     }
 
-    /**
-     * Registra actividad de lectura para el usuario en la fecha actual.
-     * Se llama automáticamente cuando el usuario actualiza progreso o marca como leído.
-     *
-     * @param userId ID del usuario
-     */
     @Transactional
     public void recordActivity(Long userId) {
         LocalDate today = LocalDate.now();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Verificar si ya existe actividad hoy
-        Optional<ReadingActivity> existingActivity = readingActivityRepository
-                .findByUserAndActivityDate(user, today);
-
-        if (existingActivity.isEmpty()) {
+        if (!readingActivityRepository.existsByUserIdAndActivityDate(userId, today)) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
             ReadingActivity activity = new ReadingActivity();
             activity.setUser(user);
             activity.setActivityDate(today);
@@ -210,5 +162,85 @@ public class ReadingStatsService {
                 .orElse(0);
 
         return new AnnualGoalProgressDTO(currentYear, targetAmount, finishedCount);
+    }
+
+    @Transactional(readOnly = true)
+    public GamificationStatsDTO getStats(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + email));
+
+        int currentYear = LocalDate.now().getYear();
+        
+        Optional<ReadingGoal> goalOpt = readingGoalRepository.findByUserAndGoalYear(user, currentYear);
+        int annualGoal = goalOpt.map(ReadingGoal::getTargetAmount).orElse(12);
+
+        List<LocalDate> activityDates = readingActivityRepository.findActivityDatesByUserId(user.getId());
+        int currentStreak = calculateStreak(activityDates);
+
+        List<Boolean> weekActivity = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        
+        for (int i = 6; i >= 0; i--) {
+            LocalDate targetDate = today.minusDays(i);
+            weekActivity.add(activityDates.contains(targetDate));
+        }
+
+        return new GamificationStatsDTO(annualGoal, currentStreak, weekActivity);
+    }
+
+    @Transactional
+    public void updateGoal(String email, GoalRequestDTO dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + email));
+
+        Optional<ReadingGoal> goalOpt = readingGoalRepository.findByUserAndGoalYear(user, dto.getGoalYear());
+        
+        ReadingGoal goal;
+        if (goalOpt.isPresent()) {
+            goal = goalOpt.get();
+            goal.setTargetAmount(dto.getTargetAmount());
+        } else {
+            goal = new ReadingGoal();
+            goal.setUser(user);
+            goal.setGoalYear(dto.getGoalYear());
+            goal.setTargetAmount(dto.getTargetAmount());
+        }
+        
+        try {
+            readingGoalRepository.save(goal);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Reading goal for year {} already exists for user {}", dto.getGoalYear(), user.getEmail());
+        }
+    }
+
+    private int calculateStreak(List<LocalDate> sortedDates) {
+        if (sortedDates == null || sortedDates.isEmpty()) {
+            return 0;
+        }
+
+        LocalDate currentDate = LocalDate.now();
+        int streak = 0;
+        LocalDate expectedDate;
+
+        if (sortedDates.get(0).equals(currentDate)) {
+            streak = 1;
+            expectedDate = currentDate.minusDays(1);
+        } else if (sortedDates.get(0).equals(currentDate.minusDays(1))) {
+            streak = 1;
+            expectedDate = currentDate.minusDays(2);
+        } else {
+            return 0;
+        }
+
+        for (int i = 1; i < sortedDates.size(); i++) {
+            if (sortedDates.get(i).equals(expectedDate)) {
+                streak++;
+                expectedDate = expectedDate.minusDays(1);
+            } else {
+                break;
+            }
+        }
+
+        return streak;
     }
 }
