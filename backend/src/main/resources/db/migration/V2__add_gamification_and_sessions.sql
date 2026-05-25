@@ -31,14 +31,3 @@ CREATE TABLE reading_goal (
    target_amount INT    NOT NULL,
    UNIQUE(user_id, goal_year)
 );
-
--- Módulo de anotaciones de lectura
-CREATE TABLE notes (
-    id         BIGSERIAL PRIMARY KEY,
-    user_id    BIGINT       NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
-    book_id    VARCHAR(255) NOT NULL,
-    quote      TEXT,
-    note       TEXT,
-    page       INT,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
-);
