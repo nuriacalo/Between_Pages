@@ -84,14 +84,14 @@ class ReadingStatsRepository {
     // Intentamos cargar la meta actual
     try {
       final goal = await getReadingGoal();
-      if (goal != null && goal.targetAmount != null) annualGoal = goal.targetAmount!;
+      if (goal != null) annualGoal = goal.targetAmount;
     } catch (_) {}
 
     // Intentamos cargar la racha de lectura
     try {
       final streak = await getReadingStreak();
-      if (streak.currentStreak != null) currentStreak = streak.currentStreak!;
-      if (streak.weekActivity != null) weekActivity = streak.weekActivity!;
+      currentStreak = streak.currentStreak!;
+      weekActivity = streak.weekActivity!;
     } catch (_) {}
 
     return GamificationStatsDTO(

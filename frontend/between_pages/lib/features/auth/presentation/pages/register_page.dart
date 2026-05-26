@@ -78,10 +78,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 children: [
                   const BetweenPagesLogo(
                     fontSize: 32.0,
-                  ), 
+                    useImage: true,
+                  ),
                   const SizedBox(
                     height: 24,
-                  ), 
+                  ),
                   Text(
                     l10n.newAccount,
                     style: textTheme.headlineMedium?.copyWith(

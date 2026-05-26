@@ -6,34 +6,33 @@ class BetweenPagesLogo extends StatelessWidget {
   final bool useImage;
 
   const BetweenPagesLogo({
-    super.key, 
-    this.fontSize = 108.0,
-    this.useImage = false, 
+    super.key,
+    this.fontSize = 38.0,
+    this.useImage = false,
   });
 
   @override
   Widget build(BuildContext context) {
-return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // TEMP: marcador para verificar que cambie fontSize
-        Text(
-          'fontSize=$fontSize useImage=$useImage',
-          style: const TextStyle(color: Colors.red, fontSize: 12),
-        ),
-        if (useImage)
-          Image.asset(
-            'assets/img/logo.png',
-            height: fontSize * 1.3,
-          )
-        else
-          Icon(
-            Icons.menu_book_rounded,
-            color: AppColors.accent(context),
-            size: fontSize * 1.2,
-          ),
-      ],
+    const baseSizeFactor = 240.0;
+
+    return SizedBox(
+      width: baseSizeFactor,
+      height: baseSizeFactor,
+      child: Center(
+        child: useImage
+            ? Image.asset(
+                'assets/img/logo.png',
+                width: baseSizeFactor,
+                height: baseSizeFactor,
+                fit: BoxFit.contain,
+              )
+            : Icon(
+                Icons.menu_book_rounded,
+                color: AppColors.accent(context),
+                size: baseSizeFactor,
+              ),
+      ),
     );
   }
 }
+

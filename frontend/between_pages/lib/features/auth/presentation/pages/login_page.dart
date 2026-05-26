@@ -43,7 +43,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             Icon(Icons.build_circle_outlined, color: AppColors.accent(context)),
             const SizedBox(width: 8),
             Text(
-              'En desarrollo', 
+              'En desarrollo',
               style: TextStyle(
                 color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.bold,
@@ -59,7 +59,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           TextButton(
             onPressed: () => context.pop(), // Cierra el pop-up
             child: Text(
-              'Entendido', 
+              'Entendido',
               style: TextStyle(
                 color: AppColors.accent(context),
                 fontWeight: FontWeight.bold,
@@ -99,7 +99,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final inputDecoration = InputDecoration(
       filled: true,
       fillColor: AppColors.surface(context),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: AppColors.border(context), width: 1.5),
@@ -134,7 +134,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 children: [
                   // Logo visual
                   const Center(child: BetweenPagesLogo(fontSize: 34.0, useImage: true)),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
 
                   // Input Email
                   TextFormField(
@@ -151,7 +151,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Input Contraseña
                   TextFormField(
@@ -172,7 +172,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 4),
 
                   // Checkbox Recordarme
                   Row(
@@ -184,15 +184,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                         onChanged: (value) => setState(() => _rememberMe = value ?? false),
                       ),
-                    Expanded(
-                      child: Text(
-                        l10n.loginRememberMe,
-                        style: TextStyle(color: AppColors.textSecondary(context)),
+                      Expanded(
+                        child: Text(
+                          l10n.loginRememberMe,
+                          style: TextStyle(color: AppColors.textSecondary(context)),
+                        ),
                       ),
-                    ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 12),
 
                   // Botón Principal de Iniciar Sesión
                   ElevatedButton(
@@ -209,7 +209,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent(context),
                       foregroundColor: AppColors.lightSurface,
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: const Size(double.infinity, 50),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -226,7 +226,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 4),
 
                   // Enlace a Registro
                   TextButton(
@@ -239,7 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
                   // Divisor visual (O inicia sesión con)
                   Row(
@@ -255,7 +255,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Expanded(child: Divider(color: AppColors.border(context))),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
                   // Botones Sociales con Pop-up integrado
                   OutlinedButton.icon(
@@ -266,12 +266,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     onPressed: () => _showComingSoonDialog(context),
                     style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: const Size(double.infinity, 50),
                       side: BorderSide(color: AppColors.border(context), width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   OutlinedButton.icon(
                     icon: Icon(Icons.menu_book, color: AppColors.textPrimary(context)),
                     label: Text(
@@ -280,7 +280,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     onPressed: () => _showComingSoonDialog(context),
                     style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: const Size(double.infinity, 50),
                       side: BorderSide(color: AppColors.border(context), width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
