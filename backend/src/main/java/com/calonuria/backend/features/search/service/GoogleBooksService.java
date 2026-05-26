@@ -1,7 +1,6 @@
-package com.calonuria.backend.features.catalog.service.external;
+package com.calonuria.backend.features.search.service;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
-import com.calonuria.backend.features.catalog.model.Book;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
 import com.calonuria.backend.shared.config.GoogleBooksConfig;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.catalog.service.external;
+package com.calonuria.backend.features.crawler.service;
 
 import com.calonuria.backend.features.catalog.model.FanficTag;
 import com.calonuria.backend.features.catalog.model.Fanfiction;

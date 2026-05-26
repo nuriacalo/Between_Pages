@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.journal.dto;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.util.List;

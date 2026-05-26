@@ -1,9 +1,9 @@
-package com.calonuria.backend.features.catalog.controller;
+package com.calonuria.backend.features.crawler.controller;
 
-import com.calonuria.backend.features.catalog.dto.Ao3CrawlRequestDTO;
 import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
-import com.calonuria.backend.features.catalog.service.external.Ao3CrawlerService;
+import com.calonuria.backend.features.crawler.dto.Ao3CrawlRequestDTO;
+import com.calonuria.backend.features.crawler.service.Ao3CrawlerService;
 import com.calonuria.backend.features.catalog.service.FanficService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

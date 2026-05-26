@@ -1,13 +1,12 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
 import com.calonuria.backend.features.catalog.model.Book;
 import com.calonuria.backend.features.catalog.model.Genre;
-import com.calonuria.backend.features.catalog.model.UserCatalog;
 import com.calonuria.backend.features.catalog.repository.BookRepository;
 import com.calonuria.backend.features.catalog.repository.GenreRepository;
 import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
-import com.calonuria.backend.features.catalog.service.external.GoogleBooksService;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
+import com.calonuria.backend.features.search.service.GoogleBooksService;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.shared.service.BaseCatalogService;
 import org.springframework.stereotype.Service;

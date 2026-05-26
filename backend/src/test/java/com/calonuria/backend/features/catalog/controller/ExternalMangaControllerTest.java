@@ -1,6 +1,8 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.service.external.JikanService;
+
+import com.calonuria.backend.features.search.controller.ExternalMangaController;
+import com.calonuria.backend.features.search.service.JikanService;
 import com.calonuria.backend.shared.config.TestSecurityConfig;
 import com.calonuria.backend.shared.security.JwtUtil;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,6 @@
 package com.calonuria.backend.features.catalog.service.external;
 
+import com.calonuria.backend.features.search.service.GoogleBooksService;
 import com.calonuria.backend.shared.config.GoogleBooksConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

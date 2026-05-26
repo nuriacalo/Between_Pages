@@ -1,8 +1,8 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
 import com.calonuria.backend.features.catalog.model.Book;
 import com.calonuria.backend.features.catalog.service.BookService;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;

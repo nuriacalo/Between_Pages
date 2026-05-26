@@ -1,9 +1,9 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
 import com.calonuria.backend.features.catalog.model.Book;
 import com.calonuria.backend.features.catalog.repository.BookRepository;
-import com.calonuria.backend.features.catalog.service.external.GoogleBooksService;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
+import com.calonuria.backend.features.search.service.GoogleBooksService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

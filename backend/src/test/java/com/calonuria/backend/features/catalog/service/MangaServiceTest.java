@@ -1,9 +1,9 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.catalog.repository.MangaRepository;
-import com.calonuria.backend.features.catalog.service.external.JikanService;
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
+import com.calonuria.backend.features.search.service.JikanService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

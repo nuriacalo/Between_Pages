@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.catalog.dto;
+package com.calonuria.backend.features.search.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

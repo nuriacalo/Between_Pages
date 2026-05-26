@@ -1,6 +1,6 @@
-package com.calonuria.backend.features.catalog.service.external;
+package com.calonuria.backend.features.search.service;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

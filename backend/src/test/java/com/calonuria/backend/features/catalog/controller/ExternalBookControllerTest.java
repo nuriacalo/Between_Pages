@@ -1,6 +1,7 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.service.external.GoogleBooksService;
+import com.calonuria.backend.features.search.controller.ExternalBookController;
+import com.calonuria.backend.features.search.service.GoogleBooksService;
 import com.calonuria.backend.shared.config.TestSecurityConfig;
 import com.calonuria.backend.shared.security.JwtUtil;
 import org.junit.jupiter.api.Test;

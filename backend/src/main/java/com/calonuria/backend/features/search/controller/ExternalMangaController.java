@@ -1,7 +1,7 @@
-package com.calonuria.backend.features.catalog.controller;
+package com.calonuria.backend.features.search.controller;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
-import com.calonuria.backend.features.catalog.service.external.JikanService;
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
+import com.calonuria.backend.features.search.service.JikanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

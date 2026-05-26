@@ -1,4 +1,4 @@
-package com.calonuria.backend.features.catalog.dto;
+package com.calonuria.backend.features.crawler.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -8,4 +8,3 @@ public record Ao3CrawlRequestDTO(
 
 ) {
 }
-

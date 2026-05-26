@@ -1,15 +1,15 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.catalog.repository.MangaRepository;
 import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
-import com.calonuria.backend.features.catalog.service.external.JikanService;
+
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
+import com.calonuria.backend.features.search.service.JikanService;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.shared.service.BaseCatalogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;

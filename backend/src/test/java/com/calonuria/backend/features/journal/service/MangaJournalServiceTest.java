@@ -1,11 +1,11 @@
 package com.calonuria.backend.features.journal.service;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.catalog.service.MangaService;
 import com.calonuria.backend.features.journal.dto.MangaJournalRegistrationDTO;
 import com.calonuria.backend.features.journal.model.MangaJournal;
 import com.calonuria.backend.features.journal.repository.MangaJournalRepository;
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.dto.MangaResponseDTO;
 import com.calonuria.backend.features.catalog.service.MangaService;
+import com.calonuria.backend.features.search.dto.MangaResponseDTO;
 import com.calonuria.backend.shared.config.TestSecurityConfig;
 import com.calonuria.backend.shared.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;

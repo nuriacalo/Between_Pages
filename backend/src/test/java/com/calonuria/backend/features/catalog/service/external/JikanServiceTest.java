@@ -1,5 +1,6 @@
 package com.calonuria.backend.features.catalog.service.external;
 
+import com.calonuria.backend.features.search.service.JikanService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

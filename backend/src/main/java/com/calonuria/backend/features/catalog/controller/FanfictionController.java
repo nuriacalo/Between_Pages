@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/fanfic")
+@RequestMapping("/api/fanfiction")
 @Tag(name = "Catálogo de Fanfics", description = "Endpoints para búsqueda y gestión de fanfics en la base de datos local")
 public class FanfictionController extends BaseCatalogController<Fanfiction, FanfictionResponseDTO, Long, FanfictionService> {
 

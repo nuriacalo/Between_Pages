@@ -1,7 +1,7 @@
-package com.calonuria.backend.features.catalog.controller;
+package com.calonuria.backend.features.search.controller;
 
-import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
-import com.calonuria.backend.features.catalog.service.external.GoogleBooksService;
+import com.calonuria.backend.features.search.dto.BookResponseDTO;
+import com.calonuria.backend.features.search.service.GoogleBooksService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

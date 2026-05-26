@@ -1,10 +1,11 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.dto.Ao3CrawlRequestDTO;
 import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.catalog.service.FanficService;
-import com.calonuria.backend.features.catalog.service.external.Ao3CrawlerService;
+import com.calonuria.backend.features.crawler.controller.Ao3CrawlerController;
+import com.calonuria.backend.features.crawler.dto.Ao3CrawlRequestDTO;
+import com.calonuria.backend.features.crawler.service.Ao3CrawlerService;
 import com.calonuria.backend.shared.config.TestSecurityConfig;
 import com.calonuria.backend.shared.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
