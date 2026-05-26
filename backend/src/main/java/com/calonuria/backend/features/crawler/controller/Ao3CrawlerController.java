@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.crawler.controller;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.crawler.dto.Ao3CrawlRequestDTO;
 import com.calonuria.backend.features.crawler.service.Ao3CrawlerService;
