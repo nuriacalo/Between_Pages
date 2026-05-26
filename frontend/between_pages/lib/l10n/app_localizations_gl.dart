@@ -156,7 +156,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get statusReading => 'Lendo';
 
   @override
-  String get statusTBR => 'Pendentes';
+  String get statusTBR => 'Por Ler';
 
   @override
   String get statusPaused => 'Pausado';
@@ -475,7 +475,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String addedToTbrItem(Object title) {
-    return 'Engadido \"$title\" á lista de Por Ler';
+    return 'Engadido \"$title\" á túa lista Por Ler';
   }
 
   @override

@@ -475,7 +475,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String addedToTbrItem(Object title) {
-    return 'Added \"$title\" to To Be Read list';
+    return 'Added \"$title\" to your To Be Read list';
   }
 
   @override

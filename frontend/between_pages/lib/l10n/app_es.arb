@@ -48,7 +48,7 @@
     "emptyJournalFanficsTitle": "No tienes fanfics en tu Journal",
     "emptyJournalFanficsSubtitle": "Empieza a añadir fanfics para ver tu progreso.",
     "statusReading": "Leyendo",
-    "statusTBR": "Pendientes",
+    "statusTBR": "Por Leer",
     "statusPaused": "Pausado",
     "statusFinished": "Terminado",
     "statusWishlist": "Lista de deseos",
@@ -167,7 +167,7 @@
             "title": {}
         }
     },
-    "addedToTbrItem": "Añadido \"{title}\" a la lista de Por Leer",
+    "addedToTbrItem": "Añadido \"{title}\" a tu lista Por Leer",
     "@addedToTbrItem": {
         "placeholders": {
             "title": {}

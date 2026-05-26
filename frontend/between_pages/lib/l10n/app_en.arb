@@ -167,7 +167,7 @@
             "title": {}
         }
     },
-    "addedToTbrItem": "Added \"{title}\" to To Be Read list",
+    "addedToTbrItem": "Added \"{title}\" to your To Be Read list",
     "@addedToTbrItem": {
         "placeholders": {
             "title": {}

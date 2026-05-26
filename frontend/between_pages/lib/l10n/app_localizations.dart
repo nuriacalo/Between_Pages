@@ -1018,7 +1018,7 @@ abstract class AppLocalizations {
   /// No description provided for @addedToTbrItem.
   ///
   /// In en, this message translates to:
-  /// **'Added \"{title}\" to To Be Read list'**
+  /// **'Added \"{title}\" to your To Be Read list'**
   String addedToTbrItem(Object title);
 
   /// No description provided for @finishedReadingItem.
