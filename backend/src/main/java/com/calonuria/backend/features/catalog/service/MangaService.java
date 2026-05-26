@@ -3,7 +3,6 @@ package com.calonuria.backend.features.catalog.service;
 import com.calonuria.backend.features.catalog.model.Manga;
 import com.calonuria.backend.features.catalog.repository.MangaRepository;
 import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
-
 import com.calonuria.backend.features.search.dto.MangaResponseDTO;
 import com.calonuria.backend.features.search.service.JikanService;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
@@ -33,7 +32,11 @@ public class MangaService extends BaseCatalogService<Manga, MangaResponseDTO, Lo
     public List<MangaResponseDTO> getMangasByUserId(Long userId) {
         return userCatalogRepository.findByUserId(userId).stream()
                 .filter(uc -> "MANGA".equals(uc.getItemType()) && uc.getManga() != null)
-                .map(uc -> mapToDTO(uc.getManga()))
+                .map(uc -> {
+                    MangaResponseDTO dto = mapToDTO(uc.getManga());
+                    dto.setStatus(uc.getStatus());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

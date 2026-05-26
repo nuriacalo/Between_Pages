@@ -40,11 +40,17 @@ public class UserCatalog {
     @JoinColumn(name = "fanfic_id")
     private Fanfiction fanfic;
 
+    @Column(name = "status", nullable = false)
+    private String status;
+
     @Column(name = "added_at", nullable = false, updatable = false)
     private LocalDateTime addedAt;
 
     @PrePersist
     protected void onCreate() {
         addedAt = LocalDateTime.now();
+        if (status == null) {
+            status = "TBR";
+        }
     }
 }

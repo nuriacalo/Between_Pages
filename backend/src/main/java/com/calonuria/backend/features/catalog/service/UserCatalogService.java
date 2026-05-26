@@ -11,6 +11,7 @@ import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class UserCatalogService {
         UserCatalog entry = new UserCatalog();
         entry.setUser(user);
         entry.setItemType(dto.getItemType());
+        entry.setStatus(StringUtils.hasText(dto.getStatus()) ? dto.getStatus() : "TBR");
 
         switch (dto.getItemType()) {
             case "BOOK":

@@ -35,4 +35,6 @@ public class BookResponseDTO {
 
     @JsonProperty("page_count")
     private Integer pageCount;
+
+    private String status;
 }

@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.catalog.service.FanfictionService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -37,4 +37,6 @@ public class MangaResponseDTO {
 
     @JsonProperty("publication_status")
     private String publicationStatus;
+
+    private String status;
 }

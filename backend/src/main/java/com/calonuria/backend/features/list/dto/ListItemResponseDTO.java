@@ -1,7 +1,7 @@
 package com.calonuria.backend.features.list.dto;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.search.dto.BookResponseDTO;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.search.dto.MangaResponseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

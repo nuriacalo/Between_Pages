@@ -15,6 +15,7 @@ public class FanfictionResponseDTO {
     private String mainShip;
     private String theme;
     private List<String> genres;
+    private List<String> tags;
     private Integer currentChapter;
     private Integer totalChapters;
     private String publicationStatus;

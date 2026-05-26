@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.catalog.service;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.catalog.repository.FanfictionRepository;
 import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
@@ -30,7 +30,11 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
     public List<FanfictionResponseDTO> getFanficsByUserId(Long userId) {
         return userCatalogRepository.findByUserId(userId).stream()
                 .filter(uc -> "FANFIC".equals(uc.getItemType()) && uc.getFanfic() != null)
-                .map(uc -> mapToDTO(uc.getFanfic()))
+                .map(uc -> {
+                    FanfictionResponseDTO dto = mapToDTO(uc.getFanfic());
+                    dto.setStatus(uc.getStatus());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

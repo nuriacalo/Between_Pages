@@ -12,6 +12,8 @@ public class UserCatalogEntryDTO {
     @NotNull
     private String itemType;
 
+    private String status;
+
     private Long bookId;
     private Long mangaId;
     private Long fanficId;

@@ -39,7 +39,11 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
     public List<BookResponseDTO> getBooksByUserId(Long userId) {
         return userCatalogRepository.findByUserId(userId).stream()
                 .filter(uc -> "BOOK".equals(uc.getItemType()) && uc.getBook() != null)
-                .map(uc -> mapToDTO(uc.getBook()))
+                .map(uc -> {
+                    BookResponseDTO dto = mapToDTO(uc.getBook());
+                    dto.setStatus(uc.getStatus());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
