@@ -1,6 +1,6 @@
 package com.calonuria.backend.features.journal.service;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
 import com.calonuria.backend.features.catalog.service.FanfictionService;
 import com.calonuria.backend.features.journal.dto.FanficJournalRegistrationDTO;

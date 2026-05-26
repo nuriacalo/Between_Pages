@@ -1,7 +1,7 @@
 package com.calonuria.backend.features.catalog.controller;
 
-import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.service.FanfictionService;
+import com.calonuria.backend.features.search.dto.FanfictionResponseDTO;
 import com.calonuria.backend.shared.config.TestSecurityConfig;
 import com.calonuria.backend.shared.security.CustomUserDetailsService;
 import com.calonuria.backend.shared.security.JwtUtil;
