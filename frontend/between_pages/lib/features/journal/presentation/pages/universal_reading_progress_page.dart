@@ -485,6 +485,7 @@ class _ReadingProgressPageState<T extends BaseJournalResponseDTO>
           progress: progress,
           progressLabel: pLabel,
           sessionRoute: _sessionRoute,
+
           rawJournal: journal,
           isSaving: _isSaving,
           onUpdateProgress: () => _showUpdateSheet(journal, current, total),
