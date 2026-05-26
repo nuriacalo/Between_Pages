@@ -30,12 +30,18 @@ class ReadingStatsRepository {
   /// Registra una actividad de lectura para el día de hoy.
   /// Esto es usado para calcular la racha de lectura.
   Future<void> recordActivity() async {
-    await _apiClient.post(ApiConstants.readingStatsActivity);
+    // Enviamos la fecha local en formato YYYY-MM-DD para evitar desajustes de 
+    // zona horaria entre el móvil (frontend) y el servidor (backend).
+    final localDate = DateTime.now().toLocal().toIso8601String().split('T').first;
+    await _apiClient.post(ApiConstants.readingStatsActivity, data: {
+      'localDate': localDate,
+    });
   }
 
   /// Obtiene la racha de lectura actual y la actividad semanal.
   Future<ReadingStreakDTO> getReadingStreak() async {
-    final response = await _apiClient.get(ApiConstants.readingStatsStreak);
+    final localDate = DateTime.now().toLocal().toIso8601String().split('T').first;
+    final response = await _apiClient.get('${ApiConstants.readingStatsStreak}?localDate=$localDate');
     return ReadingStreakDTO.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -62,9 +68,9 @@ class ReadingStatsRepository {
 
   /// Obtiene estadísticas de lectura para un item específico (velocidad, etc.).
   /// NOTA: Requiere un endpoint en el backend, ej: /api/reading-stats/item/{itemId}
-  Future<Map<String, dynamic>> getItemReadingStats(int itemId) async {
+  Future<Map<String, dynamic>> getItemReadingStats(int itemId, String itemType) async {
     try {
-      final endpoint = '/reading-stats/item/$itemId';
+      final endpoint = '/reading-stats/item/$itemId?type=$itemType';
       final response = await _apiClient.get(endpoint);
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -90,8 +96,8 @@ class ReadingStatsRepository {
     // Intentamos cargar la racha de lectura
     try {
       final streak = await getReadingStreak();
-      currentStreak = streak.currentStreak!;
-      weekActivity = streak.weekActivity!;
+      currentStreak = streak.currentStreak;
+      weekActivity = streak.weekActivity;
     } catch (_) {}
 
     return GamificationStatsDTO(
