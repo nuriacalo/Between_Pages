@@ -1,4 +1,5 @@
-import 'package:between_pages/core/repositories/journal_repository.dart';
+import 'package:between_pages/core/theme/app_colors.dart';
+import 'package:between_pages/features/journal/application/repositories/journal_repository.dart';
 import 'package:between_pages/features/journal/domain/records/base_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
@@ -401,11 +402,26 @@ class _JournalEditFormState<
         const SizedBox(height: 16),
         TextFormField(
           controller: _personalNotesController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Notas personales',
-            border: OutlineInputBorder(),
+            labelStyle: TextStyle(color: AppColors.textSecondary(context)),
+            floatingLabelStyle: TextStyle(color: widget.accentColor),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surface,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border(context)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: widget.accentColor ?? Theme.of(context).colorScheme.primary,
+                width: 1.5,
+              ),
+            ),
             alignLabelWithHint: true,
           ),
+          keyboardType: TextInputType.multiline,
           maxLines: 5,
           minLines: 3,
         ),

@@ -1,7 +1,6 @@
 class JournalStatusHelper {
   static const List<String> statusOptions = [
     'Por leer',
-    'Deseado',
     'Leyendo',
     'Pausado',
     'Terminado',
@@ -11,7 +10,6 @@ class JournalStatusHelper {
   static String mapStatusToUi(String status) {
     return switch (status) {
       'TBR' => 'Por leer',
-      'WISHLIST' => 'Deseado',
       'READING' => 'Leyendo',
       'FINISHED' => 'Terminado',
       'DROPPED' => 'Abandonado',
@@ -24,7 +22,6 @@ class JournalStatusHelper {
   static String mapStatusToDb(String status) {
     return switch (status) {
       'Por leer' => 'TBR',
-      'Deseado' => 'WISHLIST',
       'Leyendo' => 'READING',
       'Terminado' => 'FINISHED',
       'Abandonado' => 'DROPPED',

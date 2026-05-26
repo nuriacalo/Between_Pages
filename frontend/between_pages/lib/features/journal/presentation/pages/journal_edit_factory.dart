@@ -369,7 +369,6 @@ class _StyledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
@@ -380,7 +379,7 @@ class _StyledField extends StatelessWidget {
         hintText: hint,
         prefixIcon: Icon(icon, size: 18),
         filled: true,
-        fillColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F5FF),
+        fillColor: Theme.of(context).colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
