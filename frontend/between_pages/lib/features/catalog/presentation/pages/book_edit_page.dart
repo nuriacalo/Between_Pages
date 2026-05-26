@@ -1,5 +1,5 @@
 import 'package:between_pages/core/theme/app_colors.dart';
-import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
 import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
@@ -68,7 +68,6 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
     setState(() => _isSaving = true);
 
     try {
-      final bookRepo  = ref.read(bookSearchRepositoryProvider);
       final bookToSave = BookResponseDTO(
         idBook:       widget.book?.idBook ?? 0,
         googleBooksId: widget.book?.googleBooksId ?? '',
@@ -90,7 +89,7 @@ class _BookEditPageState extends ConsumerState<BookEditPage> {
         bookType: widget.book?.bookType ?? 'STANDALONE',
       );
 
-      final savedBook = await bookRepo.saveOrUpdateBook(bookToSave);
+      final savedBook = await ref.read(catalogRepositoryProvider).saveOrUpdateBook(bookToSave);
 
       if (widget.book == null) {
         final userId = ref.read(userProfileProvider).value!.idUser;

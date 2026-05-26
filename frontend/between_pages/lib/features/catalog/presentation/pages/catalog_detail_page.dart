@@ -3,10 +3,12 @@ import 'dart:ui';
 import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
 import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/user_catalog_repository.dart';
 import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
 import 'package:between_pages/features/catalog/application/providers/all_manga_provider.dart';
 import 'package:between_pages/features/catalog/application/providers/all_fanfics_provider.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/enriched_catalog_item.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/pages/book_edit_page.dart';
@@ -18,6 +20,7 @@ import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/records/fanfic_journal_record_dto.dart';
+import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/book_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
@@ -72,7 +75,7 @@ class UnifiedCatalogData {
 }
 
 class CatalogDetailPage extends ConsumerStatefulWidget {
-  final dynamic item;
+  final dynamic item; // Can be BookResponseDTO, MangaResponseDTO, or EnrichedCatalogItem
   final CatalogItemType type;
 
   const CatalogDetailPage({super.key, required this.item, required this.type});
@@ -84,11 +87,18 @@ class CatalogDetailPage extends ConsumerStatefulWidget {
 class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   bool _isAdding = false;
   late dynamic _currentItem;
+  BaseJournalResponseDTO? _journal;
 
   @override
   void initState() {
     super.initState();
-    _currentItem = widget.item;
+    if (widget.item is EnrichedCatalogItem) {
+      _currentItem = (widget.item as EnrichedCatalogItem).item;
+      _journal = (widget.item as EnrichedCatalogItem).journal;
+    } else {
+      _currentItem = widget.item;
+      _journal = null; // Will be fetched by _getExistingJournal
+    }
   }
 
   // ── Derived data ──────────────────────────────────────────────────────────
@@ -156,7 +166,11 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
 
   // ── Journal helpers ───────────────────────────────────────────────────────
 
-  dynamic _getExistingJournal() {
+  BaseJournalResponseDTO? _getExistingJournal() {
+    // If we already have a journal from the Enriched item, return it.
+    if (_journal != null) return _journal;
+
+    // Otherwise, try to fetch it from the provider (for items coming from search).
     switch (widget.type) {
       case CatalogItemType.book:
         final b = _currentItem as BookResponseDTO;
@@ -180,83 +194,96 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
     ref.invalidate(allJournalsProvider);
   }
 
-  Future<void> _addToJournal(String status) async {
+  Future<void> _addToLibrary(String status) async {
     if (_isAdding) return;
     setState(() => _isAdding = true);
+
     try {
       final user = await ref.read(userProfileProvider.future);
       final userId = user.idUser;
-      switch (widget.type) {
-        case CatalogItemType.book:
-          var book = _currentItem as BookResponseDTO;
-          if ((book.idBook ?? 0) == 0) {
-            book = await ref
-                .read(bookSearchRepositoryProvider)
-                .saveOrUpdateBook(book);
-            setState(() => _currentItem = book);
-          }
-          await ref
-              .read(bookJournalRepositoryProvider)
-              .saveRaw(
-                BookJournalRecordDTO(
-                  userId: userId,
-                  bookId: book.idBook ?? 0,
-                  googleBooksId: book.googleBooksId,
-                  status: status,
-                  currentPage: 0,
-                ).toJson(),
-              );
-          ref.invalidate(allBooksProvider);
-        case CatalogItemType.manga:
-          final m = _currentItem as MangaResponseDTO;
-          final mangaId = m.idManga;
-          await ref
-              .read(mangaJournalRepositoryProvider)
-              .saveRaw(
-                MangaJournalRecordDTO(
-                  userId: userId,
-                  mangaId: (mangaId != null && mangaId > 0) ? mangaId : null,
-                  malId: m.malId,
-                  status: status,
-                  currentChapter: 0,
-                ).toJson(),
-              );
-          ref.invalidate(allMangaProvider);
-        case CatalogItemType.fanfic:
-          var f = _currentItem as FanfictionResponseDTO;
-          if (f.idFanfic == null || f.idFanfic == 0) {
-            f = await ref
-                .read(fanficSearchRepositoryProvider)
-                .saveOrUpdateFanfic(f);
-            setState(() => _currentItem = f);
-          }
-          await ref
-              .read(fanficJournalRepositoryProvider)
-              .saveRaw(
-                FanficJournalRecordDTO(
-                  userId: userId,
-                  fanficId: f.idFanfic ?? 0,
-                  ao3Id: f.ao3Id,
-                  status: status,
-                  currentChapter: 0,
-                ).toJson(),
-              );
-          ref.invalidate(allFanficsProvider);
-      }
-      _invalidateJournals();
+      final isJournalStatus = status == 'READING' || status == 'FINISHED' || status == 'PAUSED' || status == 'DROPPED';
 
-      // Al añadir un item al diario, registramos actividad para la racha
-      // si se empieza a leer o se marca como terminado directamente.
-      if (status == 'READING' || status == 'FINISHED') {
-        try {
+      if (isJournalStatus) {
+        // --- LOGICA ANTIGUA: Crear o actualizar un Journal ---
+        switch (widget.type) {
+          case CatalogItemType.book:
+            var book = _currentItem as BookResponseDTO;
+            if ((book.idBook ?? 0) == 0) {
+              book = await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(book);
+              setState(() => _currentItem = book);
+            }
+            await ref.read(bookJournalRepositoryProvider).saveRaw(
+              BookJournalRecordDTO(
+                userId: userId,
+                bookId: book.idBook ?? 0,
+                googleBooksId: book.googleBooksId,
+                status: status,
+                currentPage: 0,
+              ).toJson(),
+            );
+            ref.invalidate(allBooksProvider);
+          case CatalogItemType.manga:
+            final m = _currentItem as MangaResponseDTO;
+            final mangaId = m.idManga;
+            await ref.read(mangaJournalRepositoryProvider).saveRaw(
+              MangaJournalRecordDTO(
+                userId: userId,
+                mangaId: (mangaId != null && mangaId > 0) ? mangaId : null,
+                malId: m.malId,
+                status: status,
+                currentChapter: 0,
+              ).toJson(),
+            );
+            ref.invalidate(allMangaProvider);
+          case CatalogItemType.fanfic:
+            var f = _currentItem as FanfictionResponseDTO;
+            if (f.idFanfic == null || f.idFanfic == 0) {
+              f = await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(f);
+              setState(() => _currentItem = f);
+            }
+            await ref.read(fanficJournalRepositoryProvider).saveRaw(
+              FanficJournalRecordDTO(
+                userId: userId,
+                fanficId: f.idFanfic ?? 0,
+                ao3Id: f.ao3Id,
+                status: status,
+                currentChapter: 0,
+              ).toJson(),
+            );
+            ref.invalidate(allFanficsProvider);
+        }
+        _invalidateJournals();
+        if (status == 'READING' || status == 'FINISHED') {
           await ref.read(readingStatsRepositoryProvider).recordActivity();
           ref.invalidate(gamificationProvider);
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error al registrar actividad: $e');
-          }
+        }
+      } else {
+        // --- NUEVA LOGICA: Añadir solo al catálogo ---
+        final repo = ref.read(userCatalogRepositoryProvider);
+        switch (widget.type) {
+          case CatalogItemType.book:
+            var book = _currentItem as BookResponseDTO;
+            if ((book.idBook ?? 0) == 0) {
+              book = await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(book);
+              setState(() => _currentItem = book);
+            }
+            await repo.addToCatalog(userId: userId, itemType: 'BOOK', bookId: book.idBook);
+            ref.invalidate(allBooksProvider);
+          case CatalogItemType.manga:
+            final m = _currentItem as MangaResponseDTO;
+            await repo.addToCatalog(userId: userId, itemType: 'MANGA', mangaId: m.idManga);
+            ref.invalidate(allMangaProvider);
+          case CatalogItemType.fanfic:
+            var f = _currentItem as FanfictionResponseDTO;
+            if (f.idFanfic == null || f.idFanfic == 0) {
+              f = await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(f);
+              setState(() => _currentItem = f);
+            }
+            await repo.addToCatalog(userId: userId, itemType: 'FANFIC', fanficId: f.idFanfic);
+            ref.invalidate(allFanficsProvider);
         }
       }
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       final msg = switch (status) {
@@ -269,9 +296,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isAdding = false);
@@ -365,18 +390,18 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   Future<void> _showAddStatusDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final selectedStatus = await _showStatusPicker(
-      title: l10n.addToJournal,
-      statuses: ['READING', 'TBR', 'FINISHED', 'WISHLIST'],
+      title: l10n.addToLibrary,
+      statuses: ['READING', 'TBR', 'FINISHED'],
       l10n: l10n,
     );
-    if (selectedStatus != null) _addToJournal(selectedStatus);
+    if (selectedStatus != null) _addToLibrary(selectedStatus);
   }
 
   Future<void> _showChangeStatusDialog(dynamic existing) async {
     final l10n = AppLocalizations.of(context)!;
     final selectedStatus = await _showStatusPicker(
       title: l10n.changeStatus,
-      statuses: ['READING', 'TBR', 'FINISHED', 'PAUSED', 'DROPPED', 'WISHLIST'],
+      statuses: ['READING', 'TBR', 'FINISHED', 'PAUSED', 'DROPPED'],
       l10n: l10n,
     );
     if (selectedStatus != null) _updateJournalStatus(existing, selectedStatus);
@@ -828,7 +853,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       buttons.add(
         _PrimaryButton(
           icon: Icons.add_rounded,
-          label: l10n.addToJournal,
+          label: l10n.addToLibrary,
           isLoading: _isAdding,
           onTap: _showAddStatusDialog,
         ),

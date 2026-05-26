@@ -4,14 +4,16 @@ import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.da
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/media_item.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/ownership_badge.dart';
+import 'package:between_pages/features/journal/domain/utils/journal_status_extensions.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class MediaListItem extends StatelessWidget {
   final MediaItem item;
+  final String? status;
   final VoidCallback? onTap;
 
-  const MediaListItem({super.key, required this.item, this.onTap});
+  const MediaListItem({super.key, required this.item, this.status, this.onTap});
 
   // ── Type helpers ─────────────────────────────────────────────────────────
 
@@ -117,6 +119,7 @@ class MediaListItem extends StatelessWidget {
                   accent:      accent,
                   fallback:    _fallbackIcon,
                   ownership:   _ownership,
+                  status:      status,
                 ),
               ),
 
@@ -208,12 +211,14 @@ class _Cover extends StatelessWidget {
   final Color    accent;
   final IconData fallback;
   final String?  ownership;
+  final String?  status;
 
   const _Cover({
     required this.coverUrl,
     required this.accent,
     required this.fallback,
     this.ownership,
+    this.status,
   });
 
   @override
@@ -240,6 +245,12 @@ class _Cover extends StatelessWidget {
                   : _Fallback(accent: accent, icon: fallback),
             ),
           ),
+          if (status != null)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: _StatusBadge(status: status!),
+            ),
           if (ownership != null &&
               ownership!.isNotEmpty &&
               ownership!.toUpperCase() != 'NONE')
@@ -317,4 +328,41 @@ class _ExtraRow extends StatelessWidget {
           ),
         ],
       );
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  const _StatusBadge({required this.status});
+
+  Color _getStatusColor(String status) {
+    return switch (status.toUpperCase()) {
+      'READING' => AppColors.statusReading,
+      'FINISHED' => AppColors.statusFinished,
+      'PAUSED' => AppColors.statusPending,
+      'DROPPED' => AppColors.statusAbandoned,
+      'WISHLIST' => const Color(0xFF9FB3BC),
+      'TBR' => AppColors.statusPending,
+      _ => Colors.grey,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _getStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        status.uiLabel(context),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 8,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 }

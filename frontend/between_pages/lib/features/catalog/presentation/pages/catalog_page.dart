@@ -1,19 +1,16 @@
 import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/core/widgets/app_tab_bar.dart';
+import 'package:between_pages/features/catalog/application/providers/enriched_catalog_provider.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
-import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/enriched_catalog_item.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
-import 'package:between_pages/features/catalog/application/providers/all_books_provider.dart';
-import 'package:between_pages/features/catalog/application/providers/all_manga_provider.dart';
-import 'package:between_pages/features/catalog/application/providers/all_fanfics_provider.dart';
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/media_list_item.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 
-// Cambia StatelessWidget → StatefulWidget con SingleTickerProviderStateMixin
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
 
@@ -21,8 +18,7 @@ class CatalogPage extends StatefulWidget {
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
-class _CatalogPageState extends State<CatalogPage>
-    with SingleTickerProviderStateMixin {
+class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   static const _tabAccents = [
@@ -82,105 +78,65 @@ class _CatalogPageState extends State<CatalogPage>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _BooksCatalogTab(),
-          _MangaCatalogTab(),
-          _FanficsCatalogTab(),
-        ],
+      body: Consumer(
+        builder: (context, ref, child) {
+          final enrichedItemsAsync = ref.watch(enrichedCatalogProvider);
+          return enrichedItemsAsync.when(
+            data: (items) {
+              final books = items.where((i) => i.item is BookResponseDTO).toList();
+              final mangas = items.where((i) => i.item is MangaResponseDTO).toList();
+              final fanfics = items.where((i) => i.item is FanfictionResponseDTO).toList();
+
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildCatalogTab(books, l10n.emptyCatalogBooks),
+                  _buildCatalogTab(mangas, l10n.emptyCatalogMangas),
+                  _buildCatalogTab(fanfics, l10n.emptyCatalogFanfics),
+                ],
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(child: Text('Error: $error')),
+          );
+        },
       ),
     );
   }
-}
 
-class _BooksCatalogTab extends ConsumerWidget {
-  const _BooksCatalogTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget _buildCatalogTab(List<EnrichedCatalogItem> items, String emptyMessage) {
     final l10n = AppLocalizations.of(context)!;
-    final booksAsync = ref.watch(allBooksProvider);
-
-    return booksAsync.when(
-      data: (books) {
-        if (books.isEmpty) {
-          return Center(child: Text(l10n.emptyCatalogBooks));
-        }
-        return _buildList(
-          books.cast<BookResponseDTO>(),
-          (book) => MediaListItem(
-            item: book,
-            onTap: () => context.push('/item/book/${book.idBook}', extra: book),
+    if (items.isEmpty) {
+      return Center(child: Text(emptyMessage));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final enrichedItem = items[index];
+        return MediaListItem(
+          item: enrichedItem.item,
+          status: enrichedItem.journal?.status ?? 'TBR', // Asignar 'TBR' si el journal es nulo
+          onTap: () => context.push(
+            '/item/${_getItemPath(enrichedItem.item)}/${_getItemId(enrichedItem.item)}',
+            extra: enrichedItem,
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
     );
   }
-}
 
-class _MangaCatalogTab extends ConsumerWidget {
-  const _MangaCatalogTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final mangaAsync = ref.watch(allMangaProvider);
-
-    return mangaAsync.when(
-      data: (mangas) {
-        if (mangas.isEmpty) {
-          return Center(child: Text(l10n.emptyCatalogMangas));
-        }
-        return _buildList(
-          mangas.cast<MangaResponseDTO>(),
-          (manga) => MediaListItem(
-            item: manga,
-            onTap: () =>
-                context.push('/item/manga/${manga.idManga}', extra: manga),
-          ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-    );
+  String _getItemPath(dynamic item) {
+    if (item is BookResponseDTO) return 'book';
+    if (item is MangaResponseDTO) return 'manga';
+    if (item is FanfictionResponseDTO) return 'fanfic';
+    return '';
   }
-}
 
-class _FanficsCatalogTab extends ConsumerWidget {
-  const _FanficsCatalogTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final fanficsAsync = ref.watch(allFanficsProvider);
-
-    return fanficsAsync.when(
-      data: (fanfics) {
-        if (fanfics.isEmpty) {
-          return Center(child: Text(l10n.emptyCatalogFanfics));
-        }
-        return _buildList(
-          fanfics.cast<FanfictionResponseDTO>(),
-          (fanfic) => MediaListItem(
-            item: fanfic,
-            onTap: () =>
-                context.push('/item/fanfic/${fanfic.idFanfic}', extra: fanfic),
-          ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-    );
+  int _getItemId(dynamic item) {
+    if (item is BookResponseDTO) return item.idBook ?? 0;
+    if (item is MangaResponseDTO) return item.idManga ?? 0;
+    if (item is FanfictionResponseDTO) return item.idFanfic ?? 0;
+    return 0;
   }
-}
-
-Widget _buildList<T>(List<T> items, Widget Function(T) itemBuilder) {
-  return ListView.builder(
-    padding: const EdgeInsets.symmetric(vertical: 10),
-    itemCount: items.length,
-    itemBuilder: (context, index) => itemBuilder(items[index]),
-  );
 }

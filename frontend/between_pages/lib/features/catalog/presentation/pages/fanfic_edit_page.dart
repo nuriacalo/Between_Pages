@@ -1,5 +1,5 @@
 import 'package:between_pages/core/theme/app_colors.dart';
-import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
 import 'package:between_pages/features/catalog/application/providers/all_fanfics_provider.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
@@ -68,7 +68,6 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
     setState(() => _isSaving = true);
 
     try {
-      final repo = ref.read(fanficSearchRepositoryProvider);
       final fanficToSave = FanfictionResponseDTO(
         idFanfic:          widget.fanfic?.idFanfic ?? 0,
         ao3Id:             widget.fanfic?.ao3Id,
@@ -94,7 +93,7 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
             : [],
       );
 
-      final saved = await repo.saveOrUpdateFanfic(fanficToSave);
+      final saved = await ref.read(catalogRepositoryProvider).saveOrUpdateFanfic(fanficToSave);
 
       if (widget.fanfic == null) {
         final userId = ref.read(userProfileProvider).value!.idUser;
