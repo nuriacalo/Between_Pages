@@ -39,5 +39,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/img/logo.png
+    - lib/assets/img/logo2.png
   generate: true
