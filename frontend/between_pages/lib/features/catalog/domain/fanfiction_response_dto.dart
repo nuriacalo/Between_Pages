@@ -9,7 +9,7 @@ class FanfictionResponseDTO implements MediaItem {
   @JsonKey(name: 'id', readValue: _readId)
   final int? idFanfic;
 
-  @JsonKey(name: 'ao3_id')
+  @JsonKey(name: 'ao3Id')
   final String? ao3Id;
 
   @JsonKey(name: 'title')
@@ -18,32 +18,35 @@ class FanfictionResponseDTO implements MediaItem {
   @JsonKey(name: 'author')
   final String? _author;
 
-  @JsonKey(name: 'source_material')
+  @JsonKey(name: 'sourceMaterial')
   final String? sourceMaterial;
 
+  @JsonKey(name: 'description')
   final String? description;
 
-  @JsonKey(name: 'cover_url')
+  @JsonKey(name: 'coverUrl')
   @override
   final String? coverUrl;
 
   @JsonKey(defaultValue: [])
   final List<String> genres;
 
-  @JsonKey(name: 'main_ship')
+  @JsonKey(name: 'mainShip')
   final String? mainShip;
 
+  @JsonKey(name: 'theme')
   final String? theme;
 
-  @JsonKey(name: 'current_chapter')
+  @JsonKey(name: 'currentChapter')
   final int? currentChapter;
 
-  @JsonKey(name: 'total_chapters')
+  @JsonKey(name: 'totalChapters')
   final int? totalChapters;
 
-  @JsonKey(name: 'publication_status')
+  @JsonKey(name: 'publicationStatus')
   final String? publicationStatus;
 
+  @JsonKey(name: 'tags')
   final List<String>? tags;
 
   /// Legacy alias used by some widgets.
@@ -90,4 +93,3 @@ class FanfictionResponseDTO implements MediaItem {
   @override
   String? get coverImageUrl => coverUrl;
 }
-

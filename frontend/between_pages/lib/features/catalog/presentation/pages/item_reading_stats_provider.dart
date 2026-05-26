@@ -5,14 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ItemStatsParams extends Equatable {
   final int? itemId;
   final int remainingPages;
+  final String itemType;
 
   const ItemStatsParams({
     required this.itemId,
     required this.remainingPages,
+    required this.itemType,
   });
 
   @override
-  List<Object?> get props => [itemId, remainingPages];
+  List<Object?> get props => [itemId, remainingPages, itemType];
 }
 
 final itemReadingStatsProvider = FutureProvider.autoDispose
@@ -21,5 +23,5 @@ final itemReadingStatsProvider = FutureProvider.autoDispose
     return {};
   }
   final repo = ref.watch(readingStatsRepositoryProvider);
-  return repo.getItemReadingStats(params.itemId!);
+  return repo.getItemReadingStats(params.itemId!, params.itemType);
 });

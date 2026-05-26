@@ -14,14 +14,16 @@ class FanficSearchRepository {
   /// Busca fanfics por título o término de búsqueda.
   Future<List<FanfictionResponseDTO>> searchFanfics(
     String query, {
-    int page = 0,
+    // El backend de /fanfiction/search no acepta page=0 (400 Bad Request).
+    // Se asume paginación 1-based.
+    int page = 1,
     int size = 20,
   }) async {
     try {
       final response = await _apiClient.get(
         ApiConstants.fanficSearch,
         queryParameters: {
-          'title': query,
+          'q': query,
           'page': page,
           'size': size,
         },
