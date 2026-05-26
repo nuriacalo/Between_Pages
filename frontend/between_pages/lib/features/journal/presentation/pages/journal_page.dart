@@ -56,29 +56,29 @@ class _JournalEntry {
 // ─────────────────────────────────────────────────────────────────────────────
 
 Color _typeColor(_EntryType t) => switch (t) {
-      _EntryType.book => AppColors.colorLibro,
-      _EntryType.manga => AppColors.colorManga,
-      _EntryType.fanfic => AppColors.colorFanfic,
-    };
+  _EntryType.book => AppColors.colorLibro,
+  _EntryType.manga => AppColors.colorManga,
+  _EntryType.fanfic => AppColors.colorFanfic,
+};
 
 String _typeLabel(_EntryType t) => switch (t) {
-      _EntryType.book => 'Libro',
-      _EntryType.manga => 'Manga',
-      _EntryType.fanfic => 'Fanfic',
-    };
+  _EntryType.book => 'Libro',
+  _EntryType.manga => 'Manga',
+  _EntryType.fanfic => 'Fanfic',
+};
 
 IconData _typeIcon(_EntryType t) => switch (t) {
-      _EntryType.book => Icons.book_rounded,
-      _EntryType.manga => Icons.menu_book_rounded,
-      _EntryType.fanfic => Icons.favorite_rounded,
-    };
+  _EntryType.book => Icons.book_rounded,
+  _EntryType.manga => Icons.menu_book_rounded,
+  _EntryType.fanfic => Icons.favorite_rounded,
+};
 
 String _ownershipIcon(String ownership) => switch (ownership) {
-      'PHYSICAL' => '📚',
-      'DIGITAL' => '📱',
-      'BORROWED' => '🤝',
-      _ => '',
-    };
+  'PHYSICAL' => '📚',
+  'DIGITAL' => '📱',
+  'BORROWED' => '🤝',
+  _ => '',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Definición de tabs
@@ -152,73 +152,79 @@ class _JournalPageState extends ConsumerState<JournalPage>
     super.dispose();
   }
 
-  List<_JournalEntry> _buildEntries(
-      Map<JournalType, List<dynamic>> journals) {
+  List<_JournalEntry> _buildEntries(Map<JournalType, List<dynamic>> journals) {
     final entries = <_JournalEntry>[];
 
     for (final raw in journals[JournalType.book] ?? []) {
       final j = raw as BookJournalResponseDto;
       final pages = j.book.pageCount ?? 0;
       final cur = j.currentPage ?? 0;
-      entries.add(_JournalEntry(
-        id: j.id,
-        type: _EntryType.book,
-        status: j.status,
-        title: j.book.title,
-        author: j.book.author,
-        coverUrl: j.book.coverUrl,
-        ownership: j.ownership,
-        progressLabel:
-            cur > 0 ? 'Pág. $cur${pages > 0 ? ' / $pages' : ''}' : null,
-        progress: pages > 0 ? (cur / pages).clamp(0.0, 1.0) : null,
-        rating: j.rating,
-        personalNotes: j.personalNotes,
-        raw: j,
-      ));
+      entries.add(
+        _JournalEntry(
+          id: j.id,
+          type: _EntryType.book,
+          status: j.status,
+          title: j.book.title,
+          author: j.book.author,
+          coverUrl: j.book.coverUrl,
+          ownership: j.ownership,
+          progressLabel: cur > 0
+              ? 'Pág. $cur${pages > 0 ? ' / $pages' : ''}'
+              : null,
+          progress: pages > 0 ? (cur / pages).clamp(0.0, 1.0) : null,
+          rating: j.rating,
+          personalNotes: j.personalNotes,
+          raw: j,
+        ),
+      );
     }
 
     for (final raw in journals[JournalType.manga] ?? []) {
       final j = raw as MangaJournalResponseDTO;
       final total = j.manga?.totalChapters ?? 0;
       final cur = j.currentChapter ?? 0;
-      entries.add(_JournalEntry(
-        id: j.id,
-        type: _EntryType.manga,
-        status: j.status,
-        title: j.manga?.title ?? 'Sin título',
-        author: j.manga?.author,
-        coverUrl: j.manga?.coverUrl,
-        ownership: j.ownership,
-        progressLabel: cur > 0
-            ? 'Cap. $cur${total > 0 ? ' / $total' : ''}'
-            : null,
-        progress: total > 0 ? (cur / total).clamp(0.0, 1.0) : null,
-        rating: j.rating,
-        personalNotes: j.personalNotes,
-        raw: j,
-      ));
+      entries.add(
+        _JournalEntry(
+          id: j.id,
+          type: _EntryType.manga,
+          status: j.status,
+          title: j.manga?.title ?? 'Sin título',
+          author: j.manga?.author,
+          coverUrl: j.manga?.coverUrl,
+          ownership: j.ownership,
+          progressLabel: cur > 0
+              ? 'Cap. $cur${total > 0 ? ' / $total' : ''}'
+              : null,
+          progress: total > 0 ? (cur / total).clamp(0.0, 1.0) : null,
+          rating: j.rating,
+          personalNotes: j.personalNotes,
+          raw: j,
+        ),
+      );
     }
 
     for (final raw in journals[JournalType.fanfic] ?? []) {
       final j = raw as FanficJournalResponseDTO;
       final total = j.fanfic.totalChapters ?? 0;
       final cur = j.currentChapter ?? 0;
-      entries.add(_JournalEntry(
-        id: j.id,
-        type: _EntryType.fanfic,
-        status: j.status,
-        title: j.fanfic.title ?? 'Sin título',
-        author: j.fanfic.author,
-        coverUrl: j.fanfic.coverUrl,
-        progressLabel: cur > 0
-            ? 'Cap. $cur${total > 0 ? ' / $total' : ''}'
-            : null,
-        progress: total > 0 ? (cur / total).clamp(0.0, 1.0) : null,
-        rating: j.rating,
-        personalNotes: j.personalNotes,
-        mainShip: j.mainShip,
-        raw: j,
-      ));
+      entries.add(
+        _JournalEntry(
+          id: j.id,
+          type: _EntryType.fanfic,
+          status: j.status,
+          title: j.fanfic.title ?? 'Sin título',
+          author: j.fanfic.author,
+          coverUrl: j.fanfic.coverUrl,
+          progressLabel: cur > 0
+              ? 'Cap. $cur${total > 0 ? ' / $total' : ''}'
+              : null,
+          progress: total > 0 ? (cur / total).clamp(0.0, 1.0) : null,
+          rating: j.rating,
+          personalNotes: j.personalNotes,
+          mainShip: j.mainShip,
+          raw: j,
+        ),
+      );
     }
 
     return entries;
@@ -327,15 +333,16 @@ class _JournalPageState extends ConsumerState<JournalPage>
                   indicatorWeight: 3,
                   dividerColor: AppColors.border(context),
                   splashFactory: NoSplash.splashFactory,
-                  overlayColor:
-                      WidgetStateProperty.all(Colors.transparent),
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 13),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                   unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: 13),
-                  tabs: _activeTabs
-                      .map((t) => Tab(text: t.label))
-                      .toList(),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                  tabs: _activeTabs.map((t) => Tab(text: t.label)).toList(),
                 ),
               ),
             ),
@@ -351,8 +358,7 @@ class _JournalPageState extends ConsumerState<JournalPage>
                 return EmptyState(
                   icon: Icons.menu_book_rounded,
                   title: 'Nada por aquí',
-                  subtitle:
-                      'No tienes lecturas en "${tab.label}" todavía.',
+                  subtitle: 'No tienes lecturas en "${tab.label}" todavía.',
                   actionLabel: l10n.findSomethingToRead,
                   onAction: () => GoRouter.of(context).go('/search'),
                 );
@@ -360,13 +366,11 @@ class _JournalPageState extends ConsumerState<JournalPage>
 
               return RefreshIndicator(
                 color: AppColors.accent(context),
-                onRefresh: () =>
-                    ref.refresh(allJournalsProvider.future),
+                onRefresh: () => ref.refresh(allJournalsProvider.future),
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
                   itemCount: tabEntries.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (_, i) => _JournalCard(
                     entry: tabEntries[i],
                     onTap: () => _openEntry(context, tabEntries[i]),
@@ -473,8 +477,9 @@ class _JournalCard extends StatelessWidget {
                             Icon(
                               Icons.favorite_rounded,
                               size: 10,
-                              color: AppColors.colorFanfic
-                                  .withValues(alpha: 0.7),
+                              color: AppColors.colorFanfic.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -483,8 +488,9 @@ class _JournalCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: textTheme.labelSmall?.copyWith(
-                                  color: AppColors.colorFanfic
-                                      .withValues(alpha: 0.85),
+                                  color: AppColors.colorFanfic.withValues(
+                                    alpha: 0.85,
+                                  ),
                                   fontSize: 10,
                                 ),
                               ),
@@ -497,27 +503,21 @@ class _JournalCard extends StatelessWidget {
 
                       // Separador + progreso
                       if (entry.progressLabel != null) ...[
-                        Divider(
-                          height: 16,
-                          color: AppColors.border(context),
-                        ),
+                        Divider(height: 16, color: AppColors.border(context)),
                         if (entry.progress != null) ...[
                           ClipRRect(
                             borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(
                               value: entry.progress,
                               minHeight: 4,
-                              backgroundColor:
-                                  color.withValues(alpha: 0.12),
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(color),
+                              backgroundColor: color.withValues(alpha: 0.12),
+                              valueColor: AlwaysStoppedAnimation<Color>(color),
                             ),
                           ),
                           const SizedBox(height: 5),
                         ],
                         Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               entry.progressLabel!,
@@ -531,8 +531,7 @@ class _JournalCard extends StatelessWidget {
                               Text(
                                 '${(entry.progress! * 100).round()}%',
                                 style: textTheme.labelSmall?.copyWith(
-                                  color:
-                                      color.withValues(alpha: 0.65),
+                                  color: color.withValues(alpha: 0.65),
                                   fontSize: 10,
                                 ),
                               ),
@@ -545,14 +544,14 @@ class _JournalCard extends StatelessWidget {
                           entry.personalNotes!.isNotEmpty) ...[
                         const SizedBox(height: 7),
                         Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.format_quote_rounded,
                               size: 11,
-                              color: AppColors.textSecondary(context)
-                                  .withValues(alpha: 0.35),
+                              color: AppColors.textSecondary(
+                                context,
+                              ).withValues(alpha: 0.35),
                             ),
                             const SizedBox(width: 3),
                             Expanded(
@@ -562,8 +561,8 @@ class _JournalCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: textTheme.bodySmall?.copyWith(
                                   color: AppColors.textSecondary(
-                                          context)
-                                      .withValues(alpha: 0.7),
+                                    context,
+                                  ).withValues(alpha: 0.7),
                                   fontStyle: FontStyle.italic,
                                   fontSize: 11,
                                   height: 1.4,
@@ -609,9 +608,8 @@ class _JournalCover extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: entry.coverUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) => Container(
-                        color: color.withValues(alpha: 0.1),
-                      ),
+                      placeholder: (_, _) =>
+                          Container(color: color.withValues(alpha: 0.1)),
                       errorWidget: (_, _, _) =>
                           _JournalCoverFallback(color: color, entry: entry),
                     )
@@ -634,20 +632,19 @@ class _JournalCoverFallback extends StatelessWidget {
   final Color color;
   final _JournalEntry entry;
 
-  const _JournalCoverFallback(
-      {required this.color, required this.entry});
+  const _JournalCoverFallback({required this.color, required this.entry});
 
   @override
   Widget build(BuildContext context) => Container(
-        color: color.withValues(alpha: 0.08),
-        child: Center(
-          child: Icon(
-            _typeIcon(entry.type),
-            size: 26,
-            color: color.withValues(alpha: 0.4),
-          ),
-        ),
-      );
+    color: color.withValues(alpha: 0.08),
+    child: Center(
+      child: Icon(
+        _typeIcon(entry.type),
+        size: 26,
+        color: color.withValues(alpha: 0.4),
+      ),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -658,33 +655,32 @@ class _JournalTypeBadge extends StatelessWidget {
   final _JournalEntry entry;
   final Color color;
 
-  const _JournalTypeBadge(
-      {required this.entry, required this.color});
+  const _JournalTypeBadge({required this.entry, required this.color});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(_typeIcon(entry.type), size: 9, color: color),
+        const SizedBox(width: 3),
+        Text(
+          _typeLabel(entry.type).toUpperCase(),
+          style: TextStyle(
+            color: color,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.6,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(_typeIcon(entry.type), size: 9, color: color),
-            const SizedBox(width: 3),
-            Text(
-              _typeLabel(entry.type).toUpperCase(),
-              style: TextStyle(
-                color: color,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -695,30 +691,29 @@ class _JournalRatingBadge extends StatelessWidget {
   final int rating;
   final Color emphasis;
 
-  const _JournalRatingBadge(
-      {required this.rating, required this.emphasis});
+  const _JournalRatingBadge({required this.rating, required this.emphasis});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: emphasis.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: emphasis.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.star_rounded, size: 10, color: emphasis),
+        const SizedBox(width: 2),
+        Text(
+          '$rating',
+          style: TextStyle(
+            color: emphasis,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.star_rounded, size: 10, color: emphasis),
-            const SizedBox(width: 2),
-            Text(
-              '$rating',
-              style: TextStyle(
-                color: emphasis,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 }

@@ -464,6 +464,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             ...statuses.map((s) {
               final c = statusColor(s);
               return ListTile(
+                tileColor: Theme.of(context).colorScheme.surface,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                 leading: Container(
                   width: 10,

@@ -1,3 +1,4 @@
+import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
@@ -44,9 +45,9 @@ class JournalItemEditPage extends ConsumerWidget {
   // ── Configuración visual por tipo ──────────────────────────────────────────
 
   ({Color accent, IconData icon, String label}) get _typeConfig => switch (type) {
-    JournalType.book  => (accent: const Color(0xFFA87C80), icon: Icons.menu_book_rounded,   label: 'Libro'),
-    JournalType.manga => (accent: const Color(0xFF5B7FA6), icon: Icons.auto_stories_rounded, label: 'Manga'),
-    JournalType.fanfic=> (accent: const Color(0xFF8B6BAE), icon: Icons.favorite_rounded,     label: 'Fanfic'),
+    JournalType.book  => (accent: AppColors.colorLibro, icon: Icons.menu_book_rounded,   label: 'Libro'),
+    JournalType.manga => (accent: AppColors.colorManga, icon: Icons.auto_stories_rounded, label: 'Manga'),
+    JournalType.fanfic=> (accent: AppColors.colorFanfic, icon: Icons.favorite_rounded,     label: 'Fanfic'),
   };
 
   Color get _statusColor => switch (journal.status.trim().toUpperCase()) {

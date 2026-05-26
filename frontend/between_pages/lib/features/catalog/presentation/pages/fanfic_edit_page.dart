@@ -33,6 +33,7 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
   late final TextEditingController _tagsController;
   late final TextEditingController _mainShipController;
   late final TextEditingController _themeController;
+  String _publicationStatus = 'ONGOING';
 
   @override
   void initState() {
@@ -47,6 +48,11 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
     _tagsController           = TextEditingController(text: (f?.tags ?? []).join(', '));
     _mainShipController       = TextEditingController(text: f?.mainShip ?? '');
     _themeController          = TextEditingController(text: f?.theme ?? '');
+
+    _publicationStatus = f?.publicationStatus ?? 'ONGOING';
+    if (!['ONGOING', 'COMPLETED', 'HIATUS', 'CANCELLED'].contains(_publicationStatus)) {
+      _publicationStatus = 'ONGOING';
+    }
   }
 
   @override
@@ -77,7 +83,7 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
         totalChapters:     int.tryParse(_totalChaptersController.text),
         coverUrl:          _coverUrlController.text.trim(),
         description:       _descriptionController.text.trim(),
-        publicationStatus: widget.fanfic?.publicationStatus ?? 'ONGOING',
+        publicationStatus: _publicationStatus,
         mainShip:          _mainShipController.text.trim().isEmpty
             ? null
             : _mainShipController.text.trim(),
@@ -188,7 +194,7 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
                 const SizedBox(height: 10),
                 AppTextField(
                   controller:  _authorController,
-                  label:       'Autor / Handle',
+                  label:       'Autor / Fandom creator',
                   icon:        Icons.person_outline_rounded,
                   accentColor: _accent,
                   isRequired:  true,
@@ -199,6 +205,13 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
                   label:       'Fandom / Material de origen',
                   hint:        'ej. Harry Potter, LOTR…',
                   icon:        Icons.auto_awesome_rounded,
+                  accentColor: _accent,
+                ),
+                const SizedBox(height: 10),
+                AppTextField(
+                  controller:  _coverUrlController,
+                  label:       'Enlace de la portada (URL)',
+                  icon:        Icons.link_rounded,
                   accentColor: _accent,
                 ),
               ],
@@ -218,10 +231,37 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
                 const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: _publicationStatus,
+                  decoration: InputDecoration(
+                    labelText: 'Estado de publicación',
+                    prefixIcon: const Icon(Icons.schedule_rounded, color: _accent),
+                    filled: true,
+                    fillColor: AppColors.card(context),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppColors.border(context)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _accent, width: 1.5),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'ONGOING', child: Text('En emisión')),
+                    DropdownMenuItem(value: 'COMPLETED', child: Text('Completada')),
+                    DropdownMenuItem(value: 'HIATUS', child: Text('En pausa (Hiatus)')),
+                    DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelada')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _publicationStatus = val);
+                  },
+                ),
+                const SizedBox(height: 10),
                 AppTextField(
                   controller:  _mainShipController,
                   label:       'Ship principal',
-                  hint:        'ej. Dramione, Zutara…',
+                  hint:        'ej. Drarry, Bakudeku...',
                   icon:        Icons.favorite_border_rounded,
                   accentColor: _accent,
                 ),
