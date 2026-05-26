@@ -1,5 +1,7 @@
 package com.calonuria.backend.features.journal.service;
 
+import com.calonuria.backend.features.catalog.model.UserCatalog;
+import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
 import com.calonuria.backend.features.journal.dto.MangaJournalRegistrationDTO;
 import com.calonuria.backend.features.journal.dto.MangaJournalResponseDTO;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
@@ -17,13 +19,16 @@ public class MangaJournalService extends BaseJournalService<MangaJournal, MangaJ
 
     private final MangaJournalRepository mangaJournalRepository;
     private final MangaService mangaService;
+    private final UserCatalogRepository userCatalogRepository;
 
     public MangaJournalService(MangaJournalRepository mangaJournalRepository,
                                UserRepository userRepository,
-                               MangaService mangaService) {
+                               MangaService mangaService,
+                               UserCatalogRepository userCatalogRepository) {
         super(mangaJournalRepository, userRepository);
         this.mangaJournalRepository = mangaJournalRepository;
         this.mangaService = mangaService;
+        this.userCatalogRepository = userCatalogRepository;
     }
 
     @Override
@@ -33,6 +38,15 @@ public class MangaJournalService extends BaseJournalService<MangaJournal, MangaJ
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
         
         Manga manga = mangaService.findOrCreate(dto.getMangaId(), dto.getMalId());
+
+        // Add to user's catalog
+        userCatalogRepository.findByUserAndManga(user, manga).orElseGet(() -> {
+            UserCatalog newCatalogEntry = new UserCatalog();
+            newCatalogEntry.setUser(user);
+            newCatalogEntry.setManga(manga);
+            newCatalogEntry.setItemType("MANGA");
+            return userCatalogRepository.save(newCatalogEntry);
+        });
 
         MangaJournal journal = mangaJournalRepository.findByUserAndManga(user, manga)
                 .orElse(new MangaJournal());

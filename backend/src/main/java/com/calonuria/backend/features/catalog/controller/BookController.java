@@ -31,6 +31,12 @@ public class BookController extends BaseCatalogController<Book, BookResponseDTO,
         super(bookService);
     }
 
+    @Operation(summary = "Obtener todos los libros del catálogo de un usuario")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<BookResponseDTO>> getBooksByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getBooksByUserId(userId));
+    }
+
     /**
      * Searches for books in the local database by title.
      *

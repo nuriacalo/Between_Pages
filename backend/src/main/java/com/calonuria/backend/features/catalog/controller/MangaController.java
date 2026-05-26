@@ -10,34 +10,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller that handles HTTP requests related to the Manga Catalog.
- * Extends {@link BaseCatalogController} to inherit standard CRUD operations
- * while providing manga-specific endpoints.
- * 
- * <p>Base path: {@code /api/manga}</p>
- */
 @RestController
 @RequestMapping("/api/manga")
-@Tag(name = "Catálogo de Manga", description = "Endpoints para búsqueda y gestión de mangas en la base de datos local")
+@Tag(name = "Catálogo de Mangas", description = "Endpoints para búsqueda y gestión de mangas en la base de datos local")
 public class MangaController extends BaseCatalogController<Manga, MangaResponseDTO, Long, MangaService> {
 
-    /**
-     * Constructs a new {@code MangaController}.
-     *
-     * @param mangaService the service responsible for manga business logic.
-     */
     public MangaController(MangaService mangaService) {
         super(mangaService);
     }
 
-    /**
-     * Searches for mangas in the local database by title.
-     *
-     * @param title the search query string (must not be empty)
-     * @return a {@link ResponseEntity} containing a list of {@link MangaResponseDTO} matching the query,
-     *         or a 400 Bad Request if the search string is empty.
-     */
+    @Operation(summary = "Obtener todos los mangas del catálogo de un usuario")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<MangaResponseDTO>> getMangasByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getMangasByUserId(userId));
+    }
+
     @Operation(summary = "Buscar mangas en la base de datos local")
     @GetMapping("/search")
     @Override
@@ -48,26 +35,12 @@ public class MangaController extends BaseCatalogController<Manga, MangaResponseD
         return ResponseEntity.ok(service.searchByTitle(title));
     }
 
-    /**
-     * Saves a new manga into the local catalog.
-     *
-     * @param dto the payload containing manga details to save
-     * @return a {@link ResponseEntity} containing the saved {@link MangaResponseDTO}
-     */
     @Operation(summary = "Guardar un nuevo manga en el catálogo")
     @PostMapping
     public ResponseEntity<MangaResponseDTO> saveManga(@RequestBody MangaResponseDTO dto) {
         return ResponseEntity.ok(service.createManga(dto));
     }
 
-    /**
-     * Updates an existing manga in the local catalog.
-     *
-     * @param id  the unique identifier of the manga to update
-     * @param dto the payload containing updated manga details
-     * @return a {@link ResponseEntity} containing the updated {@link MangaResponseDTO},
-     *         or 404 Not Found if the manga does not exist.
-     */
     @Operation(summary = "Actualizar un manga existente")
     @PutMapping("/{id}")
     public ResponseEntity<MangaResponseDTO> updateManga(@PathVariable Long id, @RequestBody MangaResponseDTO dto) {

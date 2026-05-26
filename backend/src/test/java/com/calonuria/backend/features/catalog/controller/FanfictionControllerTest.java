@@ -51,7 +51,7 @@ class FanfictionControllerTest {
     @Test
     void saveFanfic() throws Exception {
         FanfictionResponseDTO dto = new FanfictionResponseDTO();
-        when(fanfictionService.saveFromDTO(dto)).thenReturn(dto);
+        when(fanfictionService.createFanfic(dto)).thenReturn(dto);
 
         mockMvc.perform(post("/api/fanfiction")
                         .contentType(MediaType.APPLICATION_JSON)

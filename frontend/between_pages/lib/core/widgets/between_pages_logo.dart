@@ -7,16 +7,21 @@ class BetweenPagesLogo extends StatelessWidget {
 
   const BetweenPagesLogo({
     super.key, 
-    this.fontSize = 28.0,
+    this.fontSize = 108.0,
     this.useImage = false, 
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
-children: [
+      children: [
+        // TEMP: marcador para verificar que cambie fontSize
+        Text(
+          'fontSize=$fontSize useImage=$useImage',
+          style: const TextStyle(color: Colors.red, fontSize: 12),
+        ),
         if (useImage)
           Image.asset(
             'assets/img/logo.png',
@@ -24,44 +29,10 @@ children: [
           )
         else
           Icon(
-            Icons.menu_book_rounded, 
+            Icons.menu_book_rounded,
             color: AppColors.accent(context),
             size: fontSize * 1.2,
           ),
-          
-        const SizedBox(width: 8.0),
-        
-        // Tipografía del logo
-        Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Between',
-                    style: TextStyle(
-                      fontFamily: 'Lora',
-                      fontWeight: FontWeight.w700, // Negrita para el "Between"
-                      color: AppColors.textPrimary(context),
-                      fontSize: fontSize,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'Pages',
-                    style: TextStyle(
-                      fontFamily: 'Lora',
-                      fontWeight: FontWeight.w500, 
-                      fontStyle: FontStyle.italic,
-                      color: AppColors.accent(context),
-                      fontSize: fontSize,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }

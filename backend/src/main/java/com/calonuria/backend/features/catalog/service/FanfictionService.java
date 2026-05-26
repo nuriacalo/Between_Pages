@@ -2,77 +2,93 @@ package com.calonuria.backend.features.catalog.service;
 
 import com.calonuria.backend.features.catalog.dto.FanfictionResponseDTO;
 import com.calonuria.backend.features.catalog.model.Fanfiction;
-import com.calonuria.backend.features.catalog.model.FanficTag;
-import com.calonuria.backend.features.catalog.model.Genre;
 import com.calonuria.backend.features.catalog.repository.FanfictionRepository;
-import com.calonuria.backend.features.catalog.repository.GenreRepository;
+import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.shared.service.BaseCatalogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Service class for managing fanfiction entities within the local catalog.
- * Extends {@link BaseCatalogService} to reuse common catalog logic.
- * Primarily designed to work alongside the AO3 Crawler Service to store
- * and update extracted fanfiction metadata.
- */
 @Service
 public class FanfictionService extends BaseCatalogService<Fanfiction, FanfictionResponseDTO, Long> {
 
     private final FanfictionRepository fanfictionRepository;
-    private final GenreRepository genreRepository;
+    private final UserCatalogRepository userCatalogRepository;
 
-    /**
-     * Constructs a new {@code FanfictionService}.
-     *
-     * @param fanfictionRepository the repository for fanfiction persistence
-     * @param genreRepository      the repository for genre persistence
-     */
-    public FanfictionService(FanfictionRepository fanfictionRepository, GenreRepository genreRepository) {
+    public FanfictionService(FanfictionRepository fanfictionRepository, UserCatalogRepository userCatalogRepository) {
         super(fanfictionRepository);
         this.fanfictionRepository = fanfictionRepository;
-        this.genreRepository = genreRepository;
+        this.userCatalogRepository = userCatalogRepository;
     }
 
-    /**
-     * Retrieves a fanfiction from the database or creates a new empty placeholder
-     * if it does not exist.
-     *
-     * @param fanfictionId the local database ID (optional)
-     * @param ao3Id        the Archive of Our Own ID (optional)
-     * @return the resolved or newly initialized {@link Fanfiction}
-     * @throws ResourceNotFoundException if the provided local ID does not exist
-     */
+    @Transactional(readOnly = true)
+    public List<FanfictionResponseDTO> getFanficsByUserId(Long userId) {
+        return userCatalogRepository.findByUserId(userId).stream()
+                .filter(uc -> "FANFIC".equals(uc.getItemType()) && uc.getFanfic() != null)
+                .map(uc -> mapToDTO(uc.getFanfic()))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public Fanfiction findOrCreate(Long fanfictionId, String ao3Id) {
-        if (fanfictionId != null) {
-            return fanfictionRepository.findById(fanfictionId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Fanfiction no encontrado con id: " + fanfictionId));
+    public Fanfiction findOrCreate(Long fanficId, String ao3Id) {
+        if (fanficId != null) {
+            return fanfictionRepository.findById(fanficId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Fanfic no encontrado con id: " + fanficId));
         }
-        if (ao3Id != null && !ao3Id.isEmpty()) {
+
+        if (StringUtils.hasText(ao3Id)) {
             return fanfictionRepository.findByAo3Id(ao3Id)
-                    .orElseGet(() -> fanfictionRepository.save(new Fanfiction(ao3Id)));
+                    .orElseGet(() -> {
+                        Fanfiction newFanfic = new Fanfiction();
+                        newFanfic.setAo3Id(ao3Id);
+                        return fanfictionRepository.save(newFanfic);
+                    });
         }
-        // Si ambos son nulos, crea una nueva instancia sin ao3Id.
-        // El título y otros detalles se pueden añadir después.
-        return fanfictionRepository.save(new Fanfiction());
+
+        throw new IllegalArgumentException("Se debe proporcionar un fanficId o un ao3Id para encontrar o crear un fanfic.");
     }
 
-    /**
-     * Updates an existing fanfiction record with the properties provided in the DTO.
-     *
-     * @param id  the local database ID of the fanfiction to update
-     * @param dto the data to apply
-     * @return an {@link Optional} containing the updated DTO, or empty if not found
-     */
+    @Override
+    public List<FanfictionResponseDTO> searchByTitle(String title) {
+        return fanfictionRepository.findByTitleContainingIgnoreCase(title)
+                .stream().map(this::mapToDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FanfictionResponseDTO> searchByStatus(String status) {
+        return fanfictionRepository.findByPublicationStatusIgnoreCase(status)
+                .stream().map(this::mapToDTO).toList();
+    }
+
+    @Override
+    public FanfictionResponseDTO mapToDTO(Fanfiction fanfic) {
+        FanfictionResponseDTO dto = new FanfictionResponseDTO();
+        dto.setId(fanfic.getId());
+        dto.setAo3Id(fanfic.getAo3Id());
+        dto.setTitle(fanfic.getTitle());
+        dto.setAuthor(fanfic.getAuthor());
+        dto.setSourceMaterial(fanfic.getSourceMaterial());
+        dto.setDescription(fanfic.getDescription());
+        dto.setCoverUrl(fanfic.getCoverUrl());
+        dto.setMainShip(fanfic.getMainShip());
+        dto.setTheme(fanfic.getTheme());
+        dto.setCurrentChapter(fanfic.getCurrentChapter());
+        dto.setTotalChapters(fanfic.getTotalChapters());
+        dto.setPublicationStatus(fanfic.getPublicationStatus());
+        return dto;
+    }
+
+    @Transactional
+    public FanfictionResponseDTO createFanfic(FanfictionResponseDTO dto) {
+        Fanfiction fanfic = createFanficFromDto(dto);
+        return mapToDTO(fanfic);
+    }
+
     @Transactional
     public Optional<FanfictionResponseDTO> updateFanfic(Long id, FanfictionResponseDTO dto) {
         return fanfictionRepository.findById(id)
@@ -82,10 +98,13 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
                 });
     }
 
-    /**
-     * Internal helper method to map fields from a DTO to a persistent entity.
-     * Handles complex mapping for relationships like genres.
-     */
+    private Fanfiction createFanficFromDto(FanfictionResponseDTO dto) {
+        Fanfiction fanfic = new Fanfiction();
+        fanfic.setAo3Id(dto.getAo3Id());
+        updateFanficFromDto(fanfic, dto);
+        return fanfictionRepository.save(fanfic);
+    }
+
     private void updateFanficFromDto(Fanfiction fanfic, FanfictionResponseDTO dto) {
         fanfic.setTitle(dto.getTitle());
         fanfic.setAuthor(dto.getAuthor());
@@ -97,123 +116,5 @@ public class FanfictionService extends BaseCatalogService<Fanfiction, Fanfiction
         fanfic.setCurrentChapter(dto.getCurrentChapter());
         fanfic.setTotalChapters(dto.getTotalChapters());
         fanfic.setPublicationStatus(dto.getPublicationStatus());
-
-        if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
-            Set<Genre> genres = dto.getGenres().stream()
-                    .filter(StringUtils::hasText) // Filtramos textos vacíos de la lista
-                    .map(String::trim)
-                    .map(genreName -> genreRepository.findByNameIgnoreCase(genreName)
-                            .orElseGet(() -> genreRepository.save(new Genre(null, genreName))))
-                    .collect(Collectors.toSet());
-            fanfic.setGenres(genres);
-        } else {
-            // Si la lista viene vacía o nula, limpiamos los géneros
-            fanfic.setGenres(new HashSet<>());
-        }
-    }
-
-    /**
-     * Persists a fanfiction entity only if another fanfiction with the same
-     * AO3 ID does not already exist in the database.
-     *
-     * @param fanfic the fanfiction entity to save
-     * @return the saved (or pre-existing) {@link FanfictionResponseDTO}
-     */
-    @Transactional
-    public FanfictionResponseDTO saveIfNotExists(Fanfiction fanfic) {
-        if (fanfic.getAo3Id() != null) {
-            Optional<Fanfiction> existing = fanfictionRepository.findByAo3Id(fanfic.getAo3Id());
-            if (existing.isPresent()) {
-                return mapToDTO(existing.get());
-            }
-        }
-        return saveAndMap(fanfic);
-    }
-
-    /**
-     * Creates and saves a new fanfiction from a DTO representation if it doesn't already exist.
-     *
-     * @param dto the payload representing the new fanfiction
-     * @return the mapped {@link FanfictionResponseDTO}
-     */
-    @Transactional
-    public FanfictionResponseDTO saveFromDTO(FanfictionResponseDTO dto) {
-        Fanfiction fanfic = new Fanfiction();
-        fanfic.setAo3Id(dto.getAo3Id());
-        updateFanficFromDto(fanfic, dto);
-        return saveIfNotExists(fanfic);
-    }
-
-    /**
-     * Alias method for finding a fanfiction by its database ID.
-     */
-    public Optional<FanfictionResponseDTO> getFanficById(Long id) {
-        return findById(id);
-    }
-
-    /**
-     * Searches for fanfictions matching the given title query, ignoring case.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<FanfictionResponseDTO> searchByTitle(String title) {
-        return fanfictionRepository.findByTitleContainingIgnoreCase(title)
-                .stream().map(this::mapToDTO).toList();
-    }
-
-    /**
-     * Searches for fanfictions by their publication status (e.g., 'ONGOING').
-     *
-     * @param status the publication status
-     * @return a list of matching {@link FanfictionResponseDTO}
-     */
-    @Transactional(readOnly = true)
-    public List<FanfictionResponseDTO> searchByStatus(String status) {
-        return fanfictionRepository.findByPublicationStatusIgnoreCase(status)
-                .stream().map(this::mapToDTO).toList();
-    }
-
-    /**
-     * Alias method for retrieving all fanfictions.
-     */
-    public List<FanfictionResponseDTO> getAllFanfics() {
-        return findAll();
-    }
-
-    /**
-     * Converts a raw {@link Fanfiction} entity into its corresponding DTO format.
-     * Uses Hibernate BatchSize optimization to efficiently fetch AO3 tags.
-     *
-     * @param fanfic the entity to map
-     * @return the mapped {@link FanfictionResponseDTO}
-     */
-    @Override
-    public FanfictionResponseDTO mapToDTO(Fanfiction fanfic) {
-        FanfictionResponseDTO dto = new FanfictionResponseDTO();
-        dto.setId(fanfic.getId());
-        dto.setAo3Id(fanfic.getAo3Id());
-        dto.setTitle(fanfic.getTitle());
-        dto.setAuthor(fanfic.getAuthor());
-        dto.setSourceMaterial(fanfic.getSourceMaterial());
-        dto.setDescription(fanfic.getDescription());
-        dto.setCoverUrl(fanfic.getCoverUrl());
-
-        if (fanfic.getGenres() != null && !fanfic.getGenres().isEmpty()) {
-            dto.setGenres(fanfic.getGenres().stream().map(Genre::getName).collect(Collectors.toList()));
-        }
-
-        dto.setMainShip(fanfic.getMainShip());
-        dto.setTheme(fanfic.getTheme());
-        dto.setCurrentChapter(fanfic.getCurrentChapter());
-        dto.setTotalChapters(fanfic.getTotalChapters());
-        dto.setPublicationStatus(fanfic.getPublicationStatus());
-
-        // Cargar tags eficientemente gracias a @BatchSize en la entidad
-        if (fanfic.getTags() != null) {
-            List<String> tags = fanfic.getTags().stream().map(FanficTag::getTag).toList();
-            dto.setTags(tags);
-        }
-
-        return dto;
     }
 }

@@ -1,5 +1,7 @@
 package com.calonuria.backend.features.journal.service;
 
+import com.calonuria.backend.features.catalog.model.UserCatalog;
+import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
 import com.calonuria.backend.features.journal.dto.FanficJournalRegistrationDTO;
 import com.calonuria.backend.features.journal.dto.FanficJournalResponseDTO;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
@@ -18,13 +20,16 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
 
     private final FanficJournalRepository fanficJournalRepository;
     private final FanfictionService fanfictionService;
+    private final UserCatalogRepository userCatalogRepository;
 
     public FanficJournalService(FanficJournalRepository fanficJournalRepository,
                                 UserRepository userRepository,
-                                FanfictionService fanfictionService) {
+                                FanfictionService fanfictionService,
+                                UserCatalogRepository userCatalogRepository) {
         super(fanficJournalRepository, userRepository);
         this.fanficJournalRepository = fanficJournalRepository;
         this.fanfictionService = fanfictionService;
+        this.userCatalogRepository = userCatalogRepository;
     }
 
     @Override
@@ -34,6 +39,15 @@ public class FanficJournalService extends BaseJournalService<FanficJournal, Fanf
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
         
         Fanfiction fanfic = fanfictionService.findOrCreate(dto.getFanfictionId(), dto.getAo3Id());
+
+        // Add to user's catalog
+        userCatalogRepository.findByUserAndFanfic(user, fanfic).orElseGet(() -> {
+            UserCatalog newCatalogEntry = new UserCatalog();
+            newCatalogEntry.setUser(user);
+            newCatalogEntry.setFanfic(fanfic);
+            newCatalogEntry.setItemType("FANFIC");
+            return userCatalogRepository.save(newCatalogEntry);
+        });
 
         if (fanfic.getTitle() == null || fanfic.getTitle().isEmpty()) {
             fanfic.setTitle(dto.getTitle() != null ? dto.getTitle() : "Título no disponible");

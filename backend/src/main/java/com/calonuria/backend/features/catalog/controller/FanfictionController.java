@@ -10,61 +10,37 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST Controller that handles HTTP requests related to the Fanfiction Catalog.
- * Extends {@link BaseCatalogController} to inherit standard CRUD operations
- * while providing fanfiction-specific endpoints.
- * 
- * <p>Base path: {@code /api/fanfiction}</p>
- */
 @RestController
-@RequestMapping("/api/fanfiction")
-@Tag(name = "Catálogo de Fanfiction", description = "Endpoints para búsqueda y gestión de fanfictions")
+@RequestMapping("/api/fanfic")
+@Tag(name = "Catálogo de Fanfics", description = "Endpoints para búsqueda y gestión de fanfics en la base de datos local")
 public class FanfictionController extends BaseCatalogController<Fanfiction, FanfictionResponseDTO, Long, FanfictionService> {
 
-    /**
-     * Constructs a new {@code FanfictionController}.
-     *
-     * @param fanfictionService the service responsible for fanfiction business logic.
-     */
     public FanfictionController(FanfictionService fanfictionService) {
         super(fanfictionService);
     }
 
-    /**
-     * Searches for fanfictions in the local database by publication status.
-     *
-     * @param status the publication status query string (e.g., 'ONGOING', 'COMPLETED')
-     * @return a {@link ResponseEntity} containing a list of {@link FanfictionResponseDTO} matching the status
-     */
-    @Operation(summary = "Buscar fanfics por estado de publicación")
-    @GetMapping("/status")
-    public ResponseEntity<List<FanfictionResponseDTO>> searchByStatus(@RequestParam String status) {
-        // Asumimos que el servicio tiene un método para buscar por estado.
-        return ResponseEntity.ok(service.searchByStatus(status));
+    @Operation(summary = "Obtener todos los fanfics del catálogo de un usuario")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<FanfictionResponseDTO>> getFanficsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getFanficsByUserId(userId));
     }
 
-    /**
-     * Saves a new fanfiction into the local catalog.
-     *
-     * @param dto the payload containing fanfiction details to save
-     * @return a {@link ResponseEntity} containing the saved {@link FanfictionResponseDTO}
-     */
+    @Operation(summary = "Buscar fanfics en la base de datos local")
+    @GetMapping("/search")
+    @Override
+    public ResponseEntity<List<FanfictionResponseDTO>> searchByTitle(@RequestParam(value = "q") String title) {
+        if (title.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(service.searchByTitle(title));
+    }
+
     @Operation(summary = "Guardar un nuevo fanfic en el catálogo")
     @PostMapping
     public ResponseEntity<FanfictionResponseDTO> saveFanfic(@RequestBody FanfictionResponseDTO dto) {
-        // Asumimos que el servicio tiene un método para manejar esto.
-        return ResponseEntity.ok(service.saveFromDTO(dto));
+        return ResponseEntity.ok(service.createFanfic(dto));
     }
 
-    /**
-     * Updates an existing fanfiction in the local catalog.
-     *
-     * @param id  the unique identifier of the fanfiction to update
-     * @param dto the payload containing updated fanfiction details
-     * @return a {@link ResponseEntity} containing the updated {@link FanfictionResponseDTO},
-     *         or 404 Not Found if the fanfiction does not exist.
-     */
     @Operation(summary = "Actualizar un fanfic existente")
     @PutMapping("/{id}")
     public ResponseEntity<FanfictionResponseDTO> updateFanfic(@PathVariable Long id, @RequestBody FanfictionResponseDTO dto) {

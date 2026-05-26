@@ -3,8 +3,10 @@ package com.calonuria.backend.features.catalog.service;
 import com.calonuria.backend.features.catalog.dto.BookResponseDTO;
 import com.calonuria.backend.features.catalog.model.Book;
 import com.calonuria.backend.features.catalog.model.Genre;
+import com.calonuria.backend.features.catalog.model.UserCatalog;
 import com.calonuria.backend.features.catalog.repository.BookRepository;
 import com.calonuria.backend.features.catalog.repository.GenreRepository;
+import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
 import com.calonuria.backend.features.catalog.service.external.GoogleBooksService;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
 import com.calonuria.backend.shared.service.BaseCatalogService;
@@ -16,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long> {
@@ -23,12 +26,22 @@ public class BookService extends BaseCatalogService<Book, BookResponseDTO, Long>
     private final BookRepository bookRepository;
     private final GenreRepository genreRepository;
     private final GoogleBooksService googleBooksService;
+    private final UserCatalogRepository userCatalogRepository;
 
-    public BookService(BookRepository bookRepository, GenreRepository genreRepository, GoogleBooksService googleBooksService) {
+    public BookService(BookRepository bookRepository, GenreRepository genreRepository, GoogleBooksService googleBooksService, UserCatalogRepository userCatalogRepository) {
         super(bookRepository);
         this.bookRepository = bookRepository;
         this.genreRepository = genreRepository;
         this.googleBooksService = googleBooksService;
+        this.userCatalogRepository = userCatalogRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookResponseDTO> getBooksByUserId(Long userId) {
+        return userCatalogRepository.findByUserId(userId).stream()
+                .filter(uc -> "BOOK".equals(uc.getItemType()) && uc.getBook() != null)
+                .map(uc -> mapToDTO(uc.getBook()))
+                .collect(Collectors.toList());
     }
 
     @Transactional

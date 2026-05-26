@@ -1,5 +1,7 @@
 package com.calonuria.backend.features.journal.service;
 
+import com.calonuria.backend.features.catalog.model.UserCatalog;
+import com.calonuria.backend.features.catalog.repository.UserCatalogRepository;
 import com.calonuria.backend.features.journal.dto.BookJournalRegistrationDTO;
 import com.calonuria.backend.features.journal.dto.BookJournalResponseDTO;
 import com.calonuria.backend.shared.exception.ResourceNotFoundException;
@@ -17,13 +19,16 @@ public class BookJournalService extends BaseJournalService<BookJournal, BookJour
 
     private final BookJournalRepository bookJournalRepository;
     private final BookService bookService;
+    private final UserCatalogRepository userCatalogRepository;
 
     public BookJournalService(BookJournalRepository bookJournalRepository,
                               UserRepository userRepository,
-                              BookService bookService) {
+                              BookService bookService,
+                              UserCatalogRepository userCatalogRepository) {
         super(bookJournalRepository, userRepository);
         this.bookJournalRepository = bookJournalRepository;
         this.bookService = bookService;
+        this.userCatalogRepository = userCatalogRepository;
     }
 
     @Override
@@ -33,6 +38,15 @@ public class BookJournalService extends BaseJournalService<BookJournal, BookJour
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + dto.getUserId()));
 
         Book book = bookService.findOrCreateBook(dto.getBookId(), dto.getGoogleBooksId());
+
+        // Add to user's catalog
+        userCatalogRepository.findByUserAndBook(user, book).orElseGet(() -> {
+            UserCatalog newCatalogEntry = new UserCatalog();
+            newCatalogEntry.setUser(user);
+            newCatalogEntry.setBook(book);
+            newCatalogEntry.setItemType("BOOK");
+            return userCatalogRepository.save(newCatalogEntry);
+        });
 
         BookJournal journal = bookJournalRepository.findByUserAndBook(user, book)
                 .orElse(new BookJournal());
