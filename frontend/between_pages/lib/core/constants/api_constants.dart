@@ -1,9 +1,9 @@
 class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    // Usa la IP de tu red local (192.168.0.15). Ajústalo si cambia tu red.
+    // Usa la IP de tu red local. Ajústalo si cambia tu red.
     // Cambiado a tu IP de red activa (en0):
-    defaultValue: 'http://192.168.0.18:8080/api',
+    defaultValue: 'http://10.86.122.198:8080/api',
   );
 
   // JIKAN API (MyAnimeList - Unofficial)
@@ -21,6 +21,9 @@ class ApiConstants {
   // USERS (/api/user)
   static const userRegister = '$baseUrl/user/register';
   static const user = '$baseUrl/user/';
+
+  // CATALOG
+  static const userCatalog = '$baseUrl/catalog/user';
 
   // BOOKS (/api/book)
   static const bookSearch = '$baseUrl/book/search';
