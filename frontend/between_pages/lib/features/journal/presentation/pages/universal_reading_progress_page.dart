@@ -2,14 +2,12 @@ import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/manga_search_repository.dart';
-import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
 import 'package:between_pages/features/journal/domain/records/book_journal_record_dto.dart';
 import 'package:between_pages/features/journal/domain/manga_journal_record_dto.dart';
@@ -107,7 +105,7 @@ class _BookReadingProgressPageState
       _totalPagesLocal = totalPages;
     });
     try {
-      final repo = ref.read(bookSearchRepositoryProvider);
+      final repo = ref.read(catalogRepositoryProvider);
       final bookToSave = BookResponseDTO(
         idBook: _book.idBook,
         googleBooksId: _book.googleBooksId,
@@ -362,7 +360,7 @@ class _MangaReadingProgressPageState
       _totalChaptersLocal = totalChapters;
     });
     try {
-      final repo = ref.read(mangaSearchRepositoryProvider);
+      final repo = ref.read(catalogRepositoryProvider);
       final mangaToSave = MangaResponseDTO(
         idManga: _manga.idManga,
         malId: _manga.malId,
@@ -616,7 +614,7 @@ class _FanficReadingProgressPageState
       _totalChaptersLocal = totalChapters;
     });
     try {
-      final repo = ref.read(fanficSearchRepositoryProvider);
+      final repo = ref.read(catalogRepositoryProvider);
       final fanficToSave = FanfictionResponseDTO(
         idFanfic: _fanfic.idFanfic,
         ao3Id: _fanfic.ao3Id,
@@ -1024,7 +1022,7 @@ class _ProgressBody extends StatelessWidget {
                         tween: Tween(begin: 0, end: progress),
                         duration: const Duration(milliseconds: 1100),
                         curve: Curves.easeOutCubic,
-                        builder: (_, val, __) => CircularProgressIndicator(
+                        builder: (_, val, _) => CircularProgressIndicator(
                           value: val,
                           strokeWidth: 13,
                           backgroundColor: Colors.transparent,
