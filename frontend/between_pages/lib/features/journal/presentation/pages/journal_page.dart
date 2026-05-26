@@ -119,11 +119,6 @@ class _JournalPageState extends ConsumerState<JournalPage>
       color: AppColors.statusReading,
     ),
     _TabDef(
-      label: 'Pendiente',
-      statuses: ['TBR', 'WISHLIST'],
-      color: AppColors.statusPending,
-    ),
-    _TabDef(
       label: 'Terminado',
       statuses: ['FINISHED'],
       color: AppColors.statusFinished,
@@ -237,7 +232,6 @@ class _JournalPageState extends ConsumerState<JournalPage>
       _alwaysTabs[0],
       if (hasStatus(_conditionalTabs[0].statuses)) _conditionalTabs[0],
       _alwaysTabs[1],
-      _alwaysTabs[2],
       if (hasStatus(_conditionalTabs[1].statuses)) _conditionalTabs[1],
     ];
   }
@@ -305,23 +299,14 @@ class _JournalPageState extends ConsumerState<JournalPage>
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: GestureDetector(
-                  onTap: () => context.push('/global-notes'),
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: AppColors.card(context),
-                      borderRadius: BorderRadius.circular(10),
-                      border:
-                          Border.all(color: AppColors.border(context)),
-                    ),
-                    child: Icon(
-                      Icons.note_alt_outlined,
-                      size: 18,
-                      color: AppColors.textSecondary(context),
-                    ),
+                child: IconButton(
+                  onPressed: () => context.push('/global-notes'),
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    size: 24,
+                    color: AppColors.textSecondary(context),
                   ),
+                  tooltip: 'Notas Globales',
                 ),
               ),
             ],
@@ -397,7 +382,7 @@ class _JournalPageState extends ConsumerState<JournalPage>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// _JournalCard  — diseño tipo entrada de diario, sin portada
+// _JournalCard
 // ─────────────────────────────────────────────────────────────────────────────
 class _JournalCard extends StatelessWidget {
   final _JournalEntry entry;
@@ -412,25 +397,30 @@ class _JournalCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      // IntrinsicHeight permite que la barra lateral se estire
-      // al alto real del contenido sin necesitar altura fija
-      child: IntrinsicHeight(
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.card(context),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border(context)),
-          ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card(context),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border(context)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Portada ─────────────────────────────────────────────────
-              _JournalCover(entry: entry, color: color),
+              // ── Left accent bar ─────────────────────────────────────
+              Container(width: 4, color: color),
+
+              // ── Cover ───────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: _JournalCover(entry: entry, color: color),
+              ),
 
               // ── Contenido ───────────────────────────────────────────────
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(0, 12, 12, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -607,42 +597,35 @@ class _JournalCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(14),
-            bottomLeft: Radius.circular(14),
-          ),
-          child: SizedBox(
-            width: 78,
-            child: entry.coverUrl != null && entry.coverUrl!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: entry.coverUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => Container(
-                      color: color.withValues(alpha: 0.1),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: color,
-                        ),
+    return SizedBox(
+      width: 58,
+      height: 84,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox.expand(
+              child: entry.coverUrl != null && entry.coverUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: entry.coverUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => Container(
+                        color: color.withValues(alpha: 0.1),
                       ),
-                    ),
-                    errorWidget: (_, _, _) =>
-                        _JournalCoverFallback(
-                            color: color, entry: entry),
-                  )
-                : _JournalCoverFallback(color: color, entry: entry),
+                      errorWidget: (_, _, _) =>
+                          _JournalCoverFallback(color: color, entry: entry),
+                    )
+                  : _JournalCoverFallback(color: color, entry: entry),
+            ),
           ),
-        ),
-        if (entry.ownership != null)
-          Positioned(
-            top: 5,
-            left: 5,
-            child: OwnershipBadge(ownership: entry.ownership!),
-          ),
-      ],
+          if (entry.ownership != null)
+            Positioned(
+              top: 5,
+              left: 5,
+              child: OwnershipBadge(ownership: entry.ownership!),
+            ),
+        ],
+      ),
     );
   }
 }

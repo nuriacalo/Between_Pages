@@ -258,7 +258,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           ref.invalidate(gamificationProvider);
         }
       } else {
-        // --- NUEVA LOGICA: Añadir solo al catálogo ---
+        // --- Añadir solo al catálogo ---
         final repo = ref.read(userCatalogRepositoryProvider);
         switch (widget.type) {
           case CatalogItemType.book:
@@ -267,11 +267,11 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               book = await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(book);
               setState(() => _currentItem = book);
             }
-            await repo.addToCatalog(userId: userId, itemType: 'BOOK', bookId: book.idBook);
+            await repo.addToCatalog(userId: userId, itemType: 'BOOK', status: status, bookId: book.idBook);
             ref.invalidate(allBooksProvider);
           case CatalogItemType.manga:
             final m = _currentItem as MangaResponseDTO;
-            await repo.addToCatalog(userId: userId, itemType: 'MANGA', mangaId: m.idManga);
+            await repo.addToCatalog(userId: userId, itemType: 'MANGA', status: status, mangaId: m.idManga);
             ref.invalidate(allMangaProvider);
           case CatalogItemType.fanfic:
             var f = _currentItem as FanfictionResponseDTO;
@@ -279,7 +279,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
               f = await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(f);
               setState(() => _currentItem = f);
             }
-            await repo.addToCatalog(userId: userId, itemType: 'FANFIC', fanficId: f.idFanfic);
+            await repo.addToCatalog(userId: userId, itemType: 'FANFIC', status: status, fanficId: f.idFanfic);
             ref.invalidate(allFanficsProvider);
         }
       }
@@ -288,7 +288,6 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       final l10n = AppLocalizations.of(context)!;
       final msg = switch (status) {
         'READING' => l10n.startedReadingItem(_data.title),
-        'WISHLIST' => l10n.addedToWishlistItem(_data.title),
         'TBR' => l10n.addedToTbrItem(_data.title),
         'FINISHED' => l10n.finishedReadingItem(_data.title),
         _ => l10n.addedToJournalItem(_data.title),
@@ -419,8 +418,8 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       'FINISHED' => AppColors.statusFinished,
       'PAUSED' => AppColors.statusPending,
       'DROPPED' => AppColors.statusAbandoned,
-      'WISHLIST' => const Color(0xFF9FB3BC),
-      _ => AppColors.statusPending,
+      'TBR' => AppColors.statusPending,
+      _ => Colors.grey,
     };
 
     String statusLabel(String s) => switch (s) {
@@ -429,7 +428,6 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       'FINISHED' => l10n.statusFinished,
       'PAUSED' => l10n.statusPaused,
       'DROPPED' => l10n.statusDropped,
-      'WISHLIST' => l10n.statusWishlist,
       _ => s,
     };
 

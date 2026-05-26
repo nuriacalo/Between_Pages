@@ -12,6 +12,7 @@ class UserCatalogRepository {
   Future<void> addToCatalog({
     required int userId,
     required String itemType,
+    required String status,
     int? bookId,
     int? mangaId,
     int? fanficId,
@@ -22,6 +23,7 @@ class UserCatalogRepository {
         data: {
           'userId': userId,
           'itemType': itemType,
+          'status': status,
           'bookId': bookId,
           'mangaId': mangaId,
           'fanficId': fanficId,

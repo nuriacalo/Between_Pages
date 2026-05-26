@@ -102,100 +102,109 @@ class MediaListItem extends StatelessWidget {
         color:        isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Left accent bar ─────────────────────────────────────
-              Container(width: 4, color: accent),
+        child: Stack(
+          children: [
+            InkWell(
+              onTap: onTap,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── Left accent bar ─────────────────────────────────────
+                  Container(width: 4, color: accent),
 
-              // ── Cover ───────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: _Cover(
-                  coverUrl:    item.coverImageUrl,
-                  accent:      accent,
-                  fallback:    _fallbackIcon,
-                  ownership:   _ownership,
-                  status:      status,
-                ),
-              ),
-
-              // ── Body ────────────────────────────────────────────────
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 12, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment:  MainAxisAlignment.center,
-                    children: [
-                      // Type eyebrow
-                      Text(
-                        _typeLabel.toUpperCase(),
-                        style: TextStyle(
-                          fontSize:      9,
-                          fontWeight:    FontWeight.bold,
-                          color:         accent,
-                          letterSpacing: 0.7,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      // Title
-                      Text(
-                        item.title,
-                        maxLines: 2,
-                        overflow:  TextOverflow.ellipsis,
-                        style:     textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color:      AppColors.textPrimary(context),
-                          height:     1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      // Author
-                      Text(
-                        item.author,
-                        maxLines: 1,
-                        overflow:  TextOverflow.ellipsis,
-                        style:     textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary(context),
-                        ),
-                      ),
-                      // Genre chips
-                      if (genres.isNotEmpty) ...[
-                        const SizedBox(height: 7),
-                        Wrap(
-                          spacing:    5,
-                          runSpacing: 3,
-                          children: genres
-                              .map((g) => _GenreChip(label: g, color: accent))
-                              .toList(),
-                        ),
-                      ],
-                      // Type-specific extra row
-                      if (extra != null) ...[
-                        const SizedBox(height: 6),
-                        extra,
-                      ],
-                    ],
+                  // ── Cover ───────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: _Cover(
+                      coverUrl:    item.coverImageUrl,
+                      accent:      accent,
+                      fallback:    _fallbackIcon,
+                      ownership:   _ownership,
+                    ),
                   ),
-                ),
-              ),
 
-              // ── Chevron ─────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Icon(
-                  Icons.chevron_right_rounded,
-                  size:  18,
-                  color: colorScheme.outlineVariant,
-                ),
+                  // ── Body ────────────────────────────────────────────────
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 10, 12, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment:  MainAxisAlignment.center,
+                        children: [
+                          // Type eyebrow
+                          Text(
+                            _typeLabel.toUpperCase(),
+                            style: TextStyle(
+                              fontSize:      9,
+                              fontWeight:    FontWeight.bold,
+                              color:         accent,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          // Title
+                          Text(
+                            item.title,
+                            maxLines: 2,
+                            overflow:  TextOverflow.ellipsis,
+                            style:     textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color:      AppColors.textPrimary(context),
+                              height:     1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          // Author
+                          Text(
+                            item.author,
+                            maxLines: 1,
+                            overflow:  TextOverflow.ellipsis,
+                            style:     textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary(context),
+                            ),
+                          ),
+                          // Genre chips
+                          if (genres.isNotEmpty) ...[
+                            const SizedBox(height: 7),
+                            Wrap(
+                              spacing:    5,
+                              runSpacing: 3,
+                              children: genres
+                                  .map((g) => _GenreChip(label: g, color: accent))
+                                  .toList(),
+                            ),
+                          ],
+                          // Type-specific extra row
+                          if (extra != null) ...[
+                            const SizedBox(height: 6),
+                            extra,
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // ── Chevron ─────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Icon(
+                      Icons.chevron_right_rounded,
+                      size:  18,
+                      color: colorScheme.outlineVariant,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          ),
+              ),
+            ),
+            if (status != null)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: _StatusBadge(status: status!),
+              ),
+          ],
         ),
       ),
     );
@@ -211,14 +220,12 @@ class _Cover extends StatelessWidget {
   final Color    accent;
   final IconData fallback;
   final String?  ownership;
-  final String?  status;
 
   const _Cover({
     required this.coverUrl,
     required this.accent,
     required this.fallback,
     this.ownership,
-    this.status,
   });
 
   @override
@@ -245,12 +252,6 @@ class _Cover extends StatelessWidget {
                   : _Fallback(accent: accent, icon: fallback),
             ),
           ),
-          if (status != null)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: _StatusBadge(status: status!),
-            ),
           if (ownership != null &&
               ownership!.isNotEmpty &&
               ownership!.toUpperCase() != 'NONE')
@@ -340,8 +341,8 @@ class _StatusBadge extends StatelessWidget {
       'FINISHED' => AppColors.statusFinished,
       'PAUSED' => AppColors.statusPending,
       'DROPPED' => AppColors.statusAbandoned,
-      'WISHLIST' => const Color(0xFF9FB3BC),
-      'TBR' => AppColors.statusPending,
+      'WISHLIST' => AppColors.statusTBR, // Usar el mismo color que TBR
+      'TBR' => AppColors.statusTBR,
       _ => Colors.grey,
     };
   }
@@ -356,7 +357,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status.uiLabel(context),
+        status.uiLabel,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 8,

@@ -80,6 +80,7 @@ class AppColors {
   static const statusPending = Color(0xFFE8C47A);
   static const statusFinished = Color(0xFFA87C80);
   static const statusAbandoned = Color(0xFFB07070);
+  static const statusTBR = Color(0xFF9FB3BC); // <-- Color añadido para "Por Leer"
 
   // ─────────────────────────────────────────────
   // CONTENT TYPES
