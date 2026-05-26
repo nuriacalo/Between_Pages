@@ -1086,6 +1086,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to Library'**
   String get addToLibrary;
+
+  /// No description provided for @progressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress updated'**
+  String get progressUpdated;
+
+  /// No description provided for @totalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Total saved'**
+  String get totalSaved;
+
+  /// No description provided for @totalOfItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {item}'**
+  String totalOfItem(String item);
+
+  /// No description provided for @accurateTrackingReason.
+  ///
+  /// In en, this message translates to:
+  /// **'For accurate tracking we need the total {item}.'**
+  String accurateTrackingReason(String item);
+
+  /// No description provided for @currentOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Current {item} (of {total})'**
+  String currentOfTotal(String item, String total);
+
+  /// No description provided for @milestoneCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed! 🎉'**
+  String get milestoneCompleted;
+
+  /// No description provided for @milestoneAlmostThere.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there!'**
+  String get milestoneAlmostThere;
+
+  /// No description provided for @milestoneHalfway.
+  ///
+  /// In en, this message translates to:
+  /// **'Halfway there'**
+  String get milestoneHalfway;
+
+  /// No description provided for @milestoneGoodStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Good start 📖'**
+  String get milestoneGoodStart;
+
+  /// No description provided for @milestoneJustStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Just started'**
+  String get milestoneJustStarted;
+
+  /// No description provided for @milestoneNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started yet'**
+  String get milestoneNotStarted;
+
+  /// No description provided for @outOf.
+  ///
+  /// In en, this message translates to:
+  /// **'of {total}'**
+  String outOf(String total);
+
+  /// No description provided for @updateItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Update {item}'**
+  String updateItem(String item);
+
+  /// No description provided for @yourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get yourProgress;
+
+  /// No description provided for @errorLoadingStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading stats'**
+  String get errorLoadingStats;
+
+  /// No description provided for @daysReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Days reading'**
+  String get daysReading;
+
+  /// No description provided for @daysCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String daysCount(int count);
+
+  /// No description provided for @startedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Started on'**
+  String get startedOn;
+
+  /// No description provided for @itemsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'{item} read'**
+  String itemsRead(String item);
+
+  /// No description provided for @itemsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get itemsRemaining;
+
+  /// No description provided for @totalTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Total time'**
+  String get totalTime;
+
+  /// No description provided for @hoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{h}h {m}m'**
+  String hoursMinutes(int h, int m);
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{m}m'**
+  String minutes(int m);
+
+  /// No description provided for @readingSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading speed'**
+  String get readingSpeed;
+
+  /// No description provided for @speedPerHour.
+  ///
+  /// In en, this message translates to:
+  /// **'{speed}/h'**
+  String speedPerHour(String speed);
+
+  /// No description provided for @estimatedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. time'**
+  String get estimatedTime;
+
+  /// No description provided for @updateProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Update progress'**
+  String get updateProgress;
+
+  /// No description provided for @saveProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Save progress'**
+  String get saveProgress;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

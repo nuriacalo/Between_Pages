@@ -516,4 +516,108 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addToLibrary => 'Añadir a la biblioteca';
+
+  @override
+  String get progressUpdated => 'Progreso actualizado';
+
+  @override
+  String get totalSaved => 'Total guardado';
+
+  @override
+  String totalOfItem(String item) {
+    return 'Total de $item';
+  }
+
+  @override
+  String accurateTrackingReason(String item) {
+    return 'Para un seguimiento preciso necesitamos el total de $item.';
+  }
+
+  @override
+  String currentOfTotal(String item, String total) {
+    return '$item actual (de $total)';
+  }
+
+  @override
+  String get milestoneCompleted => '¡Completado! 🎉';
+
+  @override
+  String get milestoneAlmostThere => '¡Ya casi lo tienes!';
+
+  @override
+  String get milestoneHalfway => 'Más de la mitad';
+
+  @override
+  String get milestoneGoodStart => 'Buen comienzo 📖';
+
+  @override
+  String get milestoneJustStarted => 'Acabas de comenzar';
+
+  @override
+  String get milestoneNotStarted => 'Aún no has comenzado';
+
+  @override
+  String outOf(String total) {
+    return 'de $total';
+  }
+
+  @override
+  String updateItem(String item) {
+    return 'Actualizar $item';
+  }
+
+  @override
+  String get yourProgress => 'Tu progreso';
+
+  @override
+  String get errorLoadingStats => 'Error al cargar estadísticas';
+
+  @override
+  String get daysReading => 'Días leyendo';
+
+  @override
+  String daysCount(int count) {
+    return '$count días';
+  }
+
+  @override
+  String get startedOn => 'Inicio';
+
+  @override
+  String itemsRead(String item) {
+    return '$item leídos';
+  }
+
+  @override
+  String get itemsRemaining => 'Restantes';
+
+  @override
+  String get totalTime => 'Tiempo total';
+
+  @override
+  String hoursMinutes(int h, int m) {
+    return '${h}h ${m}m';
+  }
+
+  @override
+  String minutes(int m) {
+    return '${m}m';
+  }
+
+  @override
+  String get readingSpeed => 'Velocidad';
+
+  @override
+  String speedPerHour(String speed) {
+    return '$speed/h';
+  }
+
+  @override
+  String get estimatedTime => 'Tiempo est.';
+
+  @override
+  String get updateProgress => 'Actualizar progreso';
+
+  @override
+  String get saveProgress => 'Guardar progreso';
 }

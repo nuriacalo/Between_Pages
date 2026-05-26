@@ -516,4 +516,108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addToLibrary => 'Add to Library';
+
+  @override
+  String get progressUpdated => 'Progress updated';
+
+  @override
+  String get totalSaved => 'Total saved';
+
+  @override
+  String totalOfItem(String item) {
+    return 'Total $item';
+  }
+
+  @override
+  String accurateTrackingReason(String item) {
+    return 'For accurate tracking we need the total $item.';
+  }
+
+  @override
+  String currentOfTotal(String item, String total) {
+    return 'Current $item (of $total)';
+  }
+
+  @override
+  String get milestoneCompleted => 'Completed! 🎉';
+
+  @override
+  String get milestoneAlmostThere => 'Almost there!';
+
+  @override
+  String get milestoneHalfway => 'Halfway there';
+
+  @override
+  String get milestoneGoodStart => 'Good start 📖';
+
+  @override
+  String get milestoneJustStarted => 'Just started';
+
+  @override
+  String get milestoneNotStarted => 'Not started yet';
+
+  @override
+  String outOf(String total) {
+    return 'of $total';
+  }
+
+  @override
+  String updateItem(String item) {
+    return 'Update $item';
+  }
+
+  @override
+  String get yourProgress => 'Your progress';
+
+  @override
+  String get errorLoadingStats => 'Error loading stats';
+
+  @override
+  String get daysReading => 'Days reading';
+
+  @override
+  String daysCount(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get startedOn => 'Started on';
+
+  @override
+  String itemsRead(String item) {
+    return '$item read';
+  }
+
+  @override
+  String get itemsRemaining => 'Remaining';
+
+  @override
+  String get totalTime => 'Total time';
+
+  @override
+  String hoursMinutes(int h, int m) {
+    return '${h}h ${m}m';
+  }
+
+  @override
+  String minutes(int m) {
+    return '${m}m';
+  }
+
+  @override
+  String get readingSpeed => 'Reading speed';
+
+  @override
+  String speedPerHour(String speed) {
+    return '$speed/h';
+  }
+
+  @override
+  String get estimatedTime => 'Est. time';
+
+  @override
+  String get updateProgress => 'Update progress';
+
+  @override
+  String get saveProgress => 'Save progress';
 }
