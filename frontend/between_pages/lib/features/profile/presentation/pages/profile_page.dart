@@ -90,7 +90,7 @@ class ProfilePage extends ConsumerWidget {
                 children: [
                   const SizedBox(height: 4),
 
-                  const _SectionHeader(title: 'Estadísticas'),
+                  const _SectionHeader(title: 'Lecturas Completadas'),
                   const SizedBox(height: 10),
 
                   Row(
@@ -522,7 +522,7 @@ class _DropdownTrailing extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.accent(
             context,
-          ).withValues(alpha: 0.08), //FIX: Changed border radius from 6 to 8
+          ).withValues(alpha: 0.08), 
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppColors.accent(
@@ -559,7 +559,6 @@ class _DropdownTrailing extends StatelessWidget {
       context: context,
       backgroundColor: AppColors.surface(context),
       shape: RoundedRectangleBorder(
-        //FIX: Changed border radius from 12 to 20
         borderRadius: BorderRadius.circular(20),
       ),
       builder: (_) => SafeArea(
@@ -582,6 +581,7 @@ class _DropdownTrailing extends StatelessWidget {
             ...items.entries.map(
               (e) => ListTile(
                 title: Text(e.value),
+                tileColor: AppColors.surface(context),
                 trailing: e.key == value
                     ? Icon(
                         Icons.check_rounded,

@@ -1,3 +1,4 @@
+import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/core/widgets/empty_state.dart';
 import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/ownership_badge.dart';
@@ -377,9 +378,9 @@ class FeedPage extends ConsumerWidget {
 
 // Colours per content type – pull from your AppColors / CustomColors if preferred
 Color _typeColor(_ContentType t) => switch (t) {
-  _ContentType.book => const Color(0xFF7F8C95),
-  _ContentType.manga => const Color(0xFFE8A87C),
-  _ContentType.fanfic => const Color(0xFFD4A0A4),
+  _ContentType.book => AppColors.colorLibro,
+  _ContentType.manga => AppColors.colorManga,
+  _ContentType.fanfic => AppColors.colorFanfic,
 };
 
 IconData _typeIcon(_ContentType t) => switch (t) {
@@ -641,6 +642,7 @@ class _HeroReadingCard extends ConsumerWidget {
     // Obtener estadísticas de tiempo para el badge
     int? itemId;
     int remainingForStats = 0;
+    String itemTypeString = 'BOOK';
     
     if (item.type == _ContentType.book) {
       final b = item.journal as BookJournalResponseDto;
@@ -648,23 +650,27 @@ class _HeroReadingCard extends ConsumerWidget {
       final total = b.book.pageCount ?? 0;
       final cur = b.currentPage ?? 0;
       remainingForStats = (total - cur).clamp(0, total);
+      itemTypeString = 'BOOK';
     } else if (item.type == _ContentType.manga) {
       final m = item.journal as MangaJournalResponseDTO;
       itemId = m.manga?.idManga;
       final total = m.manga?.totalChapters ?? 0;
       final cur = m.currentChapter ?? 0;
       remainingForStats = (total - cur).clamp(0, total);
+      itemTypeString = 'MANGA';
     } else if (item.type == _ContentType.fanfic) {
       final f = item.journal as FanficJournalResponseDTO;
       itemId = f.fanfic.idFanfic;
       final total = f.fanfic.totalChapters ?? 0;
       final cur = f.currentChapter ?? 0;
       remainingForStats = (total - cur).clamp(0, total);
+      itemTypeString = 'FANFIC';
     }
 
     final statsParams = ItemStatsParams(
       itemId: itemId,
       remainingPages: remainingForStats,
+      itemType: itemTypeString,
     );
     final statsAsync = ref.watch(itemReadingStatsProvider(statsParams));
     final totalTimeSecs = statsAsync.value?['totalDurationSeconds'] as int?;
