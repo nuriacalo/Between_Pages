@@ -1,11 +1,13 @@
+import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
+import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
+import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
+import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
+import 'package:between_pages/features/profile/application/providers/user_provider.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
-import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
-import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
-import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
-import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
 
 class AddContentToListPage extends ConsumerStatefulWidget {
   final int listId;
@@ -20,7 +22,7 @@ class AddContentToListPage extends ConsumerStatefulWidget {
 class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _searchController = TextEditingController();
+  String _searchTerm = '';
 
   @override
   void initState() {
@@ -31,70 +33,47 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _addItem(int contentId, String contentType) async {
-    debugPrint('[AddContentToListPage] POST payload: {contentId: $contentId, contentType: $contentType, listId: ${widget.listId}}');
-    try {
-      final repo = ref.read(readingListRepositoryProvider);
-      await repo.addContentToList(widget.listId, contentId, contentType);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$contentType añadido a la lista')),
-      );
-      context.pop();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Añadir contenido'),
+        title: Text(l10n.addContent),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Libros'),
-            Tab(text: 'Mangas'),
-            Tab(text: 'Fanfics'),
+          tabs: [
+            Tab(text: l10n.books),
+            Tab(text: l10n.mangas),
+            Tab(text: l10n.fanfics),
           ],
         ),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Buscar...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
               onChanged: (value) {
-                setState(() {});
+                setState(() {
+                  _searchTerm = value;
+                });
               },
+              decoration: InputDecoration(
+                labelText: l10n.search,
+                prefixIcon: const Icon(Icons.search),
+              ),
             ),
           ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildBooksTab(),
-                _buildMangasTab(),
-                _buildFanficsTab(),
+                _buildBookList(),
+                _buildMangaList(),
+                _buildFanficList(),
               ],
             ),
           ),
@@ -103,173 +82,158 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
     );
   }
 
-  Widget _buildBooksTab() {
-    return FutureBuilder<List<BookResponseDTO>>(
-      future: ref.read(catalogRepositoryProvider).getAllBooks(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        final books = snapshot.data ?? [];
-        final filtered = books
-            .where((b) => b.title.toLowerCase().contains(
-                _searchController.text.toLowerCase()))
-            .toList();
-
-        if (filtered.isEmpty) {
-          return const Center(child: Text('No se encontraron libros'));
-        }
-
-        return ListView.builder(
-          itemCount: filtered.length,
-          itemBuilder: (context, index) {
-            final book = filtered[index];
-            return ListTile(
-              leading: book.coverUrl != null
-                  ? Image.network(
-                      book.coverUrl!,
-                      width: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          const Icon(Icons.book),
-                    )
-                  : const Icon(Icons.book),
-              title: Text(book.title),
-              subtitle: Text(book.author),
-              trailing: IconButton(
-                icon: const Icon(Icons.add_circle),
-                onPressed: () {
-                final id = book.idBook;
-                  if (id == null || id == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Libro sin ID válido')),
-                    );
-                    return;
-                  }
-                  _addItem(id, 'BOOK');
-                },
-              ),
+  Widget _buildBookList() {
+    final userIdAsync = ref.watch(userProfileProvider);
+    return userIdAsync.when(
+      data: (user) {
+        return FutureBuilder<List<BookResponseDTO>>(
+          future: ref.read(catalogRepositoryProvider).getAllBooks(user.idUser),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            final books = snapshot.data
+                    ?.where((book) => book.title
+                        .toLowerCase()
+                        .contains(_searchTerm.toLowerCase()))
+                    .toList() ??
+                [];
+            return ListView.builder(
+              itemCount: books.length,
+              itemBuilder: (context, index) {
+                final book = books[index];
+                return _buildItem(
+                  title: book.title,
+                  author: book.author,
+                  coverUrl: book.coverUrl,
+                  onTap: () => _addContent('BOOK', book.idBook!),
+                );
+              },
             );
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text('Error: $e')),
     );
   }
 
-  Widget _buildMangasTab() {
-    return FutureBuilder<List<MangaResponseDTO>>(
-      future: ref.read(catalogRepositoryProvider).getAllManga(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        final mangas = snapshot.data ?? [];
-        final filtered = mangas
-            .where((m) =>
-                m.title.toLowerCase().contains(
-                    _searchController.text.toLowerCase()))
-            .toList();
-
-        if (filtered.isEmpty) {
-          return const Center(child: Text('No se encontraron mangas'));
-        }
-
-        return ListView.builder(
-          itemCount: filtered.length,
-          itemBuilder: (context, index) {
-            final manga = filtered[index];
-            return ListTile(
-              leading: manga.coverUrl != null
-                  ? Image.network(
-                      manga.coverUrl!,
-                      width: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          const Icon(Icons.image),
-                    )
-                  : const Icon(Icons.image),
-              title: Text(manga.title),
-              subtitle: Text(manga.author),
-              trailing: IconButton(
-                icon: const Icon(Icons.add_circle),
-                onPressed: () {
-                  final id = manga.idManga;
-                  if (id == null || id == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Manga sin ID válido')),
-                    );
-                    return;
-                  }
-                  _addItem(id, 'MANGA');
-                },
-              ),
+  Widget _buildMangaList() {
+    final userIdAsync = ref.watch(userProfileProvider);
+    return userIdAsync.when(
+      data: (user) {
+        return FutureBuilder<List<MangaResponseDTO>>(
+          future: ref.read(catalogRepositoryProvider).getAllManga(user.idUser),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            final mangas = snapshot.data
+                    ?.where((manga) => (manga.title ?? '')
+                        .toLowerCase()
+                        .contains(_searchTerm.toLowerCase()))
+                    .toList() ??
+                [];
+            return ListView.builder(
+              itemCount: mangas.length,
+              itemBuilder: (context, index) {
+                final manga = mangas[index];
+                return _buildItem(
+                  title: manga.title ?? 'Sin título',
+                  author: manga.author ?? 'Autor desconocido',
+                  coverUrl: manga.coverUrl,
+                  onTap: () => _addContent('MANGA', manga.idManga!),
+                );
+              },
             );
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text('Error: $e')),
     );
   }
 
-  Widget _buildFanficsTab() {
-    return FutureBuilder<List<FanfictionResponseDTO>>(
-      future: ref.read(catalogRepositoryProvider).getAllFanfics(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        final fanfics = snapshot.data ?? [];
-        final filtered = fanfics
-            .where((f) =>
-                f.title.toLowerCase().contains(
-                    _searchController.text.toLowerCase()))
-            .toList();
-
-        if (filtered.isEmpty) {
-          return const Center(child: Text('No se encontraron fanfics'));
-        }
-
-        return ListView.builder(
-          itemCount: filtered.length,
-          itemBuilder: (context, index) {
-            final fanfic = filtered[index];
-            return ListTile(
-              leading: fanfic.coverUrl != null
-                  ? Image.network(
-                      fanfic.coverUrl!,
-                      width: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          const Icon(Icons.article),
-                    )
-                  : const Icon(Icons.article),
-              title: Text(fanfic.title),
-              subtitle: Text(fanfic.author),
-              trailing: IconButton(
-                icon: const Icon(Icons.add_circle),
-                onPressed: () {
-                  final id = fanfic.idFanfic;
-                  if (id == null || id == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Fanfíc sin ID válido')),
-                    );
-                    return;
-                  }
-                  _addItem(id, 'FANFIC');
-                },
-              ),
+  Widget _buildFanficList() {
+    final userIdAsync = ref.watch(userProfileProvider);
+    return userIdAsync.when(
+      data: (user) {
+        return FutureBuilder<List<FanfictionResponseDTO>>(
+          future: ref.read(catalogRepositoryProvider).getAllFanfics(user.idUser),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            final fanfics = snapshot.data
+                    ?.where((fanfic) => (fanfic.title ?? '')
+                        .toLowerCase()
+                        .contains(_searchTerm.toLowerCase()))
+                    .toList() ??
+                [];
+            return ListView.builder(
+              itemCount: fanfics.length,
+              itemBuilder: (context, index) {
+                final fanfic = fanfics[index];
+                return _buildItem(
+                  title: fanfic.title ?? 'Sin título',
+                  author: fanfic.author ?? 'Autor desconocido',
+                  coverUrl: fanfic.coverUrl,
+                  onTap: () => _addContent('FANFIC', fanfic.idFanfic!),
+                );
+              },
             );
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text('Error: $e')),
     );
+  }
+
+  Widget _buildItem({
+    required String title,
+    required String author,
+    String? coverUrl,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: coverUrl != null
+          ? CachedNetworkImage(
+              imageUrl: coverUrl,
+              width: 40,
+              height: 60,
+              fit: BoxFit.cover,
+            )
+          : const Icon(Icons.book),
+      title: Text(title),
+      subtitle: Text(author),
+      onTap: onTap,
+    );
+  }
+
+  void _addContent(String contentType, int contentId) async {
+    try {
+      await ref
+          .read(readingListRepositoryProvider)
+          .addContentToList(widget.listId, contentId, contentType);
+      if (mounted) {
+        Navigator.of(context).pop(true); // Indicar que se añadió contenido
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al añadir: $e')),
+        );
+      }
+    }
   }
 }
