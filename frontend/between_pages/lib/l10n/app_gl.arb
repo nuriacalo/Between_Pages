@@ -193,5 +193,11 @@
         }
     },
     "notes": "Notas",
-    "emptyCategory": "Nada nesta categoría"
+    "emptyCategory": "Nada nesta categoría",
+    "addContent": "Engadir Contido",
+    "books": "Libros",
+    "mangas": "Mangas",
+    "fanfics": "Fanfics",
+    "search": "Buscar",
+    "addToLibrary": "Engadir á biblioteca"
 }

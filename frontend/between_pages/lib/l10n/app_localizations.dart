@@ -1050,6 +1050,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing in this category'**
   String get emptyCategory;
+
+  /// No description provided for @addContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Content'**
+  String get addContent;
+
+  /// No description provided for @books.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get books;
+
+  /// No description provided for @mangas.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get mangas;
+
+  /// No description provided for @fanfics.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanfics'**
+  String get fanfics;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @addToLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Library'**
+  String get addToLibrary;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

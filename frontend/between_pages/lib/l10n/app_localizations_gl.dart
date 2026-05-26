@@ -498,4 +498,22 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get emptyCategory => 'Nada nesta categoría';
+
+  @override
+  String get addContent => 'Engadir Contido';
+
+  @override
+  String get books => 'Libros';
+
+  @override
+  String get mangas => 'Mangas';
+
+  @override
+  String get fanfics => 'Fanfics';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get addToLibrary => 'Engadir á biblioteca';
 }
