@@ -2,10 +2,13 @@ import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/domain/book_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/manga_response_dto.dart';
 import 'package:between_pages/features/catalog/domain/fanfiction_response_dto.dart';
-import 'package:between_pages/features/catalog/application/repositories/catalog_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/book_search_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/manga_search_repository.dart';
+import 'package:between_pages/features/catalog/application/repositories/fanfic_search_repository.dart';
 import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/catalog/presentation/pages/item_reading_stats_provider.dart';
+import 'package:between_pages/features/journal/domain/responses/base_journal_response_dto.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:between_pages/features/profile/application/repositories/reading_stats_repository.dart';
 import 'package:between_pages/features/journal/domain/journal_types.dart';
@@ -17,629 +20,331 @@ import 'package:between_pages/features/journal/domain/responses/manga_journal_re
 import 'package:between_pages/features/journal/domain/responses/fanfic_journal_response_dto.dart';
 import 'package:between_pages/features/journal/presentation/pages/journal_item_edit_page.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_helper.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+// ------------------- Configuración de acentos por tipo -------------------
 const _kBookAccent = AppColors.colorLibro;
 const _kMangaAccent = AppColors.colorManga;
 const _kFanficAccent = AppColors.colorFanfic;
 
-class BookReadingProgressPage extends ConsumerStatefulWidget {
-  final BookJournalResponseDto journal;
-  const BookReadingProgressPage({super.key, required this.journal});
+// ------------------- Página de progreso unificada -----------------------
+/// Página única para mostrar el progreso de lectura de cualquier formato.
+/// Accepta un journal de tipo [T] que puede ser BookJournalResponseDto,
+/// MangaJournalResponseDTO o FanficJournalResponseDTO.
+class ReadingProgressPage<T extends BaseJournalResponseDTO>
+    extends ConsumerStatefulWidget {
+  final T journal;
+  final JournalType type;
+  const ReadingProgressPage({
+    super.key,
+    required this.journal,
+    required this.type,
+  });
 
   @override
-  ConsumerState<BookReadingProgressPage> createState() =>
-      _BookReadingProgressPageState();
+  ConsumerState<ReadingProgressPage> createState() =>
+      _ReadingProgressPageState<T>();
 }
 
-class _BookReadingProgressPageState
-    extends ConsumerState<BookReadingProgressPage> {
+class _ReadingProgressPageState<T extends BaseJournalResponseDTO>
+    extends ConsumerState<ReadingProgressPage<T>> {
   bool _isSaving = false;
-  int? _currentPageLocal;
-  int? _totalPagesLocal;
+  int? _currentLocal;
+  int? _totalLocal;
 
-  BookJournalResponseDto get _journal => widget.journal;
-  BookResponseDTO get _book => _journal.book;
+  // Métodos auxiliares que usan el journal actualizado
+  String _getTitle(dynamic journal) {
+    switch (widget.type) {
+      case JournalType.book:
+        return (journal as BookJournalResponseDto).book.title;
+      case JournalType.manga:
+        return (journal as MangaJournalResponseDTO).manga?.title ?? 'Sin título';
+      case JournalType.fanfic:
+        return (journal as FanficJournalResponseDTO).fanfic.title ?? 'Sin título';
+    }
+  }
 
-  int? get _totalPages => _totalPagesLocal ?? _book.pageCount;
-  int get _currentPage => _currentPageLocal ?? _journal.currentPage ?? 0;
+  String? _getCoverUrl(dynamic journal) {
+    switch (widget.type) {
+      case JournalType.book:
+        return (journal as BookJournalResponseDto).book.coverUrl;
+      case JournalType.manga:
+        return (journal as MangaJournalResponseDTO).manga?.coverUrl;
+      case JournalType.fanfic:
+        return (journal as FanficJournalResponseDTO).fanfic.coverUrl;
+    }
+  }
 
-  Future<void> _updatePage(int newPage) async {
+  int _getCurrent(dynamic journal) {
+    return _currentLocal ?? _getCurrentFromJournal(journal);
+  }
+
+  int? _getTotal(dynamic journal) {
+    return _totalLocal ?? _getTotalFromJournal(journal);
+  }
+
+  String _progressLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (widget.type) {
+      case JournalType.book:
+        return l10n.pages;
+      case JournalType.manga:
+        return l10n.chapters;
+      case JournalType.fanfic:
+        return l10n.chapters;
+    }
+  }
+
+  IconData get _typeIcon {
+    switch (widget.type) {
+      case JournalType.book:
+        return Icons.book_rounded;
+      case JournalType.manga:
+        return Icons.menu_book_rounded;
+      case JournalType.fanfic:
+        return Icons.favorite_rounded;
+    }
+  }
+
+  String _typeLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (widget.type) {
+      case JournalType.book:
+        return l10n.books;
+      case JournalType.manga:
+        return l10n.mangas;
+      case JournalType.fanfic:
+        return l10n.fanfics;
+    }
+  }
+
+  Color get _accent {
+    switch (widget.type) {
+      case JournalType.book:
+        return _kBookAccent;
+      case JournalType.manga:
+        return _kMangaAccent;
+      case JournalType.fanfic:
+        return _kFanficAccent;
+    }
+  }
+
+  String get _sessionRoute {
+    switch (widget.type) {
+      case JournalType.book:
+        return '/journal/book/session';
+      case JournalType.manga:
+        return '/journal/manga/session';
+      case JournalType.fanfic:
+        return '/journal/fanfic/session';
+    }
+  }
+
+  String get _itemTypeString {
+    switch (widget.type) {
+      case JournalType.book:
+        return 'BOOK';
+      case JournalType.manga:
+        return 'MANGA';
+      case JournalType.fanfic:
+        return 'FANFIC';
+    }
+  }
+
+  int _getId() {
+    switch (widget.type) {
+      case JournalType.book:
+        return (widget.journal as BookJournalResponseDto).book.idBook ?? 0;
+      case JournalType.manga:
+        return (widget.journal as MangaJournalResponseDTO).manga!.idManga ?? 0;
+      case JournalType.fanfic:
+        return (widget.journal as FanficJournalResponseDTO).fanfic.idFanfic ??
+            0;
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // Lógica de actualización de progreso
+  // ----------------------------------------------------------------------
+  Future<void> _updateProgress(dynamic journal, int newValue) async {
     if (_isSaving) return;
-    final previousPage = _currentPageLocal;
-    setState(() {
-      _isSaving = true;
-      _currentPageLocal = newPage;
-    });
+    final previous = _currentLocal;
+    setState(() => _isSaving = true);
+    _currentLocal = newValue;
     try {
       final auth = ref.read(authRepositoryProvider);
-      final repo = ref.read(bookJournalRepositoryProvider);
       final user = await auth.getUserProfile();
-      final dto = BookJournalRecordDTO(
-        id: _journal.id,
-        userId: user.idUser,
-        bookId: _book.idBook,
-        googleBooksId: _book.googleBooksId != null && _book.googleBooksId!.isNotEmpty
-            ? _book.googleBooksId
-            : null,
-        status: JournalStatusHelper.mapStatusToDb(_journal.status),
-        currentPage: newPage,
-        rating: _journal.rating,
-        tearDrops: _journal.tearDrops,
-        spiceFlames: _journal.spiceFlames,
-        readingFormat: _journal.readingFormat,
-        emotions: _journal.emotions,
-        favoriteQuotes: _journal.favoriteQuotes,
-        personalNotes: _journal.personalNotes,
-        startDate: _journal.startDate,
-        endDate: _journal.endDate,
-        ownership: _journal.ownership,
-      );
-      await repo.saveRaw(dto.toJson());
+      switch (widget.type) {
+        case JournalType.book:
+          final j = journal as BookJournalResponseDto;
+          final repo = ref.read(bookJournalRepositoryProvider);
+          final dto = BookJournalRecordDTO(
+            id: j.id,
+            userId: user.idUser,
+            bookId: j.book.idBook ?? 0,
+            googleBooksId: j.book.googleBooksId?.isNotEmpty == true
+                ? j.book.googleBooksId
+                : null,
+            status: JournalStatusHelper.mapStatusToDb(j.status),
+            currentPage: newValue,
+            rating: j.rating,
+            tearDrops: j.tearDrops,
+            spiceFlames: j.spiceFlames,
+            readingFormat: j.readingFormat,
+            emotions: j.emotions,
+            favoriteQuotes: j.favoriteQuotes,
+            personalNotes: j.personalNotes,
+            startDate: j.startDate,
+            endDate: j.endDate,
+            ownership: j.ownership,
+          );
+          await repo.saveRaw(dto.toJson());
+          break;
+        case JournalType.manga:
+          final j = journal as MangaJournalResponseDTO;
+          final repo = ref.read(mangaJournalRepositoryProvider);
+          final dto = MangaJournalRecordDTO(
+            id: j.id,
+            userId: user.idUser,
+            mangaId: j.manga!.idManga,
+            malId: j.manga!.malId,
+            status: JournalStatusHelper.mapStatusToDb(j.status),
+            currentChapter: newValue,
+            currentVolume: j.currentVolume,
+            rating: j.rating,
+            tearDrops: j.tearDrops,
+            spiceFlames: j.spiceFlames,
+            readingFormat: j.readingFormat,
+            favoriteCharacter: j.favoriteCharacter,
+            favoriteArc: j.favoriteArc,
+            personalNotes: j.personalNotes,
+            startDate: j.startDate,
+            endDate: j.endDate,
+            ownership: j.ownership,
+            rereading: j.rereading,
+          );
+          await repo.saveRaw(dto.toJson());
+          break;
+        case JournalType.fanfic:
+          final j = journal as FanficJournalResponseDTO;
+          final repo = ref.read(fanficJournalRepositoryProvider);
+          final dto = FanficJournalRecordDTO(
+            id: j.id,
+            userId: user.idUser,
+            fanficId: j.fanfic.idFanfic ?? 0,
+            ao3Id: j.fanfic.ao3Id,
+            status: JournalStatusHelper.mapStatusToDb(j.status),
+            currentChapter: newValue,
+            rating: j.rating,
+            tearDrops: j.tearDrops,
+            spiceFlames: j.spiceFlames,
+            personalNotes: j.personalNotes,
+            startDate: j.startDate,
+            endDate: j.endDate,
+            rereading: j.rereading,
+          );
+          await repo.saveRaw(dto.toJson());
+          break;
+      }
       try {
         await ref.read(readingStatsRepositoryProvider).recordActivity();
         ref.invalidate(gamificationProvider);
-      } catch (e) {
-        debugPrint('Error al registrar actividad: $e');
-      }
-      ref.invalidate(journalProvider(JournalType.book));
-      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
+
+      } catch (_) {}
+
+      // Ahora invalidamos lo mínimo necesario para recalcular el entry mostrado.
+      ref.invalidate(journalProvider(widget.type));
+      ref.invalidate(journalEntryProvider((widget.type, _getId())));
+
+
+
       if (mounted) _showSuccessSnack('Progreso actualizado');
     } catch (e) {
       if (mounted) {
-        setState(() => _currentPageLocal = previousPage);
-        _showErrorSnack('Error al actualizar: $e');
+        setState(() => _currentLocal = previous);
+        _showErrorSnack('Error: $e');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  Future<void> _saveTotalPages(int totalPages) async {
-    final previousTotal = _totalPagesLocal;
-    setState(() {
-      _isSaving = true;
-      _totalPagesLocal = totalPages;
-    });
+  Future<void> _saveTotal(dynamic journal, int total) async {
+    final previousTotal = _totalLocal;
+    setState(() => _isSaving = true);
+    _totalLocal = total;
     try {
-      final repo = ref.read(catalogRepositoryProvider);
-      final bookToSave = BookResponseDTO(
-        idBook: _book.idBook,
-        googleBooksId: _book.googleBooksId,
-        title: _book.title,
-        author: _book.author,
-        pageCount: totalPages,
-        coverUrl: _book.coverUrl,
-        isbn: _book.isbn,
-        publisher: _book.publisher,
-        publishYear: _book.publishYear,
-        description: _book.description,
-        genres: _book.genres,
-        bookType: _book.bookType,
-      );
-      await repo.saveOrUpdateBook(bookToSave);
-      ref.invalidate(journalProvider(JournalType.book));
-      ref.invalidate(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
-      if (mounted) {
-        _showSuccessSnack('Total de páginas guardado');
-        _showUpdatePageSheet(knownTotal: totalPages);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _totalPagesLocal = previousTotal);
-        _showErrorSnack('Error al guardar páginas: $e');
-      }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
-  void _showSuccessSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [
-        const Icon(Icons.check_circle_outline, color: Colors.white),
-        const SizedBox(width: 8),
-        Text(msg),
-      ]),
-      backgroundColor: AppColors.statusReading,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ));
-  }
-
-  void _showErrorSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Theme.of(context).colorScheme.error,
-      behavior: SnackBarBehavior.floating,
-    ));
-  }
-
-  void _promptForTotalPages() {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => _TotalDialog(
-        controller: controller,
-        title: 'Falta información',
-        body: 'Para hacer un seguimiento adecuado, necesitamos saber cuántas páginas tiene este libro.',
-        label: 'Total de páginas',
-        icon: Icons.auto_stories_rounded,
-        accent: _kBookAccent,
-        onConfirm: (val) {
-          if (val != null && val > 0) {
-            Navigator.pop(context);
-            _saveTotalPages(val);
-          }
-        },
-      ),
-    );
-  }
-
-  void _showUpdatePageSheet({int? knownTotal}) {
-    final total = knownTotal ?? _totalPages;
-    if (total == null || total <= 0) {
-      _promptForTotalPages();
-      return;
-    }
-    _showProgressSheet(
-      title: _book.title,
-      label: 'Página actual (de $total)',
-      icon: Icons.menu_book_outlined,
-      currentValue: _currentPage,
-      accent: _kBookAccent,
-      isSaving: _isSaving,
-      onSave: (val) {
-        Navigator.pop(context);
-        _updatePage(val);
-      },
-    );
-  }
-
-  void _showProgressSheet({
-    required String title,
-    required String label,
-    required IconData icon,
-    required int currentValue,
-    required Color accent,
-    required bool isSaving,
-    required void Function(int) onSave,
-  }) {
-    final controller = TextEditingController(text: currentValue.toString());
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _ProgressSheet(
-        title: title,
-        fieldLabel: label,
-        fieldIcon: icon,
-        controller: controller,
-        accent: accent,
-        isSaving: isSaving,
-        onSave: onSave,
-      ),
-    );
-  }
-
-  void _goToEditJournal() => Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) =>
-                JournalItemEditPage(journal: _journal, type: JournalType.book)),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    final updatedJournal =
-        ref.watch(journalEntryProvider((JournalType.book, _book.idBook ?? 0)));
-    final journal = (updatedJournal as BookJournalResponseDto?) ?? _journal;
-    final book = journal.book;
-
-    final currentPage = _currentPageLocal ?? journal.currentPage ?? 0;
-    final totalPages = _totalPagesLocal ?? book.pageCount;
-    final progress = (totalPages ?? 0) > 0
-        ? (currentPage / totalPages!).clamp(0.0, 1.0)
-        : 0.0;
-
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, _) => [
-          _CoverAppBar(
+      switch (widget.type) {
+        case JournalType.book:
+          final book = (journal as BookJournalResponseDto).book;
+          final updatedBook = BookResponseDTO(
+            idBook: book.idBook,
+            googleBooksId: book.googleBooksId,
             title: book.title,
+            author: book.author,
+            pageCount: total,
             coverUrl: book.coverUrl,
-            accent: _kBookAccent,
-            typeLabel: 'Libro',
-            typeIcon: Icons.book_rounded,
-          ),
-        ],
-        body: _ProgressBody(
-          accent: _kBookAccent,
-          currentProgress: currentPage,
-          totalProgress: totalPages,
-          progress: progress,
-          progressLabel: 'Página',
-          sessionRoute: '/journal/book/session',
-          rawJournal: _journal,
-          isSaving: _isSaving,
-          onUpdateProgress: _showUpdatePageSheet,
-          onEditJournal: _goToEditJournal,
-          statsWidget: _StatsGrid(
-            accent: _kBookAccent,
-            startDate: journal.startDate,
-            currentProgress: currentPage,
-            totalProgress: totalPages,
-            itemId: book.idBook,
-            progressLabel: 'Págs.',
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class MangaReadingProgressPage extends ConsumerStatefulWidget {
-  final MangaJournalResponseDTO journal;
-  const MangaReadingProgressPage({super.key, required this.journal});
-
-  @override
-  ConsumerState<MangaReadingProgressPage> createState() =>
-      _MangaReadingProgressPageState();
-}
-
-class _MangaReadingProgressPageState
-    extends ConsumerState<MangaReadingProgressPage> {
-  bool _isSaving = false;
-  int? _currentChapterLocal;
-  int? _totalChaptersLocal;
-
-  MangaJournalResponseDTO get _journal => widget.journal;
-  MangaResponseDTO get _manga => _journal.manga!;
-
-  int? get _totalChapters => _totalChaptersLocal ?? _manga.totalChapters;
-  int get _currentChapter => _currentChapterLocal ?? _journal.currentChapter ?? 0;
-
-  Future<void> _updateChapter(int newChapter) async {
-    if (_isSaving) return;
-    final previousChapter = _currentChapterLocal;
-    setState(() {
-      _isSaving = true;
-      _currentChapterLocal = newChapter;
-    });
-    try {
-      final auth = ref.read(authRepositoryProvider);
-      final repo = ref.read(mangaJournalRepositoryProvider);
-      final user = await auth.getUserProfile();
-      final dto = MangaJournalRecordDTO(
-        id: _journal.id,
-        userId: user.idUser,
-        mangaId: _manga.idManga,
-        malId: _manga.malId,
-        status: JournalStatusHelper.mapStatusToDb(_journal.status),
-        currentChapter: newChapter,
-        currentVolume: _journal.currentVolume,
-        rating: _journal.rating,
-        tearDrops: _journal.tearDrops,
-        spiceFlames: _journal.spiceFlames,
-        readingFormat: _journal.readingFormat,
-        favoriteCharacter: _journal.favoriteCharacter,
-        favoriteArc: _journal.favoriteArc,
-        personalNotes: _journal.personalNotes,
-        startDate: _journal.startDate,
-        endDate: _journal.endDate,
-        ownership: _journal.ownership,
-        rereading: _journal.rereading,
-      );
-      await repo.saveRaw(dto.toJson());
-      try {
-        await ref.read(readingStatsRepositoryProvider).recordActivity();
-        ref.invalidate(gamificationProvider);
-      } catch (e) {
-        debugPrint('Error al registrar actividad: $e');
-      }
-      ref.invalidate(journalProvider(JournalType.manga));
-      ref.invalidate(journalEntryProvider((JournalType.manga, _manga.idManga ?? 0)));
-      if (mounted) _showSuccessSnack('Progreso actualizado');
-    } catch (e) {
-      if (mounted) {
-        setState(() => _currentChapterLocal = previousChapter);
-        _showErrorSnack('Error al actualizar: $e');
-      }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
-  Future<void> _saveTotalChapters(int totalChapters) async {
-    final previousTotal = _totalChaptersLocal;
-    setState(() {
-      _isSaving = true;
-      _totalChaptersLocal = totalChapters;
-    });
-    try {
-      final repo = ref.read(catalogRepositoryProvider);
-      final mangaToSave = MangaResponseDTO(
-        idManga: _manga.idManga,
-        malId: _manga.malId,
-        title: _manga.title,
-        author: _manga.author,
-        totalChapters: totalChapters,
-        coverUrl: _manga.coverUrl,
-        description: _manga.description,
-        genres: _manga.genres,
-        publicationStatus: _manga.publicationStatus,
-        demographic: _manga.demographic,
-        malScore: _manga.malScore,
-      );
-      await repo.saveOrUpdateManga(mangaToSave);
-      ref.invalidate(journalProvider(JournalType.manga));
-      ref.invalidate(journalEntryProvider((JournalType.manga, _manga.idManga ?? 0)));
-      if (mounted) {
-        _showSuccessSnack('Total de capítulos guardado');
-        _showUpdateChapterSheet(knownTotal: totalChapters);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _totalChaptersLocal = previousTotal);
-        _showErrorSnack('Error al guardar capítulos: $e');
-      }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
-  void _showSuccessSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [
-        const Icon(Icons.check_circle_outline, color: Colors.white),
-        const SizedBox(width: 8),
-        Text(msg),
-      ]),
-      backgroundColor: AppColors.statusReading,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ));
-  }
-
-  void _showErrorSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Theme.of(context).colorScheme.error,
-      behavior: SnackBarBehavior.floating,
-    ));
-  }
-
-  void _promptForTotalChapters() {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => _TotalDialog(
-        controller: controller,
-        title: 'Falta información',
-        body: 'Para hacer un seguimiento adecuado, necesitamos saber cuántos capítulos tiene este manga.',
-        label: 'Total de capítulos',
-        icon: Icons.menu_book_rounded,
-        accent: _kMangaAccent,
-        onConfirm: (val) {
-          if (val != null && val > 0) {
-            Navigator.pop(context);
-            _saveTotalChapters(val);
-          }
-        },
-      ),
-    );
-  }
-
-  void _showUpdateChapterSheet({int? knownTotal}) {
-    final total = knownTotal ?? _totalChapters;
-    if (total == null || total <= 0) {
-      _promptForTotalChapters();
-      return;
-    }
-    _showProgressSheet(
-      title: _manga.title,
-      label: 'Capítulo actual (de $total)',
-      icon: Icons.bookmark_outlined,
-      currentValue: _currentChapter,
-      accent: _kMangaAccent,
-      isSaving: _isSaving,
-      onSave: (val) {
-        Navigator.pop(context);
-        _updateChapter(val);
-      },
-    );
-  }
-
-  void _showProgressSheet({
-    required String title,
-    required String label,
-    required IconData icon,
-    required int currentValue,
-    required Color accent,
-    required bool isSaving,
-    required void Function(int) onSave,
-  }) {
-    final controller = TextEditingController(text: currentValue.toString());
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _ProgressSheet(
-        title: title,
-        fieldLabel: label,
-        fieldIcon: icon,
-        controller: controller,
-        accent: accent,
-        isSaving: isSaving,
-        onSave: onSave,
-      ),
-    );
-  }
-
-  void _goToEditJournal() => Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) => JournalItemEditPage(
-                journal: _journal, type: JournalType.manga)),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    final updatedJournal =
-        ref.watch(journalEntryProvider((JournalType.manga, _manga.idManga ?? 0)));
-    final journal = (updatedJournal as MangaJournalResponseDTO?) ?? _journal;
-    final manga = journal.manga!;
-
-    final currentChapter = _currentChapterLocal ?? journal.currentChapter ?? 0;
-    final totalChapters = _totalChaptersLocal ?? manga.totalChapters;
-    final progress = (totalChapters ?? 0) > 0
-        ? (currentChapter / totalChapters!).clamp(0.0, 1.0)
-        : 0.0;
-
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, _) => [
-          _CoverAppBar(
+            isbn: book.isbn,
+            publisher: book.publisher,
+            publishYear: book.publishYear,
+            description: book.description,
+            genres: book.genres,
+            bookType: book.bookType,
+          );
+          await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(updatedBook);
+          break;
+        case JournalType.manga:
+          final manga = (journal as MangaJournalResponseDTO).manga!;
+          final updatedManga = MangaResponseDTO(
+            idManga: manga.idManga,
+            malId: manga.malId,
             title: manga.title,
+            author: manga.author,
+            totalChapters: total,
             coverUrl: manga.coverUrl,
-            accent: _kMangaAccent,
-            typeLabel: 'Manga',
-            typeIcon: Icons.menu_book_rounded,
-          ),
-        ],
-        body: _ProgressBody(
-          accent: _kMangaAccent,
-          currentProgress: currentChapter,
-          totalProgress: totalChapters,
-          progress: progress,
-          progressLabel: 'Capítulo',
-          sessionRoute: '/journal/manga/session',
-          rawJournal: _journal,
-          isSaving: _isSaving,
-          onUpdateProgress: _showUpdateChapterSheet,
-          onEditJournal: _goToEditJournal,
-          statsWidget: _StatsGrid(
-            accent: _kMangaAccent,
-            startDate: journal.startDate,
-            currentProgress: currentChapter,
-            totalProgress: totalChapters,
-            itemId: manga.idManga,
-            progressLabel: 'Caps.',
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FanficReadingProgressPage extends ConsumerStatefulWidget {
-  final FanficJournalResponseDTO journal;
-  const FanficReadingProgressPage({super.key, required this.journal});
-
-  @override
-  ConsumerState<FanficReadingProgressPage> createState() =>
-      _FanficReadingProgressPageState();
-}
-
-class _FanficReadingProgressPageState
-    extends ConsumerState<FanficReadingProgressPage> {
-  bool _isSaving = false;
-  int? _currentChapterLocal;
-  int? _totalChaptersLocal;
-
-  FanficJournalResponseDTO get _journal => widget.journal;
-  FanfictionResponseDTO get _fanfic => _journal.fanfic;
-
-  int? get _totalChapters => _totalChaptersLocal ?? _fanfic.totalChapters;
-  int get _currentChapter => _currentChapterLocal ?? _journal.currentChapter ?? 0;
-
-  Future<void> _updateChapter(int newChapter) async {
-    if (_isSaving) return;
-    final previousChapter = _currentChapterLocal;
-    setState(() {
-      _isSaving = true;
-      _currentChapterLocal = newChapter;
-    });
-    try {
-      final auth = ref.read(authRepositoryProvider);
-      final repo = ref.read(fanficJournalRepositoryProvider);
-      final user = await auth.getUserProfile();
-      final dto = FanficJournalRecordDTO(
-        id: _journal.id,
-        userId: user.idUser,
-        fanficId: _fanfic.idFanfic ?? 0,
-        ao3Id: _fanfic.ao3Id,
-        status: JournalStatusHelper.mapStatusToDb(_journal.status),
-        currentChapter: newChapter,
-        rating: _journal.rating,
-        tearDrops: _journal.tearDrops,
-        spiceFlames: _journal.spiceFlames,
-        personalNotes: _journal.personalNotes,
-        startDate: _journal.startDate,
-        endDate: _journal.endDate,
-        rereading: _journal.rereading,
-        mainShip: _journal.mainShip,
-        secondaryShips: _journal.secondaryShips,
-        angstLevel: _journal.angstLevel,
-        shipLoyalty: _journal.shipLoyalty,
-        canonType: _journal.canonType,
-      );
-      await repo.saveRaw(dto.toJson());
-      try {
-        await ref.read(readingStatsRepositoryProvider).recordActivity();
-        ref.invalidate(gamificationProvider);
-      } catch (e) {
-        debugPrint('Error al registrar actividad: $e');
+            description: manga.description,
+            genres: manga.genres,
+            publicationStatus: manga.publicationStatus,
+            demographic: manga.demographic,
+            malScore: manga.malScore,
+          );
+          await ref.read(mangaSearchRepositoryProvider).saveOrUpdateManga(updatedManga);
+          break;
+        case JournalType.fanfic:
+          final fanfic = (journal as FanficJournalResponseDTO).fanfic;
+          final updatedFanfic = FanfictionResponseDTO(
+            idFanfic: fanfic.idFanfic,
+            ao3Id: fanfic.ao3Id,
+            title: fanfic.title,
+            author: fanfic.author,
+            sourceMaterial: fanfic.sourceMaterial,
+            totalChapters: total,
+            coverUrl: fanfic.coverUrl,
+            description: fanfic.description,
+            publicationStatus: fanfic.publicationStatus,
+            mainShip: fanfic.mainShip,
+            theme: fanfic.theme,
+            tags: fanfic.tags,
+            genres: fanfic.genres,
+          );
+          await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(updatedFanfic);
+          break;
       }
-      ref.invalidate(journalProvider(JournalType.fanfic));
-      ref.invalidate(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic ?? 0)));
-      if (mounted) _showSuccessSnack('Progreso actualizado');
-    } catch (e) {
+      ref.invalidate(journalProvider(widget.type));
+      ref.invalidate(journalEntryProvider((widget.type, _getId())));
       if (mounted) {
-        setState(() => _currentChapterLocal = previousChapter);
-        _showErrorSnack('Error al actualizar: $e');
-      }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
-  Future<void> _saveTotalChapters(int totalChapters) async {
-    final previousTotal = _totalChaptersLocal;
-    setState(() {
-      _isSaving = true;
-      _totalChaptersLocal = totalChapters;
-    });
-    try {
-      final repo = ref.read(catalogRepositoryProvider);
-      final fanficToSave = FanfictionResponseDTO(
-        idFanfic: _fanfic.idFanfic,
-        ao3Id: _fanfic.ao3Id,
-        title: _fanfic.title,
-        author: _fanfic.author,
-        sourceMaterial: _fanfic.sourceMaterial,
-        totalChapters: totalChapters,
-        coverUrl: _fanfic.coverUrl,
-        description: _fanfic.description,
-        publicationStatus: _fanfic.publicationStatus,
-        mainShip: _fanfic.mainShip,
-        theme: _fanfic.theme,
-        tags: _fanfic.tags,
-      );
-      await repo.saveOrUpdateFanfic(fanficToSave);
-      ref.invalidate(journalProvider(JournalType.fanfic));
-      ref.invalidate(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic ?? 0)));
-      if (mounted) {
-        _showSuccessSnack('Total de capítulos guardado');
-        _showUpdateChapterSheet(knownTotal: totalChapters);
+        _showSuccessSnack(AppLocalizations.of(context)!.totalSaved);
+        _showUpdateSheet(journal, _getCurrent(journal), total);
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _totalChaptersLocal = previousTotal);
-        _showErrorSnack('Error al guardar capítulos: $e');
+        setState(() => _totalLocal = previousTotal);
+        _showErrorSnack('${AppLocalizations.of(context)!.errorPrefix}: $e');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -647,156 +352,187 @@ class _FanficReadingProgressPageState
   }
 
   void _showSuccessSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [
-        const Icon(Icons.check_circle_outline, color: Colors.white),
-        const SizedBox(width: 8),
-        Text(msg),
-      ]),
-      backgroundColor: AppColors.statusReading,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text(msg),
+          ],
+        ),
+        backgroundColor: AppColors.statusReading,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _showErrorSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Theme.of(context).colorScheme.error,
-      behavior: SnackBarBehavior.floating,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
-  void _promptForTotalChapters() {
+  void _promptForTotal(dynamic journal) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
+    final pLabel = _progressLabel(context);
     showDialog(
       context: context,
-      builder: (context) => _TotalDialog(
+      builder: (_) => _TotalDialog(
         controller: controller,
-        title: 'Falta información',
-        body: 'Para hacer un seguimiento adecuado, necesitamos saber cuántos capítulos tiene este fanfic.',
-        label: 'Total de capítulos',
-        icon: Icons.bookmark_outline,
-        accent: _kFanficAccent,
+        title: l10n.totalOfItem(pLabel),
+        accent: _accent,
+        body: l10n.accurateTrackingReason(pLabel),
+        label: l10n.totalOfItem(pLabel),
+        icon: _typeIcon,
         onConfirm: (val) {
           if (val != null && val > 0) {
             Navigator.pop(context);
-            _saveTotalChapters(val);
+            _saveTotal(journal, val);
           }
         },
       ),
     );
   }
 
-  void _showUpdateChapterSheet({int? knownTotal}) {
-    final total = knownTotal ?? _totalChapters;
+  void _showUpdateSheet(dynamic journal, int current, int? total) {
+    final l10n = AppLocalizations.of(context)!;
     if (total == null || total <= 0) {
-      _promptForTotalChapters();
+      _promptForTotal(journal);
       return;
     }
-    _showProgressSheet(
-      title: _fanfic.title,
-      label: 'Capítulo actual (de $total)',
-      icon: Icons.favorite_rounded,
-      currentValue: _currentChapter,
-      accent: _kFanficAccent,
-      isSaving: _isSaving,
-      onSave: (val) {
-        Navigator.pop(context);
-        _updateChapter(val);
-      },
-    );
-  }
-
-  void _showProgressSheet({
-    required String title,
-    required String label,
-    required IconData icon,
-    required int currentValue,
-    required Color accent,
-    required bool isSaving,
-    required void Function(int) onSave,
-  }) {
-    final controller = TextEditingController(text: currentValue.toString());
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _ProgressSheet(
-        title: title,
-        fieldLabel: label,
-        fieldIcon: icon,
-        controller: controller,
-        accent: accent,
-        isSaving: isSaving,
-        onSave: onSave,
+      builder: (_) => _ProgressSheet(
+        title: _getTitle(journal),
+        fieldLabel: l10n.currentOfTotal(_progressLabel(context), total.toString()),
+        fieldIcon: _typeIcon,
+        controller: TextEditingController(text: current.toString()),
+        accent: _accent,
+        isSaving: _isSaving,
+        maxValue: total,
+        onSave: (val) {
+          Navigator.pop(context);
+          _updateProgress(journal, val);
+        },
       ),
     );
   }
 
-  void _goToEditJournal() => Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) => JournalItemEditPage(
-                journal: _journal, type: JournalType.fanfic)),
-      );
+  void _goToEditJournal() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            JournalItemEditPage(journal: widget.journal, type: widget.type),
+      ),
+    );
+  }
 
+  String? _getStartDate(dynamic journal) {
+    switch (widget.type) {
+      case JournalType.book:
+        return (journal as BookJournalResponseDto).startDate;
+      case JournalType.manga:
+        return (journal as MangaJournalResponseDTO).startDate;
+      case JournalType.fanfic:
+        return (journal as FanficJournalResponseDTO).startDate;
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // Build
+  // ----------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    final updatedJournal =
-        ref.watch(journalEntryProvider((JournalType.fanfic, _fanfic.idFanfic ?? 0)));
-    final journal = (updatedJournal as FanficJournalResponseDTO?) ?? _journal;
-    final fanfic = journal.fanfic;
-
-    final currentChapter = _currentChapterLocal ?? journal.currentChapter ?? 0;
-    final totalChapters = _totalChaptersLocal ?? fanfic.totalChapters;
-    final progress = (totalChapters ?? 0) > 0
-        ? (currentChapter / totalChapters!).clamp(0.0, 1.0)
+    final updatedJournal = ref.watch(
+      journalEntryProvider((widget.type, _getId())),
+    );
+    final journal = updatedJournal ?? widget.journal;
+    final current = _getCurrent(journal);
+    final total = _getTotal(journal);
+    final progress = (total != null && total > 0)
+        ? (current / total).clamp(0.0, 1.0)
         : 0.0;
+
+    final String pLabel = _progressLabel(context);
 
     return Scaffold(
       body: NestedScrollView(
-        headerSliverBuilder: (context, _) => [
+        headerSliverBuilder: (_, _) => [
           _CoverAppBar(
-            title: fanfic.title,
-            coverUrl: fanfic.coverUrl,
-            accent: _kFanficAccent,
-            typeLabel: 'Fanfic',
-            typeIcon: Icons.favorite_rounded,
+            title: _getTitle(journal),
+            coverUrl: _getCoverUrl(journal),
+            accent: _accent,
+            typeLabel: _typeLabel(context),
+            typeIcon: _typeIcon,
           ),
         ],
         body: _ProgressBody(
-          accent: _kFanficAccent,
-          currentProgress: currentChapter,
-          totalProgress: totalChapters,
+          accent: _accent,
+          currentProgress: current,
+          totalProgress: total,
           progress: progress,
-          progressLabel: 'Capítulo',
-          sessionRoute: '/journal/fanfic/session',
-          rawJournal: _journal,
+          progressLabel: pLabel,
+          sessionRoute: _sessionRoute,
+          rawJournal: journal,
           isSaving: _isSaving,
-          onUpdateProgress: _showUpdateChapterSheet,
+          onUpdateProgress: () => _showUpdateSheet(journal, current, total),
           onEditJournal: _goToEditJournal,
           statsWidget: _StatsGrid(
-            accent: _kFanficAccent,
-            startDate: journal.startDate,
-            currentProgress: currentChapter,
-            totalProgress: totalChapters,
-            itemId: fanfic.idFanfic,
-            progressLabel: 'Caps.',
+            accent: _accent,
+            startDate: _getStartDate(journal),
+            currentProgress: current,
+            totalProgress: total,
+            itemId: _getId(),
+            progressLabel: pLabel,
+            itemType: _itemTypeString,
           ),
         ),
       ),
     );
   }
+
+  int _getCurrentFromJournal(dynamic j) {
+    switch (widget.type) {
+      case JournalType.book:
+        return (j as BookJournalResponseDto).currentPage ?? 0;
+      case JournalType.manga:
+        return (j as MangaJournalResponseDTO).currentChapter ?? 0;
+      case JournalType.fanfic:
+        return (j as FanficJournalResponseDTO).currentChapter ?? 0;
+    }
+  }
+
+  int? _getTotalFromJournal(dynamic j) {
+    switch (widget.type) {
+      case JournalType.book:
+        return (j as BookJournalResponseDto).book.pageCount;
+      case JournalType.manga:
+        return (j as MangaJournalResponseDTO).manga!.totalChapters;
+      case JournalType.fanfic:
+        return (j as FanficJournalResponseDTO).fanfic.totalChapters;
+    }
+  }
 }
 
+// ------------------- Componentes visuales ------------------
 class _CoverAppBar extends StatelessWidget {
   final String title;
   final String? coverUrl;
   final Color accent;
   final String typeLabel;
   final IconData typeIcon;
-
   const _CoverAppBar({
     required this.title,
     required this.coverUrl,
@@ -808,31 +544,44 @@ class _CoverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCover = coverUrl != null && coverUrl!.isNotEmpty;
-
     return SliverAppBar(
-      expandedHeight: 260,
+      expandedHeight: 280,
       pinned: true,
+      stretch: true,
       backgroundColor: accent,
       foregroundColor: Colors.white,
-      title: Row(
-        children: [
-          Icon(typeIcon, size: 14, color: Colors.white70),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+      elevation: 0,
+      leading: Padding(
+        padding: const EdgeInsets.all(8),
+        child: InkWell(
+          onTap: () => Navigator.pop(context),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white,
+              size: 20,
             ),
           ),
-        ],
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.pin,
+        stretchModes: const [StretchMode.zoomBackground],
+        collapseMode: CollapseMode.parallax,
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -842,45 +591,44 @@ class _CoverAppBar extends StatelessWidget {
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(color: accent),
                 errorWidget: (_, _, _) => Container(color: accent),
-              )
-            else
-              Container(color: accent),
+              ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.4, 1.0],
                   colors: [
-                    Colors.black.withValues(alpha: 0.25),
-                    Colors.black.withValues(alpha: 0.65),
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.80),
                   ],
                 ),
               ),
             ),
             Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
+              bottom: 24,
+              left: 20,
+              right: 20,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const SizedBox(width: 20),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: SizedBox(
-                        width: 70,
-                        height: 100,
+                        width: 72,
+                        height: 104,
                         child: hasCover
                             ? CachedNetworkImage(
                                 imageUrl: coverUrl!,
@@ -889,19 +637,25 @@ class _CoverAppBar extends StatelessWidget {
                                     Container(color: Colors.white12),
                                 errorWidget: (_, _, _) => Container(
                                   color: Colors.white12,
-                                  child: Icon(typeIcon,
-                                      color: Colors.white54, size: 28),
+                                  child: Icon(
+                                    typeIcon,
+                                    color: Colors.white54,
+                                    size: 28,
+                                  ),
                                 ),
                               )
                             : Container(
                                 color: Colors.white12,
-                                child: Icon(typeIcon,
-                                    color: Colors.white54, size: 28),
+                                child: Icon(
+                                  typeIcon,
+                                  color: Colors.white54,
+                                  size: 28,
+                                ),
                               ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -909,12 +663,12 @@ class _CoverAppBar extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3)),
+                            color: accent.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -927,28 +681,30 @@ class _CoverAppBar extends StatelessWidget {
                                   color: Colors.white,
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.8,
+                                  letterSpacing: 1,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Text(
                           title,
-                          maxLines: 2,
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
-                            height: 1.2,
+                            height: 1.25,
+                            shadows: [
+                              Shadow(color: Colors.black54, blurRadius: 8),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 20),
                 ],
               ),
             ),
@@ -971,7 +727,6 @@ class _ProgressBody extends StatelessWidget {
   final VoidCallback onUpdateProgress;
   final VoidCallback onEditJournal;
   final Widget statsWidget;
-
   const _ProgressBody({
     required this.accent,
     required this.currentProgress,
@@ -986,19 +741,27 @@ class _ProgressBody extends StatelessWidget {
     required this.statsWidget,
   });
 
+  String _milestoneMessage(double p, AppLocalizations l10n) {
+    if (p >= 1.0) return l10n.milestoneCompleted;
+    if (p >= 0.75) return l10n.milestoneAlmostThere;
+    if (p >= 0.5) return l10n.milestoneHalfway;
+    if (p >= 0.25) return l10n.milestoneGoodStart;
+    if (p > 0) return l10n.milestoneJustStarted;
+    return l10n.milestoneNotStarted;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
-    final percentage = (progress * 100).toStringAsFixed(1);
-
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Círculo de progreso
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 28),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
             decoration: BoxDecoration(
               color: AppColors.card(context),
               borderRadius: BorderRadius.circular(20),
@@ -1007,24 +770,25 @@ class _ProgressBody extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(
-                  width: 170,
-                  height: 170,
+                  width: 190,
+                  height: 190,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       CircularProgressIndicator(
                         value: 1,
-                        strokeWidth: 13,
+                        strokeWidth: 10,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                            accent.withValues(alpha: 0.1)),
+                          accent.withValues(alpha: 0.1),
+                        ),
                       ),
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0, end: progress),
-                        duration: const Duration(milliseconds: 1100),
+                        duration: const Duration(milliseconds: 1200),
                         curve: Curves.easeOutCubic,
                         builder: (_, val, _) => CircularProgressIndicator(
                           value: val,
-                          strokeWidth: 13,
+                          strokeWidth: 10,
                           backgroundColor: Colors.transparent,
                           valueColor: AlwaysStoppedAnimation<Color>(accent),
                           strokeCap: StrokeCap.round,
@@ -1034,20 +798,27 @@ class _ProgressBody extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              '$percentage%',
-                              style: textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: accent,
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: progress * 100),
+                              duration: const Duration(milliseconds: 1200),
+                              curve: Curves.easeOutCubic,
+                              builder: (_, val, _) => Text(
+                                '${val.round()}%',
+                                style: textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: accent,
+                                  fontSize: 32,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
                               totalProgress != null && totalProgress! > 0
                                   ? '$currentProgress / $totalProgress'
                                   : '$progressLabel $currentProgress',
                               style: textTheme.bodySmall?.copyWith(
                                 color: AppColors.textSecondary(context),
+                                fontSize: 11,
                               ),
                             ),
                           ],
@@ -1056,9 +827,27 @@ class _ProgressBody extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _milestoneMessage(progress, l10n),
+                    style: textTheme.labelMedium?.copyWith(
+                      color: accent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Column(
                     children: [
                       ClipRRect(
@@ -1066,7 +855,7 @@ class _ProgressBody extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 6,
-                          backgroundColor: accent.withValues(alpha: 0.12),
+                          backgroundColor: accent.withValues(alpha: 0.1),
                           valueColor: AlwaysStoppedAnimation<Color>(accent),
                         ),
                       ),
@@ -1078,13 +867,15 @@ class _ProgressBody extends StatelessWidget {
                             '$progressLabel $currentProgress',
                             style: textTheme.labelSmall?.copyWith(
                               color: AppColors.textSecondary(context),
+                              fontSize: 10,
                             ),
                           ),
                           if (totalProgress != null)
                             Text(
-                              'de $totalProgress',
+                                l10n.outOf(totalProgress.toString()),
                               style: textTheme.labelSmall?.copyWith(
                                 color: AppColors.textSecondary(context),
+                                fontSize: 10,
                               ),
                             ),
                         ],
@@ -1098,53 +889,51 @@ class _ProgressBody extends StatelessWidget {
           const SizedBox(height: 20),
           statsWidget,
           const SizedBox(height: 28),
-          FilledButton.icon(
+          // Botones
+          ElevatedButton.icon(
             onPressed: onUpdateProgress,
-            icon: isSaving
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.edit_note_rounded),
-            label: Text('Actualizar $progressLabel'.toLowerCase()),
-            style: FilledButton.styleFrom(
+            icon: const Icon(Icons.edit_note_rounded, size: 18),
+            label: Text(l10n.updateItem(progressLabel)),
+            style: ElevatedButton.styleFrom(
               backgroundColor: accent,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              minimumSize: const Size.fromHeight(52),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          FilledButton.icon(
-            onPressed: () =>
-                GoRouter.of(context).push(sessionRoute, extra: rawJournal),
-            icon: const Icon(Icons.timer_outlined),
-            label: const Text('Iniciar sesión de lectura'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.surface(context),
-              foregroundColor: isDark
-                  ? AppColors.darkTextPrimary
-                  : AppColors.lightTextPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 3,
             ),
           ),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: onEditJournal,
-            icon: const Icon(Icons.tune_rounded),
-            label: const Text('Editar journal completo'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: accent,
-              side: BorderSide(color: accent.withValues(alpha: 0.4)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+            onPressed: () =>
+                GoRouter.of(context).push(sessionRoute, extra: rawJournal),
+            icon: Icon(Icons.timer_outlined, color: accent, size: 18),
+            label: Text(
+              l10n.startReadingSession,
+              style: TextStyle(color: AppColors.textPrimary(context)),
             ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              side: BorderSide(color: AppColors.border(context)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            onPressed: onEditJournal,
+            icon: Icon(
+              Icons.tune_rounded,
+              color: AppColors.textSecondary(context),
+              size: 16,
+            ),
+            label: Text(
+              l10n.editJournal,
+              style: TextStyle(color: AppColors.textSecondary(context)),
+            ),
+            style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
         ],
       ),
@@ -1152,14 +941,17 @@ class _ProgressBody extends StatelessWidget {
   }
 }
 
-class _StatsGrid extends ConsumerWidget {
+// ----------------------------------------------------------------------
+// _StatsGrid y auxiliares (ligeramente simplificados)
+// ----------------------------------------------------------------------
+class _StatsGrid extends ConsumerStatefulWidget {
   final Color accent;
   final String? startDate;
   final int currentProgress;
   final int? totalProgress;
   final int? itemId;
   final String progressLabel;
-
+  final String itemType;
   const _StatsGrid({
     required this.accent,
     required this.startDate,
@@ -1167,8 +959,14 @@ class _StatsGrid extends ConsumerWidget {
     required this.totalProgress,
     required this.itemId,
     required this.progressLabel,
+    required this.itemType,
   });
 
+  @override
+  ConsumerState<_StatsGrid> createState() => _StatsGridState();
+}
+
+class _StatsGridState extends ConsumerState<_StatsGrid> {
   String _formatDate(String dateStr) {
     try {
       final d = DateTime.parse(dateStr);
@@ -1179,69 +977,129 @@ class _StatsGrid extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    int? days;
-    if (startDate != null && startDate!.isNotEmpty) {
-      try {
-        days = DateTime.now().difference(DateTime.parse(startDate!)).inDays + 1;
-      } catch (_) {}
-    }
-    final remaining = totalProgress != null
-        ? (totalProgress! - currentProgress).clamp(0, totalProgress!)
-        : null;
-
-    final statsParams = ItemStatsParams(
-      itemId: itemId,
-      remainingPages: remaining ?? 0,
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final statsAsync = ref.watch(
+      itemReadingStatsProvider(
+        ItemStatsParams(
+          itemId: widget.itemId,
+          remainingPages: (widget.totalProgress ?? 0) - widget.currentProgress,
+          itemType: widget.itemType,
+        ),
+      ),
     );
-    final statsAsync = ref.watch(itemReadingStatsProvider(statsParams));
-
-    final stats = <_StatItem>[
+    final days = (widget.startDate != null && widget.startDate!.isNotEmpty)
+        ? DateTime.now().difference(DateTime.parse(widget.startDate!)).inDays +
+              1
+        : null;
+    final remaining = widget.totalProgress != null
+        ? (widget.totalProgress! - widget.currentProgress).clamp(
+            0,
+            widget.totalProgress!,
+          )
+        : null;
+    final baseStats = <_StatItem>[
       if (days != null)
-        _StatItem(Icons.calendar_today_outlined, 'Días leyendo', '$days'),
-      if (startDate != null && startDate!.isNotEmpty)
-        _StatItem(Icons.play_circle_outline, 'Inicio', _formatDate(startDate!)),
-      _StatItem(Icons.bookmark_added_outlined, '$progressLabel leídos',
-          '$currentProgress'),
+        _StatItem(Icons.calendar_today_outlined, l10n.daysReading, l10n.daysCount(days)),
+      if (widget.startDate != null && widget.startDate!.isNotEmpty)
+        _StatItem(
+          Icons.play_circle_outline,
+          l10n.startedOn,
+          _formatDate(widget.startDate!),
+        ),
+      _StatItem(
+        Icons.bookmark_added_outlined,
+        l10n.itemsRead(widget.progressLabel),
+        '${widget.currentProgress}',
+      ),
       if (remaining != null)
-        _StatItem(Icons.library_books_outlined, '$progressLabel restantes',
-            '$remaining'),
+        _StatItem(Icons.library_books_outlined, l10n.itemsRemaining, '$remaining'),
     ];
 
-    final statsData = statsAsync.value;
-    final totalTimeSecs = statsData?['totalDurationSeconds'] as int?;
-    if (totalTimeSecs != null && totalTimeSecs > 0) {
-      final th = totalTimeSecs ~/ 3600;
-      final tm = (totalTimeSecs % 3600) ~/ 60;
-      stats.add(_StatItem(Icons.timelapse_rounded, 'Tiempo invertido',
-          th > 0 ? '${th}h ${tm}m' : '${tm}m'));
-    }
-    final speed = statsData?['speedPagesPerHour'] as double?;
-    if (speed != null && speed > 0 && speed != 30.0) {
-      stats.add(_StatItem(
-          Icons.speed_rounded, 'Velocidad', '${speed.toStringAsFixed(1)}/h'));
-      final remainingSecs =
-          statsData?['estimatedTimeRemainingSeconds'] as int?;
-      if (remainingSecs != null && remainingSecs > 0) {
-        final h = remainingSecs ~/ 3600;
-        final m = (remainingSecs % 3600) ~/ 60;
-        stats.add(_StatItem(Icons.timer_outlined, 'Tiempo est.',
-            h > 0 ? '${h}h ${m}m' : '${m}m'));
-      }
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 16,
+              decoration: BoxDecoration(
+                color: widget.accent,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.yourProgress,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary(context),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        statsAsync.when(
+          data: (statsData) {
+            final totalTimeSecs = statsData['totalDurationSeconds'] as int?;
+            final allStats = <_StatItem>[...baseStats];
+            if (totalTimeSecs != null && totalTimeSecs > 0) {
+              final th = totalTimeSecs ~/ 3600;
+              final tm = (totalTimeSecs % 3600) ~/ 60;
+              allStats.add(
+                _StatItem(
+                  Icons.timelapse_rounded,
+                  l10n.totalTime,
+                  th > 0 ? l10n.hoursMinutes(th, tm) : l10n.minutes(tm),
+                ),
+              );
+            }
+            return _buildGrid(context, allStats);
+          },
+          loading: () => _buildGrid(context, baseStats, isLoading: true),
+          error: (_, _) => _buildGrid(context, baseStats, hasError: true),
+        ),
+      ],
+    );
+  }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.7,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, i) =>
-          _StatCard(stat: stats[i], accent: accent),
+  Widget _buildGrid(
+    BuildContext context,
+    List<_StatItem> items, {
+    bool isLoading = false,
+    bool hasError = false,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (hasError) {
+      return Center(
+        child: Text(
+          l10n.errorLoadingStats,
+          style: TextStyle(color: AppColors.textSecondary(context)),
+        ),
+      );
+    }
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 1.8,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: items.length,
+          itemBuilder: (_, i) => isLoading
+              ? _StatCardSkeleton()
+              : _StatCard(stat: items[i], accent: widget.accent),
+        );
+      },
     );
   }
 }
@@ -1260,42 +1118,98 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    return AnimatedScale(
+      scale: 0.95,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.card(context),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border(context)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.6),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(14),
+                  bottomLeft: Radius.circular(14),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(stat.icon, size: 12, color: accent),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            stat.label,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.textSecondary(context),
+                                  fontSize: 10,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      stat.value,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
+class _StatCardSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.card(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.border(context)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(stat.icon, size: 14, color: accent),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  stat.label,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary(context),
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+          Container(width: 4, color: Colors.grey.shade300),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(width: 60, height: 10, color: Colors.grey.shade300),
+                  const SizedBox(height: 8),
+                  Container(width: 40, height: 14, color: Colors.grey.shade300),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            stat.value,
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary(context),
             ),
           ),
         ],
@@ -1311,8 +1225,8 @@ class _ProgressSheet extends StatelessWidget {
   final TextEditingController controller;
   final Color accent;
   final bool isSaving;
+  final int maxValue;
   final void Function(int) onSave;
-
   const _ProgressSheet({
     required this.title,
     required this.fieldLabel,
@@ -1320,23 +1234,24 @@ class _ProgressSheet extends StatelessWidget {
     required this.controller,
     required this.accent,
     required this.isSaving,
+    required this.maxValue,
     required this.onSave,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
-
     return Padding(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface(context),
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1352,70 +1267,116 @@ class _ProgressSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Text('Actualizar progreso',
-                  style: textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(title,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary(context),
-                  )),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Icon(fieldIcon, color: accent, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.updateProgress,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary(context),
+                          ),
+                        ),
+                        Text(
+                          title,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
               TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 autofocus: true,
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 decoration: InputDecoration(
                   labelText: fieldLabel,
-                  prefixIcon: Icon(fieldIcon, color: accent, size: 20),
-                  filled: true,
-                  fillColor: AppColors.card(context),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: AppColors.border(context)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: accent, width: 1.5),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                  labelStyle: TextStyle(
+                    color: AppColors.textSecondary(context),
                   ),
                   floatingLabelStyle: TextStyle(
                     color: accent,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: isSaving
-                      ? null
-                      : () {
-                          final val = int.tryParse(controller.text);
-                          if (val != null && val >= 0) onSave(val);
-                        },
-                  icon: isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.save_rounded),
-                  label: const Text('Guardar progreso'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: accent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(fieldIcon, color: accent),
+                  filled: true,
+                  fillColor: AppColors.card(context),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColors.border(context)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: accent, width: 1.8),
                   ),
                 ),
+                onSubmitted: (value) {
+                  final val = int.tryParse(value);
+                  if (val != null && val >= 0 && val <= maxValue) {
+                    onSave(val);
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isSaving
+                    ? null
+                    : () {
+                        final val = int.tryParse(controller.text);
+                        if (val != null && val >= 0 && val <= maxValue) {
+                          onSave(val);
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accent,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 3,
+                ),
+                child: isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.save_rounded, size: 18),
+                          const SizedBox(width: 8),
+                          Text(l10n.saveProgress),
+                        ],
+                      ),
               ),
             ],
           ),
@@ -1433,7 +1394,6 @@ class _TotalDialog extends StatelessWidget {
   final IconData icon;
   final Color accent;
   final void Function(int?) onConfirm;
-
   const _TotalDialog({
     required this.controller,
     required this.title,
@@ -1446,31 +1406,71 @@ class _TotalDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
     return AlertDialog(
+      backgroundColor: AppColors.surface(context),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text(title),
+      title: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: accent, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(body,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary(context),
-                  )),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: accent.withValues(alpha: 0.15)),
+            ),
+            child: Text(
+              body,
+              style: textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary(context),
+                height: 1.5,
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: controller,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             autofocus: true,
             decoration: InputDecoration(
               labelText: label,
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              floatingLabelStyle: TextStyle(color: accent),
+              prefixIcon: Icon(icon, color: accent),
+              filled: true,
+              fillColor: AppColors.card(context),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.border(context)),
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: accent, width: 1.5),
               ),
-              prefixIcon: Icon(icon, color: accent),
-              floatingLabelStyle: TextStyle(color: accent),
             ),
           ),
         ],
@@ -1478,12 +1478,20 @@ class _TotalDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(
+            l10n.cancelButton,
+            style: TextStyle(color: AppColors.textSecondary(context)),
+          ),
         ),
         FilledButton(
           onPressed: () => onConfirm(int.tryParse(controller.text)),
-          style: FilledButton.styleFrom(backgroundColor: accent),
-          child: const Text('Guardar y continuar'),
+          style: FilledButton.styleFrom(
+            backgroundColor: accent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Text(l10n.saveButton),
         ),
       ],
     );
