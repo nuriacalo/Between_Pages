@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -90,9 +91,13 @@ public class ReadingStatsController {
     @Operation(summary = "Obtener racha de lectura y actividad semanal")
     @GetMapping("/streak")
     public ResponseEntity<ReadingStreakDTO> getReadingStreak(
-            Principal principal) {
+            Principal principal,
+            @RequestParam(name = "localDate", required = false) String localDateString) {
+        LocalDate referenceDate = localDateString != null 
+                ? LocalDate.parse(localDateString) 
+                : LocalDate.now();
         return ResponseEntity.ok(readingStatsService.calculateReadingStreak(
-                getUserByEmail(principal.getName()).getId()));
+                getUserByEmail(principal.getName()).getId(), referenceDate));
     }
 
     /**
@@ -122,9 +127,10 @@ public class ReadingStatsController {
     @GetMapping("/item/{itemId}")
     public ResponseEntity<Map<String, Object>> getItemReadingStats(
             Principal principal,
-            @PathVariable Long itemId) {
+            @PathVariable Long itemId,
+            @RequestParam(name = "type", required = true) String type) {
         User user = getUserByEmail(principal.getName());
-        Map<String, Object> stats = readingStatsService.getItemReadingStats(user.getId(), itemId);
+        Map<String, Object> stats = readingStatsService.getItemReadingStats(user.getId(), itemId, type.toUpperCase());
         return ResponseEntity.ok(stats);
     }
 }

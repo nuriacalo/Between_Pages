@@ -93,13 +93,32 @@ public class ReadingStatsService {
     }
 
     @Transactional(readOnly = true)
-    public ReadingStreakDTO calculateReadingStreak(Long userId) {
-        LocalDate today = LocalDate.now();
+    public ReadingStreakDTO calculateReadingStreak(Long userId, LocalDate today) {
         LocalDate weekStart = today.with(DayOfWeek.MONDAY);
         LocalDate weekEnd = today.with(DayOfWeek.SUNDAY);
 
         List<ReadingActivity> weekActivities = readingActivityRepository
                 .findByUserIdAndActivityDateBetween(userId, weekStart, weekEnd);
+
+        // The streak should now be directly from the User entity
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        int currentStreak = user.getCurrentStreak(); // Get streak from User entity
+        LocalDate lastReadingDate = user.getLastReadingDate();
+
+        // Si ha pasado más de 1 día desde la última lectura, la racha se ha roto
+        if (lastReadingDate != null) {
+            long daysSinceLastRead = ChronoUnit.DAYS.between(lastReadingDate, today);
+            if (daysSinceLastRead > 1) {
+                currentStreak = 0;
+            }
+        }
+
+        // Determinar el inicio de la racha actual para colorear solo esos días
+        LocalDate currentStreakStart = null;
+        if (lastReadingDate != null && currentStreak > 0) {
+            currentStreakStart = lastReadingDate.minusDays(currentStreak - 1);
+        }
 
         List<Boolean> weekActivity = new ArrayList<>(7);
         for (int i = 0; i < 7; i++) {
@@ -107,17 +126,19 @@ public class ReadingStatsService {
         }
 
         for (ReadingActivity activity : weekActivities) {
-            DayOfWeek dayOfWeek = activity.getActivityDate().getDayOfWeek();
-            int index = dayOfWeek.getValue() - 1; 
-            if (index >= 0 && index < 7) {
-                weekActivity.set(index, true);
+            LocalDate activityDate = activity.getActivityDate();
+            boolean isPartOfCurrentStreak = currentStreakStart != null && 
+                                            !activityDate.isBefore(currentStreakStart) && 
+                                            !activityDate.isAfter(lastReadingDate);
+
+            if (isPartOfCurrentStreak) {
+                DayOfWeek dayOfWeek = activityDate.getDayOfWeek();
+                int index = dayOfWeek.getValue() - 1; 
+                if (index >= 0 && index < 7) {
+                    weekActivity.set(index, true);
+                }
             }
         }
-
-        // The streak should now be directly from the User entity
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        int currentStreak = user.getCurrentStreak(); // Get streak from User entity
 
         long totalActiveDays = readingActivityRepository.countByUserIdAndActivityDateBetween(
                 userId, today.minusYears(1), today);
@@ -210,15 +231,32 @@ public class ReadingStatsService {
 
         // The streak should now be directly from the User entity
         int currentStreak = user.getCurrentStreak(); // Get streak from User entity
+        LocalDate lastReadingDate = user.getLastReadingDate();
+        LocalDate today = LocalDate.now();
+
+        // Validar rotura de racha caducada
+        if (lastReadingDate != null) {
+            long daysSinceLastRead = ChronoUnit.DAYS.between(lastReadingDate, today);
+            if (daysSinceLastRead > 1) {
+                currentStreak = 0;
+            }
+        }
+
+        LocalDate currentStreakStart = null;
+        if (lastReadingDate != null && currentStreak > 0) {
+            currentStreakStart = lastReadingDate.minusDays(currentStreak - 1);
+        }
 
         List<Boolean> weekActivity = new ArrayList<>();
-        LocalDate today = LocalDate.now();
         
         // This part still relies on ReadingActivity, which is fine for weekly activity visualization
         for (int i = 6; i >= 0; i--) {
             LocalDate targetDate = today.minusDays(i);
             boolean hasActivity = readingActivityRepository.existsByUserIdAndActivityDate(user.getId(), targetDate);
-            weekActivity.add(hasActivity);
+            boolean isPartOfCurrentStreak = currentStreakStart != null && 
+                                            !targetDate.isBefore(currentStreakStart) && 
+                                            !targetDate.isAfter(lastReadingDate);
+            weekActivity.add(hasActivity && isPartOfCurrentStreak);
         }
 
         return new GamificationStatsDTO(annualGoal, currentStreak, weekActivity);
@@ -292,14 +330,22 @@ public class ReadingStatsService {
 
 
     @Transactional(readOnly = true)
-    public Map<String, Object> getItemReadingStats(Long userId, Long itemId) {
+    public Map<String, Object> getItemReadingStats(Long userId, Long itemId, String itemType) {
         Map<String, Object> stats = new HashMap<>();
-        stats.put("speedPagesPerHour", 0.0);
         stats.put("estimatedTimeRemainingSeconds", 0);
 
-        long totalDurationSeconds = readingSessionRepository.findTotalDurationSecondsByItemId(userId, itemId)
+        long totalDurationSeconds = readingSessionRepository.findTotalDurationSecondsByItemId(userId, itemId, itemType)
                 .orElse(0L);
+
+        Long bookId = "BOOK".equals(itemType) ? itemId : null;
+        Long mangaId = "MANGA".equals(itemType) ? itemId : null;
+        Long fanficId = "FANFIC".equals(itemType) ? itemId : null;
+
+        Double averageSpeed = readingSessionRepository.findAverageSpeedForItem(userId, bookId, mangaId, fanficId)
+                .orElse(0.0);
+
         stats.put("totalDurationSeconds", totalDurationSeconds);
+        stats.put("speedPagesPerHour", averageSpeed);
 
         return stats;
     }

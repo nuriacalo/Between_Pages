@@ -67,6 +67,9 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
                                             @Param("mangaId") Long mangaId,
                                             @Param("fanficId") Long fanficId);
 
-    @Query("SELECT SUM(rs.durationSeconds) FROM ReadingSession rs WHERE rs.user.id = :userId AND (rs.book.id = :itemId OR rs.manga.id = :itemId OR rs.fanfic.id = :itemId)")
-    Optional<Long> findTotalDurationSecondsByItemId(@Param("userId") Long userId, @Param("itemId") Long itemId);
+    @Query("SELECT SUM(rs.durationSeconds) FROM ReadingSession rs WHERE rs.user.id = :userId AND " +
+           "((:itemType = 'BOOK' AND rs.book.id = :itemId) OR " +
+           "(:itemType = 'MANGA' AND rs.manga.id = :itemId) OR " +
+           "(:itemType = 'FANFIC' AND rs.fanfic.id = :itemId))")
+    Optional<Long> findTotalDurationSecondsByItemId(@Param("userId") Long userId, @Param("itemId") Long itemId, @Param("itemType") String itemType);
 }
