@@ -2,6 +2,7 @@ package com.calonuria.backend.features.user.controller;
 
 import com.calonuria.backend.features.user.dto.ReadingGoalDTO;
 import com.calonuria.backend.features.user.dto.ReadingStreakDTO;
+import com.calonuria.backend.features.user.dto.ReadingActivityRequestDTO; // Import added
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import com.calonuria.backend.features.user.service.ReadingStatsService;
@@ -104,8 +105,9 @@ public class ReadingStatsController {
     @Operation(summary = "Registrar actividad de lectura de hoy")
     @PostMapping("/activity")
     public ResponseEntity<Void> recordActivity(
-            Principal principal) {
-        readingStatsService.recordActivity(getUserByEmail(principal.getName()).getId());
+            Principal principal,
+            @RequestBody ReadingActivityRequestDTO request) { // Modified to accept DTO
+        readingStatsService.recordActivity(getUserByEmail(principal.getName()).getId(), request.getLocalDate()); // Modified to pass localDate
         return ResponseEntity.ok().build();
     }
 

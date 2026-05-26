@@ -1,53 +1,62 @@
 # BetweenPages
-BetweenPages es una plataforma fullstack de seguimiento de lectura para **libros, manga y fanfiction**. Permite descubrir contenido, guardarlo en catálogo propio, registrar progreso, organizar listas y visualizar estadísticas personales de lectura.
 
-## Qué resuelve la aplicación
-BetweenPages está pensada para centralizar en un solo lugar lo que normalmente se lleva en varias apps/notas:
+BetweenPages es una plataforma fullstack de seguimiento de lectura para **libros, manga y fanfiction**. Permite descubrir contenido, guardarlo en un catálogo propio, registrar progreso, organizar listas y visualizar estadísticas personales.
+
+---
+
+## Qué resuelve
+Centraliza en un solo lugar tareas que normalmente se hacen en varias apps/notas:
 - Descubrimiento de obras (búsqueda externa + catálogo local).
 - Seguimiento de progreso por tipo de contenido.
 - Organización por listas personalizadas.
 - Registro de hábitos (racha, metas, sesiones de lectura).
-- Gestión de cuenta con autenticación JWT.
+- Cuenta con autenticación basada en JWT.
+
+---
 
 ## Funcionalidades principales
-### 1) Catálogo
-- Gestión de **book**, **manga** y **fanfiction**.
-- Consulta por ID, listado general y alta en base de datos.
-- Búsqueda local y búsqueda externa según tipo.
+1. **Catálogo**
+   - Gestión de `book`, `manga` y `fanfiction`.
+   - Consulta por ID, listado y alta.
+   - Búsqueda local y búsqueda externa según tipo.
 
-### 2) Integraciones externas
-- Google Books para búsqueda de libros.
-- Jikan (MyAnimeList) para búsqueda de manga externo.
+2. **Integraciones externas**
+   - Google Books para libros.
+   - Jikan (MyAnimeList) para manga.
 
-### 3) Journal de lectura
-- Registro y actualización de progreso para cada tipo de obra.
-- Estados de lectura, valoraciones y notas.
-- Filtros por estado y consulta de relecturas.
+3. **Journal de lectura**
+   - Registro y actualización de progreso.
+   - Estados de lectura, valoraciones y notas.
+   - Filtros por estado y consulta de relecturas.
 
-### 4) Listas y organización
-- Creación de listas personalizadas por usuario.
-- Consulta de listas y eliminación.
+4. **Listas**
+   - Listas personalizadas por usuario.
+   - Consulta y eliminación.
 
-### 5) Estadísticas y gamificación
-- Meta anual de lectura.
-- Racha de actividad.
-- Registro de sesiones de lectura temporizadas.
+5. **Estadísticas y gamificación**
+   - Meta anual de lectura.
+   - Racha de actividad.
+   - Sesiones de lectura temporizadas.
 
-### 6) Frontend multiplataforma
-- Android, iOS, Web, Windows, macOS y Linux.
-- Tema claro/oscuro.
-- Internacionalización: español, inglés y gallego.
+6. **Frontend multiplataforma**
+   - Android, iOS, Web, Windows, macOS y Linux.
+   - Tema claro/oscuro.
+   - Internacionalización: español, inglés y gallego.
+
+---
 
 ## Arquitectura
-Repositorio monorepo con dos aplicaciones:
+Monorepo con dos aplicaciones:
 - `backend/`: API REST en Spring Boot.
 - `frontend/between_pages/`: app Flutter.
 
 Flujo general:
-1. El usuario interactúa con Flutter.
+1. Flutter muestra la UI.
 2. Flutter consume la API REST (`/api/...`).
 3. El backend persiste y consulta en PostgreSQL.
 4. Para búsquedas externas se consulta Google Books o Jikan.
+
+---
 
 ## Stack tecnológico
 ### Backend
@@ -67,6 +76,8 @@ Flujo general:
 - Flutter Secure Storage + Shared Preferences
 - Intl / Flutter Localizations
 
+---
+
 ## Estructura del repositorio
 ```text
 BetweenPages/
@@ -84,24 +95,28 @@ BetweenPages/
 │   │   ├── application-dev.yaml
 │   │   └── db/migration/
 │   └── pom.xml
-├── frontend/between_pages/
-│   ├── lib/
-│   ├── android/
-│   ├── ios/
-│   ├── web/
-│   ├── windows/
-│   ├── macos/
-│   ├── linux/
-│   └── pubspec.yaml
-└── README.md
+└── frontend/between_pages/
+    ├── lib/
+    ├── android/
+    ├── ios/
+    ├── web/
+    ├── windows/
+    ├── macos/
+    ├── linux/
+    └── pubspec.yaml
 ```
+
+---
 
 ## Requisitos
 - Java 21
 - PostgreSQL 14+
 - Flutter SDK compatible con `sdk: ^3.10.4`
 
+---
+
 ## Puesta en marcha local
+
 ### 1) Base de datos
 Crea una base de datos PostgreSQL:
 ```bash
@@ -128,10 +143,14 @@ flutter pub get
 flutter run --dart-define=API_BASE_URL=http://localhost:8080/api
 ```
 
-Nota Android emulator: usa `http://10.0.2.2:8080/api`.
+Nota (Android emulator):
+- usa `http://10.0.2.2:8080/api`
+
+---
 
 ## Configuración
-### Variables backend (`backend/src/main/resources/application.yaml`)
+### Backend
+`backend/src/main/resources/application.yaml`
 - `DB_URL` (default: `jdbc:postgresql://localhost:5432/between_pages`)
 - `DB_USERNAME`
 - `DB_PASSWORD`
@@ -145,23 +164,29 @@ Nota Android emulator: usa `http://10.0.2.2:8080/api`.
 - `FLYWAY_ENABLED`
 - `LOG_LEVEL`
 
-### Configuración frontend
-La URL de API se define con `--dart-define=API_BASE_URL=...`.
-Si no se define, el cliente usa su `defaultValue` en `lib/core/constants/api_constants.dart`.
+### Frontend
+La URL de API se define con:
+- `--dart-define=API_BASE_URL=...`
 
-## Seguridad y autenticación
-Auth basada en JWT:
+Si no se define, el cliente usa el `defaultValue` en:
+- `lib/core/constants/api_constants.dart`
+
+---
+
+## Seguridad y autenticación (JWT)
+Endpoints principales:
 - `POST /api/user/register`
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
 - `GET /api/auth/me`
 
 Para endpoints protegidos:
-- Header `Authorization: Bearer <token>`
+- `Authorization: Bearer <token>`
 
-En seguridad hay rutas públicas explícitas (registro, login, refresh, búsquedas y swagger) y el resto requiere autenticación.
+---
 
-## Endpoints principales (resumen funcional)
+## Endpoints principales (resumen)
+
 ### Catálogo
 - `GET /api/book/search?q=...`
 - `GET /api/book/search/local?q=...`
@@ -181,7 +206,7 @@ En seguridad hay rutas públicas explícitas (registro, login, refresh, búsqued
 - `GET /api/fanfiction`
 - `POST /api/fanfiction`
 
-### Tags fanfiction
+### Tags (fanfiction)
 - `GET /api/fanfiction/{fanficId}/tags`
 - `POST /api/fanfiction/{fanficId}/tags?tag=...`
 - `PUT /api/fanfiction/{fanficId}/tags`
@@ -228,19 +253,23 @@ En seguridad hay rutas públicas explícitas (registro, login, refresh, búsqued
 - `POST /api/reading-sessions`
 - `GET /api/reading-sessions/stats?remainingPages=...`
 
+---
+
 ## Calidad de código y tests
-Backend:
+### Backend
 ```bash
 cd backend
 ./mvnw test
 ```
 
-Frontend:
+### Frontend
 ```bash
 cd frontend/between_pages
 flutter analyze
 flutter test
 ```
+
+---
 
 ## Build de frontend
 ```bash
@@ -253,5 +282,8 @@ flutter build macos
 flutter build linux
 ```
 
+---
+
 ## Autoría
 Nuria Calo — Proyecto TFC.
+

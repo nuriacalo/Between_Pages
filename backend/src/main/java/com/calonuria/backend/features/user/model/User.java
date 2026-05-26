@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.time.LocalDate; // Import added
 
 /**
  * Entidad que representa un usuario de la aplicación.
@@ -53,6 +54,18 @@ public class User {
      */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    /**
+     * Racha de lectura actual del usuario.
+     */
+    @Column(name = "current_streak", nullable = false)
+    private int currentStreak = 0; // Initialize to 0
+
+    /**
+     * Última fecha en la que el usuario registró actividad de lectura.
+     */
+    @Column(name = "last_reading_date")
+    private LocalDate lastReadingDate; // Can be null initially
 
     /**
      * Método que se ejecuta antes de persistir el usuario.

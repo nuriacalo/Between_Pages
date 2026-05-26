@@ -81,13 +81,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/journal/book/progress',
-        builder: (context, state) {
-          final journal = state.extra as BookJournalResponseDto;
-          return BookReadingProgressPage(journal: journal);
-        },
-      ),
-      GoRoute(
         path: '/journal/book/session',
         builder: (context, state) {
           final journal = state.extra as BookJournalResponseDto;
@@ -132,24 +125,38 @@ final routerProvider = Provider<GoRouter>((ref) {
           return DiaryPage(data: journal.toDiaryData());
         },
       ),
+      // Para libro
+      GoRoute(
+        path: '/journal/book/progress',
+        builder: (context, state) {
+          final journal = state.extra as BookJournalResponseDto;
+          return ReadingProgressPage(journal: journal, type: JournalType.book);
+        },
+      ),
+      // Para manga
       GoRoute(
         path: '/journal/manga/progress',
         builder: (context, state) {
           final journal = state.extra as MangaJournalResponseDTO;
-          return MangaReadingProgressPage(journal: journal);
+          return ReadingProgressPage(journal: journal, type: JournalType.manga);
         },
       ),
+      // Para fanfic
       GoRoute(
         path: '/journal/fanfic/progress',
         builder: (context, state) {
           final journal = state.extra as FanficJournalResponseDTO;
-          return FanficReadingProgressPage(journal: journal);
+          return ReadingProgressPage(
+            journal: journal,
+            type: JournalType.fanfic,
+          );
         },
       ),
       GoRoute(path: '/lists', builder: (context, state) => const ListsPage()),
       GoRoute(
         path: '/lists/create',
-        builder: (context, state) => const CreateListPage(), // Cambia esto si tu clase se llama diferente
+        builder: (context, state) =>
+            const CreateListPage(), // Cambia esto si tu clase se llama diferente
       ),
       GoRoute(
         path: '/list/:id',

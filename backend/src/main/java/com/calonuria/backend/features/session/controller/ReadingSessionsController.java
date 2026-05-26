@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate; // Import added
+
 @RestController
 @RequestMapping("/api/reading-sessions")
 @RequiredArgsConstructor
@@ -32,7 +34,8 @@ public class ReadingSessionsController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         dto.setUserId(user.getId());
         readingSessionService.saveSession(dto);
-        readingStatsService.recordActivity(user.getId());
+        // Pass the current server date as a string
+        readingStatsService.recordActivity(user.getId(), LocalDate.now().toString());
         return ResponseEntity.ok().build();
     }
 

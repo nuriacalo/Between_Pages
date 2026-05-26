@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Year;
+import java.time.temporal.ChronoUnit; // Import added
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -113,7 +114,10 @@ public class ReadingStatsService {
             }
         }
 
-        int currentStreak = calculateStreak(userId, today);
+        // The streak should now be directly from the User entity
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        int currentStreak = user.getCurrentStreak(); // Get streak from User entity
 
         long totalActiveDays = readingActivityRepository.countByUserIdAndActivityDateBetween(
                 userId, today.minusYears(1), today);
@@ -121,29 +125,32 @@ public class ReadingStatsService {
         return new ReadingStreakDTO(currentStreak, weekActivity, totalActiveDays);
     }
 
-    private int calculateStreak(Long userId, LocalDate today) {
-        int streak = 0;
-        LocalDate checkDate = today;
+    // This method is no longer needed for calculating the main streak, as it's stored in User
+    // private int calculateStreak(Long userId, LocalDate today) {
+    //     int streak = 0;
+    //     LocalDate checkDate = today;
 
-        while (true) {
-            boolean hasActivity = readingActivityRepository.existsByUserIdAndActivityDate(userId, checkDate);
-            if (hasActivity) {
-                streak++;
-                checkDate = checkDate.minusDays(1);
-            } else {
-                break;
-            }
-        }
-
-        return streak;
-    }
+    //     while (true) {
+    //         boolean hasActivity = readingActivityRepository.existsByUserIdAndActivityDate(userId, checkDate);
+    //         if (hasActivity) {
+    //             streak++;
+    //             checkDate = checkDate.minusDays(1);
+    //         } else {
+    //             break;
+    //         }
+    //     }
+    //     return streak;
+    // }
 
     @Transactional
-    public void recordActivity(Long userId) {
-        LocalDate today = LocalDate.now();
+    public void recordActivity(Long userId, String localDateString) { // Modified to accept localDateString
+        LocalDate today = LocalDate.parse(localDateString); // Parse the localDateString
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        // Check if an activity for today already exists to avoid duplicate entries
         if (!readingActivityRepository.existsByUserIdAndActivityDate(userId, today)) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
             ReadingActivity activity = new ReadingActivity();
             activity.setUser(user);
             activity.setActivityDate(today);
@@ -153,6 +160,29 @@ public class ReadingStatsService {
                 log.warn("Activity for date {} already exists for user ID {}", today, userId);
             }
         }
+
+        // Streak calculation logic
+        LocalDate lastActivityDate = user.getLastReadingDate();
+
+        if (lastActivityDate == null) {
+            // First activity for the user
+            user.setCurrentStreak(1);
+        } else {
+            long daysBetween = ChronoUnit.DAYS.between(lastActivityDate, today);
+
+            if (daysBetween == 1) {
+                // Read yesterday, streak continues
+                user.setCurrentStreak(user.getCurrentStreak() + 1);
+            } else if (daysBetween > 1) {
+                // Did not read yesterday, streak resets
+                user.setCurrentStreak(1);
+            }
+            // If daysBetween == 0, read today, streak remains unchanged.
+            // This is important to prevent incrementing the streak if reading multiple times on the same day.
+        }
+
+        user.setLastReadingDate(today); // Update the last reading date
+        userRepository.save(user); // Save the changes to the user
     }
 
     @Transactional(readOnly = true)
@@ -178,15 +208,17 @@ public class ReadingStatsService {
         Optional<ReadingGoal> goalOpt = readingGoalRepository.findByUserAndGoalYear(user, currentYear);
         int annualGoal = goalOpt.map(ReadingGoal::getTargetAmount).orElse(12);
 
-        List<LocalDate> activityDates = readingActivityRepository.findActivityDatesByUserId(user.getId());
-        int currentStreak = calculateStreak(activityDates);
+        // The streak should now be directly from the User entity
+        int currentStreak = user.getCurrentStreak(); // Get streak from User entity
 
         List<Boolean> weekActivity = new ArrayList<>();
         LocalDate today = LocalDate.now();
         
+        // This part still relies on ReadingActivity, which is fine for weekly activity visualization
         for (int i = 6; i >= 0; i--) {
             LocalDate targetDate = today.minusDays(i);
-            weekActivity.add(activityDates.contains(targetDate));
+            boolean hasActivity = readingActivityRepository.existsByUserIdAndActivityDate(user.getId(), targetDate);
+            weekActivity.add(hasActivity);
         }
 
         return new GamificationStatsDTO(annualGoal, currentStreak, weekActivity);
@@ -217,6 +249,9 @@ public class ReadingStatsService {
         }
     }
 
+    // This calculateStreak method is no longer directly used for the main streak value,
+    // as it's now managed in the User entity. It might be useful for historical calculations
+    // or specific reports, but for the current streak, we rely on the User entity.
     private int calculateStreak(List<LocalDate> sortedDates) {
         if (sortedDates == null || sortedDates.isEmpty()) {
             return 0;
@@ -226,27 +261,35 @@ public class ReadingStatsService {
         int streak = 0;
         LocalDate expectedDate;
 
-        if (sortedDates.get(0).equals(currentDate)) {
+        if (sortedDates.contains(currentDate)) { // Check if today's activity is present
             streak = 1;
             expectedDate = currentDate.minusDays(1);
-        } else if (sortedDates.get(0).equals(currentDate.minusDays(1))) {
+        } else if (sortedDates.contains(currentDate.minusDays(1))) { // Check if yesterday's activity is present
             streak = 1;
             expectedDate = currentDate.minusDays(2);
         } else {
             return 0;
         }
 
-        for (int i = 1; i < sortedDates.size(); i++) {
-            if (sortedDates.get(i).equals(expectedDate)) {
+        // Sort dates in descending order to easily check consecutive days backwards
+        sortedDates.sort((d1, d2) -> d2.compareTo(d1));
+
+        for (LocalDate date : sortedDates) {
+            if (date.equals(currentDate)) continue; // Skip today if already handled
+
+            if (date.equals(expectedDate)) {
                 streak++;
                 expectedDate = expectedDate.minusDays(1);
-            } else {
+            } else if (date.isBefore(expectedDate)) {
+                // If a date is before the expected date, the streak is broken
                 break;
             }
+            // If date is after expectedDate (meaning it's a future date or a duplicate of today), ignore
         }
 
         return streak;
     }
+
 
     @Transactional(readOnly = true)
     public Map<String, Object> getItemReadingStats(Long userId, Long itemId) {
