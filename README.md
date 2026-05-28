@@ -1,86 +1,110 @@
-# BetweenPages
+<div align="center">
 
-BetweenPages es una plataforma fullstack de seguimiento de lectura para **libros, manga y fanfiction**. Permite descubrir contenido, guardarlo en un catálogo propio, registrar progreso, organizar listas y visualizar estadísticas personales.
+# 📚 BetweenPages
 
----
+**Plataforma full-stack unificada para el seguimiento de lectura multiformato.**
 
-## Qué resuelve
-Centraliza en un solo lugar tareas que normalmente se hacen en varias apps/notas:
-- Descubrimiento de obras (búsqueda externa + catálogo local).
-- Seguimiento de progreso por tipo de contenido.
-- Organización por listas personalizadas.
-- Registro de hábitos (racha, metas, sesiones de lectura).
-- Cuenta con autenticación basada en JWT.
+[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-F2F4F9?style=for-the-badge&logo=spring-boot)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
+[![Java 21](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://jdk.java.net/21/)
 
----
+> **Proyecto TFC (Trabajo de Fin de Ciclo) - DAM** <br>
+> *Desarrollado por Nuria Calo Mosquera*
 
-## Funcionalidades principales
-1. **Catálogo**
-   - Gestión de `book`, `manga` y `fanfiction`.
-   - Consulta por ID, listado y alta.
-   - Búsqueda local y búsqueda externa según tipo.
-
-2. **Integraciones externas**
-   - Google Books para libros.
-   - Jikan (MyAnimeList) para manga.
-
-3. **Journal de lectura**
-   - Registro y actualización de progreso.
-   - Estados de lectura, valoraciones y notas.
-   - Filtros por estado y consulta de relecturas.
-
-4. **Listas**
-   - Listas personalizadas por usuario.
-   - Consulta y eliminación.
-
-5. **Estadísticas y gamificación**
-   - Meta anual de lectura.
-   - Racha de actividad.
-   - Sesiones de lectura temporizadas.
-
-6. **Frontend multiplataforma**
-   - Android, iOS, Web, Windows, macOS y Linux.
-   - Tema claro/oscuro.
-   - Internacionalización: español, inglés y gallego.
+</div>
 
 ---
 
-## Arquitectura
-Monorepo con dos aplicaciones:
-- `backend/`: API REST en Spring Boot.
-- `frontend/between_pages/`: app Flutter.
+## 📑 Índice
+- [El Problema que Resuelve](#-el-problema-que-resuelve)
+- [Funcionalidades Principales](#-funcionalidades-principales)
+- [Arquitectura del Sistema](#️-arquitectura-del-sistema)
+- [Stack Tecnológico](#-stack-tecnológico)
+- [Puesta en marcha local](#-puesta-en-marcha-local)
+- [Endpoints principales](#-endpoints-principales-resumen)
 
-Flujo general:
-1. Flutter muestra la UI.
-2. Flutter consume la API REST (`/api/...`).
-3. El backend persiste y consulta en PostgreSQL.
-4. Para búsquedas externas se consulta Google Books o Jikan.
-
----
-
-## Stack tecnológico
-### Backend
-- Java 21
-- Spring Boot 3.3.1
-- Spring Security + JWT
-- Spring Data JPA
-- PostgreSQL
-- SpringDoc OpenAPI (Swagger)
-- Maven Wrapper (`./mvnw`)
-
-### Frontend
-- Flutter + Dart
-- Riverpod (estado)
-- GoRouter (navegación)
-- Dio (HTTP)
-- Flutter Secure Storage + Shared Preferences
-- Intl / Flutter Localizations
+## 🎯 El Problema que Resuelve
+Soluciona la fragmentación existente entre plataformas como *Goodreads*, *MyAnimeList* y *AO3*. BetweenPages centraliza todo en un único ecosistema:
+- **Biblioteca Unificada:** Libros, mangas y fanfics en un mismo lugar.
+- **Automatización de Datos:** Integración con APIs externas y un web scraper propio para obtener metadatos sin esfuerzo.
+- **Gamificación y Hábitos:** Registro de rachas, metas anuales y sesiones de lectura cronometradas.
+- **Métricas Emocionales:** Va más allá de las estrellas, permitiendo registrar *Tear Drops* 💧, *Spice Flames* 🔥 y *Angst Level* 💔.
 
 ---
 
-## Estructura del repositorio
-```text
-BetweenPages/
+## ✨ Funcionalidades Principales
+
+1. **Integraciones Externas y Crawler Propio 🌐**
+   - **Google Books API:** Búsqueda e importación automática de libros.
+   - **Jikan API (v4):** Obtención de metadatos de manga desde MyAnimeList.
+   - **Crawler AO3 Integrado:** Extracción fiable de datos (título, autor, sinopsis, estado, ships) pegando simplemente el enlace de un fanfic.
+
+2. **Journal Emocional de Lectura 📖**
+   - Widgets personalizados para evaluar respuestas emocionales (EmojiRatingSelector, AngstLevelSelector).
+   - Notas, citas favoritas y probabilidad de relectura.
+
+3. **Listas Polimórficas 📋**
+   - Colecciones personalizadas que pueden contener simultáneamente libros, mangas y fanfics.
+
+4. **Gamificación y Sesiones ⏱️**
+   - Cronómetro de lectura en vivo.
+   - Seguimiento de rachas diarias y progreso hacia la meta anual.
+
+5. **Seguridad Robusta 🛡️**
+   - Autenticación JWT con Tokens de Acceso y Refresco.
+   - Renovación asíncrona silenciosa (cola de peticiones en el Interceptor de Dio).
+   - Almacenamiento cifrado en el dispositivo (`flutter_secure_storage`).
+
+---
+
+## 📱 Capturas de Pantalla
+
+*(Reemplaza los enlaces de "via.placeholder.com" por las rutas de tus capturas reales)*
+<p align="center">
+  <img src="https://via.placeholder.com/250x500.png?text=Home+App" alt="Home" width="22%" />
+  <img src="https://via.placeholder.com/250x500.png?text=Catálogo" alt="Catálogo" width="22%" />
+  <img src="https://via.placeholder.com/250x500.png?text=Journal" alt="Journal" width="22%" />
+  <img src="https://via.placeholder.com/250x500.png?text=Sesión+Lectura" alt="Sesion" width="22%" />
+</p>
+
+---
+
+## ⚙️ Arquitectura del Sistema
+El proyecto utiliza una estructura de **Monorepo** que aloja dos aplicaciones principales:
+- 🔙 `backend/`: API REST desarrollada en Spring Boot.
+- 📱 `frontend/between_pages/`: Aplicación multiplataforma en Flutter.
+
+**Flujo general:**
+1. **Cliente Flutter** maneja el estado reactivo con Riverpod y realiza peticiones seguras mediante Dio.
+2. **API REST Spring Boot** actúa como middleware y procesador de lógica de negocio (seguridad, web scraping, integración de APIs).
+3. **PostgreSQL** almacena los datos de manera relacional (y polimórfica para el contenido), con esquemas versionados mediante Flyway.
+
+---
+
+## 🛠 Stack Tecnológico
+
+### Backend 🔙
+- **Lenguaje & Framework:** Java 21, Spring Boot 3.3.1
+- **Seguridad:** Spring Security + JWT (Access/Refresh Tokens)
+- **Persistencia:** PostgreSQL, Spring Data JPA, Migraciones con **Flyway**
+- **Documentación:** SpringDoc OpenAPI (Swagger)
+- **Web Scraping:** Jsoup (Crawler AO3)
+
+### Frontend 📱
+- **Framework:** Flutter (Dart) - *Soporte multiplataforma (iOS, Android, Web)*
+- **Gestor de Estado:** Riverpod
+- **Enrutamiento:** GoRouter
+- **Red:** Dio (con `AuthInterceptor` customizado)
+- **Almacenamiento Local:** `flutter_secure_storage`, `shared_preferences`
+- **UI/UX:** Material 3, Temas Claro/Oscuro, Internacionalización (gl, es, en)
+
+---
+
+## 📂 Estructura del repositorio
+```graphql
+📦 BetweenPages
 ├── backend/
 │   ├── src/main/java/com/calonuria/backend/
 │   │   ├── config/
@@ -108,22 +132,22 @@ BetweenPages/
 
 ---
 
-## Requisitos
+## 🚀 Requisitos
 - Java 21
 - PostgreSQL 14+
 - Flutter SDK compatible con `sdk: ^3.10.4`
 
 ---
 
-## Puesta en marcha local
+## 💻 Puesta en marcha local
 
-### 1) Base de datos
+### 1️⃣ Base de datos
 Crea una base de datos PostgreSQL:
 ```bash
 createdb between_pages
 ```
 
-### 2) Backend
+### 2️⃣ Backend
 Desde `backend/`:
 ```bash
 ./mvnw spring-boot:run
@@ -286,4 +310,3 @@ flutter build linux
 
 ## Autoría
 Nuria Calo — Proyecto TFC.
-

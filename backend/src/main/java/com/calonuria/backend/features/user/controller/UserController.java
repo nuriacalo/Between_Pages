@@ -2,6 +2,7 @@ package com.calonuria.backend.features.user.controller;
 
 import com.calonuria.backend.features.user.dto.UserRegistrationDTO;
 import com.calonuria.backend.features.user.dto.UserResponseDTO;
+import com.calonuria.backend.features.user.dto.UserUpdateDTO;
 import com.calonuria.backend.features.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,6 +52,27 @@ public class UserController {
             return ResponseEntity.ok(userService.registerUser(registrationDTO));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Updates an existing user's profile metadata.
+     *
+     * @param id the unique identifier of the user
+     * @param updateDTO the payload containing updated fields
+     * @return a {@link ResponseEntity} containing the updated {@link UserResponseDTO}
+     */
+    @Operation(summary = "Actualizar perfil de usuario")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO updateDTO) {
+        try {
+            return ResponseEntity.ok(userService.updateUserProfile(id, updateDTO));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

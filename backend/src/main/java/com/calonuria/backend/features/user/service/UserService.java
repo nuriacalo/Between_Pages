@@ -2,10 +2,12 @@ package com.calonuria.backend.features.user.service;
 
 import com.calonuria.backend.features.user.dto.UserRegistrationDTO;
 import com.calonuria.backend.features.user.dto.UserResponseDTO;
+import com.calonuria.backend.features.user.dto.UserUpdateDTO;
 import com.calonuria.backend.features.user.model.User;
 import com.calonuria.backend.features.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
@@ -40,6 +42,30 @@ public class UserService {
 
         User saved = userRepository.save(newUser);
         return mapToDTO(saved);
+    }
+
+    /**
+     * Actualiza los datos del perfil de un usuario existente.
+     * @param id ID del usuario
+     * @param updateDTO datos a actualizar
+     * @return DTO con la información del usuario actualizada
+     */
+    @Transactional
+    public UserResponseDTO updateUserProfile(Long id, UserUpdateDTO updateDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (updateDTO.getName() != null && !updateDTO.getName().trim().isEmpty()) {
+            user.setName(updateDTO.getName());
+        }
+        
+        if (updateDTO.getEmail() != null && !updateDTO.getEmail().trim().isEmpty()) {
+            user.setEmail(updateDTO.getEmail());
+        }
+
+        userRepository.save(user); // <-- Fuerza a Hibernate a ejecutar el UPDATE en la BD
+
+        return mapToDTO(user);
     }
 
     /**
