@@ -6,8 +6,25 @@ import 'package:between_pages/features/lists/application/repositories/reading_li
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// 1. Creamos proveedores para almacenar en caché los catálogos y no recargarlos al buscar
+final _allBooksProvider = FutureProvider.autoDispose<List<BookResponseDTO>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  return ref.read(catalogRepositoryProvider).getAllBooks(user.idUser);
+});
+
+final _allMangaProvider = FutureProvider.autoDispose<List<MangaResponseDTO>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  return ref.read(catalogRepositoryProvider).getAllManga(user.idUser);
+});
+
+final _allFanficsProvider = FutureProvider.autoDispose<List<FanfictionResponseDTO>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  return ref.read(catalogRepositoryProvider).getAllFanfics(user.idUser);
+});
 
 class AddContentToListPage extends ConsumerStatefulWidget {
   final int listId;
@@ -83,35 +100,22 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
   }
 
   Widget _buildBookList() {
-    final userIdAsync = ref.watch(userProfileProvider);
-    return userIdAsync.when(
-      data: (user) {
-        return FutureBuilder<List<BookResponseDTO>>(
-          future: ref.read(catalogRepositoryProvider).getAllBooks(user.idUser),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            final books = snapshot.data
-                    ?.where((book) => book.title
-                        .toLowerCase()
-                        .contains(_searchTerm.toLowerCase()))
-                    .toList() ??
-                [];
-            return ListView.builder(
-              itemCount: books.length,
-              itemBuilder: (context, index) {
-                final book = books[index];
-                return _buildItem(
-                  title: book.title,
-                  author: book.author,
-                  coverUrl: book.coverUrl,
-                  onTap: () => _addContent('BOOK', book.idBook!),
-                );
-              },
+    final booksAsync = ref.watch(_allBooksProvider);
+    return booksAsync.when(
+      data: (data) {
+        final books = data
+            .where((book) =>
+                book.title.toLowerCase().contains(_searchTerm.toLowerCase()))
+            .toList();
+        return ListView.builder(
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            final book = books[index];
+            return _buildItem(
+              title: book.title,
+              author: book.author,
+              coverUrl: book.coverUrl,
+              onTap: () => _addContent('BOOK', book.idBook!),
             );
           },
         );
@@ -122,35 +126,22 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
   }
 
   Widget _buildMangaList() {
-    final userIdAsync = ref.watch(userProfileProvider);
-    return userIdAsync.when(
-      data: (user) {
-        return FutureBuilder<List<MangaResponseDTO>>(
-          future: ref.read(catalogRepositoryProvider).getAllManga(user.idUser),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            final mangas = snapshot.data
-                    ?.where((manga) => (manga.title ?? '')
-                        .toLowerCase()
-                        .contains(_searchTerm.toLowerCase()))
-                    .toList() ??
-                [];
-            return ListView.builder(
-              itemCount: mangas.length,
-              itemBuilder: (context, index) {
-                final manga = mangas[index];
-                return _buildItem(
-                  title: manga.title ?? 'Sin título',
-                  author: manga.author ?? 'Autor desconocido',
-                  coverUrl: manga.coverUrl,
-                  onTap: () => _addContent('MANGA', manga.idManga!),
-                );
-              },
+    final mangasAsync = ref.watch(_allMangaProvider);
+    return mangasAsync.when(
+      data: (data) {
+        final mangas = data
+            .where((manga) =>
+                (manga.title ?? '').toLowerCase().contains(_searchTerm.toLowerCase()))
+            .toList();
+        return ListView.builder(
+          itemCount: mangas.length,
+          itemBuilder: (context, index) {
+            final manga = mangas[index];
+            return _buildItem(
+              title: manga.title ?? 'Sin título',
+              author: manga.author ?? 'Autor desconocido',
+              coverUrl: manga.coverUrl,
+              onTap: () => _addContent('MANGA', manga.idManga!),
             );
           },
         );
@@ -161,35 +152,22 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
   }
 
   Widget _buildFanficList() {
-    final userIdAsync = ref.watch(userProfileProvider);
-    return userIdAsync.when(
-      data: (user) {
-        return FutureBuilder<List<FanfictionResponseDTO>>(
-          future: ref.read(catalogRepositoryProvider).getAllFanfics(user.idUser),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            final fanfics = snapshot.data
-                    ?.where((fanfic) => (fanfic.title ?? '')
-                        .toLowerCase()
-                        .contains(_searchTerm.toLowerCase()))
-                    .toList() ??
-                [];
-            return ListView.builder(
-              itemCount: fanfics.length,
-              itemBuilder: (context, index) {
-                final fanfic = fanfics[index];
-                return _buildItem(
-                  title: fanfic.title ?? 'Sin título',
-                  author: fanfic.author ?? 'Autor desconocido',
-                  coverUrl: fanfic.coverUrl,
-                  onTap: () => _addContent('FANFIC', fanfic.idFanfic!),
-                );
-              },
+    final fanficsAsync = ref.watch(_allFanficsProvider);
+    return fanficsAsync.when(
+      data: (data) {
+        final fanfics = data
+            .where((fanfic) =>
+                (fanfic.title ?? '').toLowerCase().contains(_searchTerm.toLowerCase()))
+            .toList();
+        return ListView.builder(
+          itemCount: fanfics.length,
+          itemBuilder: (context, index) {
+            final fanfic = fanfics[index];
+            return _buildItem(
+              title: fanfic.title ?? 'Sin título',
+              author: fanfic.author ?? 'Autor desconocido',
+              coverUrl: fanfic.coverUrl,
+              onTap: () => _addContent('FANFIC', fanfic.idFanfic!),
             );
           },
         );
@@ -231,7 +209,18 @@ class _AddContentToListPageState extends ConsumerState<AddContentToListPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al añadir: $e')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('No se pudo añadir a la lista. Es posible que ya exista.')),
+              ],
+            ),
+            backgroundColor: Colors.orange.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     }

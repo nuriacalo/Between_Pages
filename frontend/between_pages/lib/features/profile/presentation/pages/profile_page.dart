@@ -194,7 +194,17 @@ class ProfilePage extends ConsumerWidget {
                       _GroupTile(
                         icon: Icons.notifications_outlined,
                         title: l10n.profileNotifications,
-                        onTap: () {},
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Notificaciones — próximamente 🚧'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -223,6 +233,107 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DropdownTrailing extends StatelessWidget {
+  final String value;
+  final Map<String, String> items;
+  final ValueChanged<String?> onChanged;
+
+  const _DropdownTrailing({
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showPicker(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.accent(
+            context,
+          ).withValues(alpha: 0.08), 
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.accent(
+              context,
+            ).withValues(alpha: 0.3).withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              items[value] ?? value,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppColors.accent(context),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(width: 4),
+
+            Icon(
+              Icons.expand_more_rounded,
+              size: 14,
+              color: AppColors.accent(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border(context),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            ...items.entries.map(
+              (e) => ListTile(
+                title: Text(e.value),
+                tileColor: AppColors.surface(context),
+                trailing: e.key == value
+                    ? Icon(
+                        Icons.check_rounded,
+                        color: AppColors.accent(context),
+                      )
+                    : null,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onChanged(e.key);
+                },
+              ),
+            ),
+
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -495,107 +606,6 @@ class _GroupTile extends StatelessWidget {
                   size: 20,
                   color: AppColors.textSecondary(context),
                 ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DropdownTrailing extends StatelessWidget {
-  final String value;
-  final Map<String, String> items;
-  final ValueChanged<String?> onChanged;
-
-  const _DropdownTrailing({
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showPicker(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: AppColors.accent(
-            context,
-          ).withValues(alpha: 0.08), 
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.accent(
-              context,
-            ).withValues(alpha: 0.3).withValues(alpha: 0.3),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              items[value] ?? value,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.accent(context),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(width: 4),
-
-            Icon(
-              Icons.expand_more_rounded,
-              size: 14,
-              color: AppColors.accent(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showPicker(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface(context),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border(context),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            ...items.entries.map(
-              (e) => ListTile(
-                title: Text(e.value),
-                tileColor: AppColors.surface(context),
-                trailing: e.key == value
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: AppColors.accent(context),
-                      )
-                    : null,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onChanged(e.key);
-                },
-              ),
-            ),
-
-            const SizedBox(height: 8),
           ],
         ),
       ),

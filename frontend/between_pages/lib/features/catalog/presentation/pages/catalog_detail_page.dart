@@ -167,27 +167,31 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
   // ── Journal helpers ───────────────────────────────────────────────────────
 
   BaseJournalResponseDTO? _getExistingJournal() {
-    // If we already have a journal from the Enriched item, return it.
-    if (_journal != null) return _journal;
-
-    // Otherwise, try to fetch it from the provider (for items coming from search).
+    BaseJournalResponseDTO? providerJournal;
+    
     switch (widget.type) {
       case CatalogItemType.book:
         final b = _currentItem as BookResponseDTO;
-        return ref.watch(
+        providerJournal = ref.watch(
           journalEntryProvider((JournalType.book, b.idBook ?? 0)),
         );
+        break;
       case CatalogItemType.manga:
         final m = _currentItem as MangaResponseDTO;
-        return ref.watch(
+        providerJournal = ref.watch(
           journalEntryProvider((JournalType.manga, m.idManga ?? 0)),
         );
+        break;
       case CatalogItemType.fanfic:
         final f = _currentItem as FanfictionResponseDTO;
-        return ref.watch(
+        providerJournal = ref.watch(
           journalEntryProvider((JournalType.fanfic, f.idFanfic ?? 0)),
         );
+        break;
     }
+
+    // Si el provider tiene datos frescos los usamos. Si es nulo, usamos el inicial de respaldo.
+    return providerJournal ?? _journal;
   }
 
   void _invalidateJournals() {
@@ -210,7 +214,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             var book = _currentItem as BookResponseDTO;
             if ((book.idBook ?? 0) == 0) {
               book = await ref.read(bookSearchRepositoryProvider).saveOrUpdateBook(book);
-              setState(() => _currentItem = book);
+              if (mounted) setState(() => _currentItem = book);
             }
             await ref.read(bookJournalRepositoryProvider).saveRaw(
               BookJournalRecordDTO(
@@ -239,7 +243,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
             var f = _currentItem as FanfictionResponseDTO;
             if (f.idFanfic == null || f.idFanfic == 0) {
               f = await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(f);
-              setState(() => _currentItem = f);
+              if (mounted) setState(() => _currentItem = f);
             }
             await ref.read(fanficJournalRepositoryProvider).saveRaw(
               FanficJournalRecordDTO(
@@ -295,7 +299,15 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No se pudo actualizar la biblioteca. Inténtalo de nuevo.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isAdding = false);
@@ -375,9 +387,15 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No se pudo cambiar el estado. Inténtalo de nuevo.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isAdding = false);
@@ -481,24 +499,25 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
     );
   }
 
-  void _openJournalEdit(dynamic journal) {
+  Future<void> _openJournalEdit(dynamic journal) async {
     switch (widget.type) {
       case CatalogItemType.book:
-        context.push(
+        await context.push(
           '/journal/book/edit',
           extra: journal as BookJournalResponseDto,
         );
       case CatalogItemType.manga:
-        context.push(
+        await context.push(
           '/journal/manga/edit',
           extra: journal as MangaJournalResponseDTO,
         );
       case CatalogItemType.fanfic:
-        context.push(
+        await context.push(
           '/journal/fanfic/edit',
           extra: journal as FanficJournalResponseDTO,
         );
     }
+    _invalidateJournals(); // Refresca los datos al volver
   }
 
   Future<void> _openItemEdit(dynamic item) async {
@@ -532,30 +551,45 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
 
   Future<void> _showAddToListDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    final lists = ref.read(listProvider);
 
     final selectedList = await showDialog<ListResponseDTO>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.addedToList),
 
-        content: lists.when(
-          data: (data) => SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                final list = data[index];
-                return ListTile(
-                  title: Text(list.name),
-                  onTap: () => Navigator.of(context).pop(list),
-                );
-              },
-            ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Consumer(
+            builder: (context, dialogRef, _) {
+              final lists = dialogRef.watch(listProvider);
+              return lists.when(
+                data: (data) {
+                  if (data.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text('Aún no tienes listas creadas.'),
+                    );
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final list = data[index];
+                      return ListTile(
+                        title: Text(list.name),
+                        onTap: () => Navigator.of(context).pop(list),
+                      );
+                    },
+                  );
+                },
+                loading: () => const SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stack) => Text('Error: $error'),
+              );
+            },
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Text('Error: $error'),
         ),
         actions: [
           TextButton(
@@ -599,7 +633,18 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al añadir a la lista: $e')),
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(child: Text('No se pudo añadir a la lista. Es posible que ya exista.')),
+                ],
+              ),
+              backgroundColor: Colors.orange.shade400,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           );
         }
       }
@@ -867,26 +912,28 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
           _PrimaryButton(
             icon: Icons.menu_book_rounded,
             label: l10n.viewReadingProgress,
-            onTap: () {
+            onTap: () async {
               final route = switch (widget.type) {
                 CatalogItemType.book => '/journal/book/progress',
-                CatalogItemType.manga => '/journal/manga/edit',
-                CatalogItemType.fanfic => '/journal/fanfic/edit',
+                CatalogItemType.manga => '/journal/manga/progress',
+                CatalogItemType.fanfic => '/journal/fanfic/progress',
               };
-              context.push(route, extra: existingJournal);
+              await context.push(route, extra: existingJournal);
+              _invalidateJournals(); // Refresca al cerrar el contador
             },
           ),
           const SizedBox(height: 10),
           _PrimaryButton(
             icon: Icons.timer_outlined,
             label: l10n.startReadingSession,
-            onTap: () {
+            onTap: () async {
               final route = switch (widget.type) {
                 CatalogItemType.book => '/journal/book/session',
                 CatalogItemType.manga => '/journal/manga/session',
                 CatalogItemType.fanfic => '/journal/fanfic/session',
               };
-              context.push(route, extra: existingJournal);
+              await context.push(route, extra: existingJournal);
+              _invalidateJournals(); // Refresca al terminar la sesión
             },
             bgColor: AppColors.colorManga,
           ),

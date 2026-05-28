@@ -21,7 +21,7 @@ class BetweenPagesLogo extends StatelessWidget {
       child: Center(
         child: useImage
             ? Image.asset(
-                'lib/assets/img/logo2.png',
+                'assets/img/logo.png',
                 width: baseSizeFactor,
                 height: baseSizeFactor,
                 fit: BoxFit.contain,

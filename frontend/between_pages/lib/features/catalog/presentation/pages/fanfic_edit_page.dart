@@ -232,7 +232,7 @@ class _FanficEditPageState extends ConsumerState<FanficEditPage> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: _publicationStatus,
+                  initialValue: _publicationStatus,
                   decoration: InputDecoration(
                     labelText: 'Estado de publicación',
                     prefixIcon: const Icon(Icons.schedule_rounded, color: _accent),

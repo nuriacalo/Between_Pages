@@ -7,6 +7,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
+/// Excepción personalizada para errores de autenticación sin el prefijo "Exception:"
+class AuthException implements Exception {
+  final String message;
+  AuthException(this.message);
+  @override
+  String toString() => message;
+}
+
 /// Repositorio encargado de toda la lógica de autenticación:
 /// login, registro, logout, refresh de tokens y verificación de sesión.
 class AuthRepository {
@@ -27,7 +35,7 @@ class AuthRepository {
       final refreshToken = response.data['refreshToken'] as String?;
 
       if (accessToken == null || accessToken.isEmpty) {
-        throw Exception(
+        throw AuthException(
           'Token no encontrado. El servidor devolvió: ${response.data}',
         );
       }
@@ -38,9 +46,16 @@ class AuthRepository {
       }
     } on DioException catch (e) {
       debugPrint('⚠️ Error 400 Body: ${e.response?.data}');
-      throw Exception(
-        e.response?.data['message'] ?? 'Error al iniciar sesión: ${e.message}',
-      );
+      final data = e.response?.data;
+      String errorMsg = 'Error al iniciar sesión';
+      if (data is Map && data['message'] != null) {
+        errorMsg = data['message'].toString();
+      } else if (data is String && data.trim().isNotEmpty) {
+        errorMsg = data;
+      } else if (e.message != null && e.message!.isNotEmpty) {
+        errorMsg = '$errorMsg: ${e.message}';
+      }
+      throw AuthException(errorMsg);
     }
   }
 
@@ -87,10 +102,16 @@ class AuthRepository {
         data: {'name': name, 'email': email, 'password': password},
       );
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ??
-            'Error al registrar usuario: ${e.message}',
-      );
+      final data = e.response?.data;
+      String errorMsg = 'Error al registrar usuario';
+      if (data is Map && data['message'] != null) {
+        errorMsg = data['message'].toString();
+      } else if (data is String && data.trim().isNotEmpty) {
+        errorMsg = data;
+      } else if (e.message != null && e.message!.isNotEmpty) {
+        errorMsg = '$errorMsg: ${e.message}';
+      }
+      throw AuthException(errorMsg);
     }
   }
 
@@ -99,13 +120,35 @@ class AuthRepository {
     await _authTokenStorage.clearAll();
   }
 
+  /// Actualiza el perfil del usuario.
+  Future<void> updateProfile(int userId, String name, String email) async {
+    try {
+      await _apiClient.put(
+        '${ApiConstants.user}$userId',
+        data: {'name': name, 'email': email},
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      String errorMsg = 'Error al actualizar perfil';
+      if (data is Map && data['message'] != null) {
+        errorMsg = data['message'].toString();
+      } else if (data is String && data.trim().isNotEmpty) {
+        errorMsg = data;
+      } else if (e.message != null && e.message!.isNotEmpty) {
+        errorMsg = '$errorMsg: ${e.message}';
+      }
+      throw AuthException(errorMsg);
+    }
+  }
+
   /// Obtiene el perfil del usuario autenticado.
   Future<UserResponseDTO> getUserProfile() async {
     try {
       final response = await _apiClient.get(ApiConstants.me);
       return UserResponseDTO.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception('Error al obtener perfil: ${e.message}');
+      final msg = e.message != null && e.message!.isNotEmpty ? ': ${e.message}' : '';
+      throw AuthException('Error al obtener perfil$msg');
     }
   }
 

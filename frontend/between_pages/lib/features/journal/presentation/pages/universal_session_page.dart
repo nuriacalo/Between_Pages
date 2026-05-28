@@ -24,15 +24,15 @@ enum SessionMediaType { book, manga, fanfic }
 
 class UniversalSessionData {
   final SessionMediaType mediaType;
-  final int              itemId;
-  final ReadingItemType  timerItemType;
-  final String           title;
-  final String?          coverUrl;
-  final int              currentProgress;
-  final int?             totalProgress;
-  final String           progressPrompt;
-  final Color            accentColor;
-  final dynamic          rawJournal;
+  final int itemId;
+  final ReadingItemType timerItemType;
+  final String title;
+  final String? coverUrl;
+  final int currentProgress;
+  final int? totalProgress;
+  final String progressPrompt;
+  final Color accentColor;
+  final dynamic rawJournal;
 
   const UniversalSessionData({
     required this.mediaType,
@@ -57,7 +57,8 @@ class UniversalSessionPage extends ConsumerStatefulWidget {
       _UniversalSessionPageState();
 }
 
-class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> with WidgetsBindingObserver {
+class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage>
+    with WidgetsBindingObserver {
   bool _isSaving = false;
   DateTime? _backgroundTime;
 
@@ -103,7 +104,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       // Si el cronómetro está corriendo, guardamos la hora en la que se apaga la pantalla o se minimiza
       if (ref.read(readingTimerProvider).isRunning && _backgroundTime == null) {
         _backgroundTime = DateTime.now();
@@ -112,7 +114,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
       // Al volver, si estaba corriendo, sumamos el tiempo que ha pasado en segundo plano
       if (_backgroundTime != null && ref.read(readingTimerProvider).isRunning) {
         final difference = DateTime.now().difference(_backgroundTime!);
-        ref.read(readingTimerProvider.notifier).addSeconds(difference.inSeconds);
+        ref
+            .read(readingTimerProvider.notifier)
+            .addSeconds(difference.inSeconds);
         _backgroundTime = null;
       }
     }
@@ -124,33 +128,36 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
   void _finishSession() {
     ref.read(readingTimerProvider.notifier).pause();
-    final elapsed    = ref.read(readingTimerProvider).elapsedSeconds;
+    final elapsed = ref.read(readingTimerProvider).elapsedSeconds;
     final controller = TextEditingController(
       text: widget.data.currentProgress.toString(),
     );
 
     showModalBottomSheet<void>(
-      context:            context,
+      context: context,
       isScrollControlled: true,
-      backgroundColor:    Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.fromLTRB(
-          24, 20, 24,
+          24,
+          20,
+          24,
           MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
         ),
         child: Column(
-          mainAxisSize:       MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Handle
             Center(
               child: Container(
-                width:  40, height: 4,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  color:        Theme.of(sheetCtx).colorScheme.outlineVariant,
+                  color: Theme.of(sheetCtx).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -160,19 +167,19 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
             // Title
             Text(
               '¡Sesión finalizada!',
-              style: Theme.of(sheetCtx).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                sheetCtx,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
             // Time summary card
             Container(
-              padding:    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color:        _accent.withValues(alpha:0.1),
+                color: _accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border:       Border.all(color: _accent.withValues(alpha:0.25)),
+                border: Border.all(color: _accent.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
@@ -187,9 +194,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                   Text(
                     _formatTime(elapsed),
                     style: TextStyle(
-                      color:      _accent,
+                      color: _accent,
                       fontWeight: FontWeight.bold,
-                      fontSize:   15,
+                      fontSize: 15,
                     ),
                   ),
                 ],
@@ -199,33 +206,33 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
             // Progress field
             TextField(
-              controller:     controller,
-              keyboardType:   TextInputType.number,
-              autofocus:      true,
+              controller: controller,
+              keyboardType: TextInputType.number,
+              autofocus: true,
               decoration: InputDecoration(
                 labelText: widget.data.progressPrompt,
-                hintText:  'Desde ${widget.data.currentProgress}',
+                hintText: 'Desde ${widget.data.currentProgress}',
                 prefixIcon: Icon(
                   Icons.bookmark_added_rounded,
                   color: _accent,
-                  size:  20,
+                  size: 20,
                 ),
-                filled:    true,
+                filled: true,
                 fillColor: AppColors.card(sheetCtx),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:   BorderSide(color: AppColors.border(sheetCtx)),
+                  borderSide: BorderSide(color: AppColors.border(sheetCtx)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:   BorderSide(color: _accent, width: 1.5),
+                  borderSide: BorderSide(color: _accent, width: 1.5),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:   BorderSide.none,
+                  borderSide: BorderSide.none,
                 ),
                 floatingLabelStyle: TextStyle(
-                  color:      _accent,
+                  color: _accent,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -244,17 +251,17 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                   } else {
                     ScaffoldMessenger.of(sheetCtx).showSnackBar(
                       const SnackBar(
-                        content:  Text('Introduce un número válido.'),
+                        content: Text('Introduce un número válido.'),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
                 },
-                icon:  const Icon(Icons.save_rounded),
+                icon: const Icon(Icons.save_rounded),
                 label: const Text('Guardar y salir'),
                 style: FilledButton.styleFrom(
                   backgroundColor: _accent,
-                  padding:         const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -279,96 +286,116 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
     setState(() => _isSaving = true);
 
     try {
-      final user              = await ref.read(authRepositoryProvider).getUserProfile();
-      final elapsedSeconds    = ref.read(readingTimerProvider).elapsedSeconds;
-      final progressDelta     = newProgress - widget.data.currentProgress;
+      final user = await ref.read(authRepositoryProvider).getUserProfile();
+      final elapsedSeconds = ref.read(readingTimerProvider).elapsedSeconds;
+      final progressDelta = newProgress - widget.data.currentProgress;
 
       switch (widget.data.mediaType) {
         case SessionMediaType.book:
           final journal = widget.data.rawJournal as BookJournalResponseDto;
-          final book    = journal.book;
-          await ref.read(bookJournalRepositoryProvider).saveRaw(
-            BookJournalRecordDTO(
-              id:             journal.id,
-              userId:         user.idUser,
-              bookId:         book.idBook,
-              googleBooksId:  book.googleBooksId,
-              status:         journal.status,
-              currentPage:    newProgress,
-              rating:         journal.rating,
-              tearDrops:      journal.tearDrops,
-              spiceFlames:    journal.spiceFlames,
-              readingFormat:  journal.readingFormat,
-              emotions:       journal.emotions,
-              favoriteQuotes: journal.favoriteQuotes,
-              personalNotes:  journal.personalNotes,
-              startDate:      journal.startDate,
-              endDate:        journal.endDate,
-              ownership:      journal.ownership,
-            ).toJson(),
-          );
+          final book = journal.book;
+          await ref
+              .read(bookJournalRepositoryProvider)
+              .saveRaw(
+                BookJournalRecordDTO(
+                  id: journal.id,
+                  userId: user.idUser,
+                  bookId: book.idBook,
+                  googleBooksId: book.googleBooksId,
+                  status: journal.status,
+                  currentPage: newProgress,
+                  rating: journal.rating,
+                  tearDrops: journal.tearDrops,
+                  spiceFlames: journal.spiceFlames,
+                  readingFormat: journal.readingFormat,
+                  emotions: journal.emotions,
+                  favoriteQuotes: journal.favoriteQuotes,
+                  personalNotes: journal.personalNotes,
+                  startDate: journal.startDate,
+                  endDate: journal.endDate,
+                  ownership: journal.ownership,
+                ).toJson(),
+              );
           ref.invalidate(journalProvider(JournalType.book));
-          ref.invalidate(journalEntryProvider((JournalType.book, book.idBook ?? 0)));
+          ref.invalidate(
+            journalEntryProvider((JournalType.book, book.idBook ?? 0)),
+          );
 
         case SessionMediaType.manga:
           final journal = widget.data.rawJournal as MangaJournalResponseDTO;
-          final manga   = journal.manga;
-          await ref.read(mangaJournalRepositoryProvider).saveRaw(
-            MangaJournalRecordDTO(
-              id:                journal.id,
-              userId:            user.idUser,
-              mangaId:           manga?.idManga,
-              malId:             manga?.malId,
-              status:            journal.status,
-              currentChapter:    newProgress,
-              rating:            journal.rating,
-              readingFormat:     journal.readingFormat,
-              favoriteCharacter: journal.favoriteCharacter,
-              favoriteArc:       journal.favoriteArc,
-              personalNotes:     journal.personalNotes,
-              startDate:         journal.startDate,
-              endDate:           journal.endDate,
-            ).toJson(),
-          );
+          final manga = journal.manga;
+          await ref
+              .read(mangaJournalRepositoryProvider)
+              .saveRaw(
+                MangaJournalRecordDTO(
+                  id: journal.id,
+                  userId: user.idUser,
+                  mangaId: manga?.idManga,
+                  malId: manga?.malId,
+                  status: journal.status,
+                  currentChapter: newProgress,
+                  rating: journal.rating,
+                  readingFormat: journal.readingFormat,
+                  favoriteCharacter: journal.favoriteCharacter,
+                  favoriteArc: journal.favoriteArc,
+                  personalNotes: journal.personalNotes,
+                  startDate: journal.startDate,
+                  endDate: journal.endDate,
+                ).toJson(),
+              );
           ref.invalidate(journalProvider(JournalType.manga));
-          ref.invalidate(journalEntryProvider((JournalType.manga, manga?.idManga ?? 0)));
+          ref.invalidate(
+            journalEntryProvider((JournalType.manga, manga?.idManga ?? 0)),
+          );
 
         case SessionMediaType.fanfic:
           final journal = widget.data.rawJournal as FanficJournalResponseDTO;
-          final fanfic  = journal.fanfic;
-          await ref.read(fanficJournalRepositoryProvider).saveRaw(
-            FanficJournalRecordDTO(
-              id:             journal.id,
-              userId:         user.idUser,
-              fanficId:       fanfic.idFanfic ?? 0,
-              ao3Id:          fanfic.ao3Id,
-              status:         journal.status,
-              currentChapter: newProgress,
-              rating:         journal.rating,
-              tearDrops:      journal.tearDrops,
-              spiceFlames:    journal.spiceFlames,
-              personalNotes:  journal.personalNotes,
-              startDate:      journal.startDate,
-              endDate:        journal.endDate,
-            ).toJson(),
-          );
+          final fanfic = journal.fanfic;
+          await ref
+              .read(fanficJournalRepositoryProvider)
+              .saveRaw(
+                FanficJournalRecordDTO(
+                  id: journal.id,
+                  userId: user.idUser,
+                  fanficId: fanfic.idFanfic ?? 0,
+                  ao3Id: fanfic.ao3Id,
+                  status: journal.status,
+                  currentChapter: newProgress,
+                  rating: journal.rating,
+                  tearDrops: journal.tearDrops,
+                  spiceFlames: journal.spiceFlames,
+                  personalNotes: journal.personalNotes,
+                  startDate: journal.startDate,
+                  endDate: journal.endDate,
+                ).toJson(),
+              );
           ref.invalidate(journalProvider(JournalType.fanfic));
-          ref.invalidate(journalEntryProvider((JournalType.fanfic, fanfic.idFanfic ?? 0)));
+          ref.invalidate(
+            journalEntryProvider((JournalType.fanfic, fanfic.idFanfic ?? 0)),
+          );
       }
 
       // Unificamos el guardado de la sesión y la racha fuera del switch para no repetirlo
       if (progressDelta > 0 || elapsedSeconds > 0) {
-        ref.read(readingSessionRepositoryProvider).saveSession(
-          ReadingSessionRecordDTO(
-            userId:          user.idUser,
-            bookId:          widget.data.mediaType == SessionMediaType.book ? widget.data.itemId : null,
-            mangaId:         widget.data.mediaType == SessionMediaType.manga ? widget.data.itemId : null,
-            fanficId:        widget.data.mediaType == SessionMediaType.fanfic ? widget.data.itemId : null,
-            durationSeconds: elapsedSeconds,
-            pagesRead:       progressDelta,
-          ),
-        );
-        
+        ref
+            .read(readingSessionRepositoryProvider)
+            .saveSession(
+              ReadingSessionRecordDTO(
+                userId: user.idUser,
+                bookId: widget.data.mediaType == SessionMediaType.book
+                    ? widget.data.itemId
+                    : null,
+                mangaId: widget.data.mediaType == SessionMediaType.manga
+                    ? widget.data.itemId
+                    : null,
+                fanficId: widget.data.mediaType == SessionMediaType.fanfic
+                    ? widget.data.itemId
+                    : null,
+                durationSeconds: elapsedSeconds,
+                pagesRead: progressDelta,
+              ),
+            );
+
         // Registramos la actividad para la racha SOLO si se leyó al menos una página
         // La racha debe ser consecutiva con progreso real, no solo con tiempo invertido
         if (progressDelta > 0) {
@@ -382,7 +409,29 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
       ref.read(readingTimerProvider.notifier).reset();
 
+      // 1. Invalidamos la caché global para que al volver atrás los números estén actualizados
+      ref.invalidate(allJournalsProvider);
+
       if (!mounted) return;
+
+      // 2. Lanzamos el aviso verde de confirmación
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Text('Progreso de lectura guardado'),
+            ],
+          ),
+          backgroundColor: AppColors.statusReading,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+
       Navigator.pop(context);
 
       if (shouldPromptEdit) _showFinishedPrompt();
@@ -390,10 +439,12 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:         Text('Error al guardar: $e'),
+            content: Text('Error al guardar: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
-            behavior:        SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -409,16 +460,16 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
   @override
   Widget build(BuildContext context) {
     final timerState = ref.watch(readingTimerProvider);
-    final isDark     = Theme.of(context).brightness == Brightness.dark;
-    final bgColor    = isDark
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark
         ? const Color(0xFF1E1E1E)
-        : _accent.withValues(alpha:0.05);
+        : _accent.withValues(alpha: 0.05);
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation:       0,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 32),
           onPressed: () => context.pop(),
@@ -429,7 +480,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: SizedBox(
-                  width: 20, height: 20,
+                  width: 20,
+                  height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
@@ -446,8 +498,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                 // ── Cover ────────────────────────────────────────────
                 _Cover(
                   coverUrl: widget.data.coverUrl,
-                  accent:   _accent,
-                  type:     widget.data.mediaType,
+                  accent: _accent,
+                  type: widget.data.mediaType,
                 ),
                 const SizedBox(height: 12),
 
@@ -456,9 +508,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Text(
                     widget.data.title,
-                    textAlign:  TextAlign.center,
-                    maxLines:   2,
-                    overflow:   TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -468,18 +520,21 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
                 // ── Progress label ───────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
-                    color:        _accent.withValues(alpha:0.1),
+                    color: _accent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border:       Border.all(color: _accent.withValues(alpha:0.25)),
+                    border: Border.all(color: _accent.withValues(alpha: 0.25)),
                   ),
                   child: Text(
                     '${widget.data.progressPrompt}: ${widget.data.currentProgress}'
                     '${widget.data.totalProgress != null ? ' / ${widget.data.totalProgress}' : ''}',
                     style: TextStyle(
-                      fontSize:   12,
-                      color:      _accent,
+                      fontSize: 12,
+                      color: _accent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -490,9 +545,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                 Text(
                   _formatTime(timerState.elapsedSeconds),
                   style: TextStyle(
-                    fontSize:     72,
-                    fontWeight:   FontWeight.w300,
-                    color:        AppColors.textPrimary(context),
+                    fontSize: 72,
+                    fontWeight: FontWeight.w300,
+                    color: AppColors.textPrimary(context),
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -504,18 +559,20 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                   children: [
                     // Play / Pause
                     FloatingActionButton.large(
-                      heroTag:         'play_pause',
+                      heroTag: 'play_pause',
                       backgroundColor: _accent,
                       foregroundColor: Colors.white,
-                      elevation:       0,
+                      elevation: 0,
                       onPressed: () {
                         if (timerState.isRunning) {
                           ref.read(readingTimerProvider.notifier).pause();
                         } else {
-                          ref.read(readingTimerProvider.notifier).start(
-                            widget.data.itemId,
-                            widget.data.timerItemType,
-                          );
+                          ref
+                              .read(readingTimerProvider.notifier)
+                              .start(
+                                widget.data.itemId,
+                                widget.data.timerItemType,
+                              );
                         }
                       },
                       child: Icon(
@@ -529,7 +586,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
                     // Stop
                     FloatingActionButton.large(
-                      heroTag:         'stop',
+                      heroTag: 'stop',
                       backgroundColor: timerState.elapsedSeconds > 0
                           ? Theme.of(context).colorScheme.errorContainer
                           : Theme.of(context).disabledColor,
@@ -546,12 +603,16 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
                     // Add note
                     FloatingActionButton(
-                      heroTag:         'notes',
-                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                      elevation:       0,
-                      tooltip:         'Añadir nota',
-                      onPressed:       _openAddNoteSheet,
+                      heroTag: 'notes',
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.secondaryContainer,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSecondaryContainer,
+                      elevation: 0,
+                      tooltip: 'Añadir nota',
+                      onPressed: _openAddNoteSheet,
                       child: const Icon(Icons.edit_note_rounded),
                     ),
                   ],
@@ -562,7 +623,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                 Text(
                   'Desliza hacia abajo para ocultar.\nEl temporizador seguirá activo.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color:  AppColors.textSecondary(context),
+                    color: AppColors.textSecondary(context),
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -574,15 +635,16 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
       ),
     );
   }
+
   void _openAddNoteSheet() {
     showModalBottomSheet<void>(
-      context:            context,
+      context: context,
       isScrollControlled: true,
-      backgroundColor:    Colors.transparent,
+      backgroundColor: Colors.transparent,
       builder: (_) => AddNoteSheet(
         itemType: _itemTypeString,
-        itemId:   widget.data.itemId,
-        accent:   _accent,
+        itemId: widget.data.itemId,
+        accent: _accent,
         // ref parameter removed — AddNoteSheet is a ConsumerStatefulWidget
         // and gets its own ref automatically.
       ),
@@ -595,9 +657,9 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 
   void _showFinishedPrompt() {
     showModalBottomSheet<void>(
-      context:             context,
-      barrierColor:        Colors.black.withValues(alpha:0.4),
-      backgroundColor:     Theme.of(context).colorScheme.surface,
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -608,38 +670,39 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
           children: [
             // Handle
             Container(
-              width:  40, height: 4,
+              width: 40,
+              height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color:        Theme.of(sheetCtx).colorScheme.outlineVariant,
+                color: Theme.of(sheetCtx).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
 
             // Trophy icon
             Container(
-              width:  64, height: 64,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color:        _accent.withValues(alpha:0.12),
+                color: _accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(Icons.emoji_events_rounded,
-                  color: _accent, size: 30),
+              child: Icon(Icons.emoji_events_rounded, color: _accent, size: 30),
             ),
             const SizedBox(height: 16),
 
             Text(
               '¡Has terminado el libro!',
-              style: Theme.of(sheetCtx).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                sheetCtx,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               '¿Quieres actualizar tu diario y añadir valoraciones?',
               style: Theme.of(sheetCtx).textTheme.bodyMedium?.copyWith(
-                color:  AppColors.textSecondary(sheetCtx),
+                color: AppColors.textSecondary(sheetCtx),
                 height: 1.4,
               ),
               textAlign: TextAlign.center,
@@ -654,17 +717,17 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
                   Navigator.pop(sheetCtx);
                   final extra = widget.data.rawJournal;
                   final route = switch (widget.data.mediaType) {
-                    SessionMediaType.book   => '/journal/book/edit',
-                    SessionMediaType.manga  => '/journal/manga/edit',
+                    SessionMediaType.book => '/journal/book/edit',
+                    SessionMediaType.manga => '/journal/manga/edit',
                     SessionMediaType.fanfic => '/journal/fanfic/edit',
                   };
                   context.go(route, extra: extra);
                 },
-                icon:  const Icon(Icons.edit_rounded),
+                icon: const Icon(Icons.edit_rounded),
                 label: const Text('Editar diario'),
                 style: FilledButton.styleFrom(
                   backgroundColor: _accent,
-                  padding:         const EdgeInsets.symmetric(vertical: 13),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -679,7 +742,7 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(sheetCtx),
                 style: OutlinedButton.styleFrom(
-                  side:    BorderSide(color: AppColors.border(sheetCtx)),
+                  side: BorderSide(color: AppColors.border(sheetCtx)),
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -700,8 +763,8 @@ class _UniversalSessionPageState extends ConsumerState<UniversalSessionPage> wit
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Cover extends StatelessWidget {
-  final String?          coverUrl;
-  final Color            accent;
+  final String? coverUrl;
+  final Color accent;
   final SessionMediaType type;
 
   const _Cover({
@@ -711,10 +774,10 @@ class _Cover extends StatelessWidget {
   });
 
   IconData get _fallbackIcon => switch (type) {
-        SessionMediaType.book   => Icons.book_rounded,
-        SessionMediaType.manga  => Icons.menu_book_rounded,
-        SessionMediaType.fanfic => Icons.favorite_rounded,
-      };
+    SessionMediaType.book => Icons.book_rounded,
+    SessionMediaType.manga => Icons.menu_book_rounded,
+    SessionMediaType.fanfic => Icons.favorite_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -723,27 +786,25 @@ class _Cover extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color:      accent.withValues(alpha:0.4),
+            color: accent.withValues(alpha: 0.4),
             blurRadius: 30,
-            offset:     const Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: SizedBox(
-          width:  140,
+          width: 140,
           height: 210,
           child: coverUrl != null && coverUrl!.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl:    coverUrl!,
-                  fit:         BoxFit.cover,
+                  imageUrl: coverUrl!,
+                  fit: BoxFit.cover,
                   placeholder: (_, _) =>
-                      Container(color: accent.withValues(alpha:0.12)),
-                  errorWidget: (_, _, _) => _CoverFallback(
-                    accent: accent,
-                    icon:   _fallbackIcon,
-                  ),
+                      Container(color: accent.withValues(alpha: 0.12)),
+                  errorWidget: (_, _, _) =>
+                      _CoverFallback(accent: accent, icon: _fallbackIcon),
                 )
               : _CoverFallback(accent: accent, icon: _fallbackIcon),
         ),
@@ -753,15 +814,15 @@ class _Cover extends StatelessWidget {
 }
 
 class _CoverFallback extends StatelessWidget {
-  final Color    accent;
+  final Color accent;
   final IconData icon;
   const _CoverFallback({required this.accent, required this.icon});
 
   @override
   Widget build(BuildContext context) => Container(
-        color: accent.withValues(alpha:0.12),
-        child: Center(
-          child: Icon(icon, size: 48, color: accent.withValues(alpha:0.5)),
-        ),
-      );
+    color: accent.withValues(alpha: 0.12),
+    child: Center(
+      child: Icon(icon, size: 48, color: accent.withValues(alpha: 0.5)),
+    ),
+  );
 }

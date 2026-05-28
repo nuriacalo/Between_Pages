@@ -2,6 +2,7 @@ class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     // IP de red local
+    //  defaultValue: 'http://10.18.69.198:8080/api',
     defaultValue: 'http://192.168.0.18:8080/api',
   );
 
@@ -38,7 +39,7 @@ class ApiConstants {
   static const fanficSearch = '$baseUrl/fanfiction/search';
   static const fanficStatus = '$baseUrl/fanfiction/status';
   static const fanfic = '$baseUrl/fanfiction';
-  
+
   // CRAWLER EXTERNO (/api/crawler)
   static const ao3Crawler = '$baseUrl/crawler/ao3';
 
@@ -67,13 +68,15 @@ class ApiConstants {
   static const listRemoveItem = '$baseUrl/lists/{listId}/items';
 
   // JOURNAL - BOOKS (/api/journal/BOOK)
-  static const bookJournal = '$baseUrl/journal/book'; // POST (Minúsculas en el backend)
+  static const bookJournal =
+      '$baseUrl/journal/book'; // POST (Minúsculas en el backend)
   static const bookJournalUser = '$baseUrl/journal/BOOK/user/';
   static const bookJournalUserStatus =
       '$baseUrl/journal/BOOK/user/{userId}/status';
   static const bookJournalUserRereadings =
       '$baseUrl/journal/BOOK/user/{userId}/rereadings';
-  static const bookJournalDelete = '$baseUrl/journal/BOOK/'; // Para concatenar el ID al eliminar
+  static const bookJournalDelete =
+      '$baseUrl/journal/BOOK/'; // Para concatenar el ID al eliminar
 
   // JOURNAL - MANGA (/api/journal/MANGA)
   static const mangaJournal = '$baseUrl/journal/manga'; // POST

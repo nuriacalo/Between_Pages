@@ -258,6 +258,7 @@ class _ReadingProgressPageState<T extends BaseJournalResponseDTO>
       } catch (_) {}
 
       // Ahora invalidamos lo mínimo necesario para recalcular el entry mostrado.
+      ref.invalidate(allJournalsProvider);
       ref.invalidate(journalProvider(widget.type));
       ref.invalidate(journalEntryProvider((widget.type, _getId())));
 
@@ -335,6 +336,7 @@ class _ReadingProgressPageState<T extends BaseJournalResponseDTO>
           await ref.read(fanficSearchRepositoryProvider).saveOrUpdateFanfic(updatedFanfic);
           break;
       }
+      ref.invalidate(allJournalsProvider);
       ref.invalidate(journalProvider(widget.type));
       ref.invalidate(journalEntryProvider((widget.type, _getId())));
       if (mounted) {

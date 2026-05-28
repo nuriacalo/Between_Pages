@@ -10,6 +10,7 @@ import 'package:between_pages/features/journal/domain/responses/fanfic_journal_r
 import 'package:between_pages/features/journal/domain/responses/manga_journal_response_dto.dart';
 import 'package:between_pages/features/journal/domain/utils/journal_status_extensions.dart';
 import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
+import 'package:between_pages/features/home/presentation/pages/home_page.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -218,8 +219,11 @@ class FeedPage extends ConsumerWidget {
         icon: Icons.shelves,
         title: 'Tu biblioteca está vacía',
         subtitle: 'Añade un libro, manga o fanfic para comenzar tu aventura.',
-        actionLabel: 'Buscar algo que leer',
-        onAction: () => GoRouter.of(context).go('/search'),
+        actionLabel: l10n.findSomethingToRead,
+        onAction: () {
+          // Cambiar a la pestaña de búsqueda (índice 1) en el HomePage
+          ref.read(homeTabProvider.notifier).state = 1;
+        },
       );
     }
 

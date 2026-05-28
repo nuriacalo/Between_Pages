@@ -6,6 +6,7 @@ import 'package:between_pages/features/catalog/presentation/widgets/media_list_i
 import 'package:between_pages/features/lists/application/repositories/reading_list_repository.dart';
 import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 import 'package:between_pages/features/lists/domain/reading_list_detail_response_dto.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,7 @@ class ListDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(listDetailProvider(list.id));
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -65,8 +67,7 @@ class ListDetailPage extends ConsumerWidget {
                         color: AppColors.textSecondary(context)),
                     onPressed: () =>
                         ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Editar lista — próximamente')),
+                      SnackBar(content: Text(l10n.editListComingSoon)),
                     ),
                   ),
                 ),
@@ -94,7 +95,7 @@ class ListDetailPage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'COLECCIÓN',
+                          l10n.collection,
                           style: textTheme.labelSmall?.copyWith(
                             color: AppColors.emphasis(context),
                             fontWeight: FontWeight.bold,
@@ -155,8 +156,7 @@ class ListDetailPage extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${detail.items.length} '
-                        '${detail.items.length == 1 ? 'obra' : 'obras'}',
+                        detail.items.length == 1 ? l10n.oneItem : l10n.multipleItems(detail.items.length),
                         style: textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary(context),
@@ -197,44 +197,47 @@ class ListDetailPage extends ConsumerWidget {
                               border: Border.all(
                                   color: AppColors.border(context)),
                             ),
-                            child: mediaItem == null
-                                ? ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: AppColors.accent(context)
-                                          .withValues(alpha: 0.15),
-                                      child: Text(
-                                        '${item.position}',
-                                        style: TextStyle(
-                                            color:
-                                                AppColors.accent(context)),
+                            child: Material(
+                              type: MaterialType.transparency,
+                              child: mediaItem == null
+                                  ? ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: AppColors.accent(context)
+                                            .withValues(alpha: 0.15),
+                                        child: Text(
+                                          '${item.position}',
+                                          style: TextStyle(
+                                              color:
+                                                  AppColors.accent(context)),
+                                        ),
                                       ),
+                                      title: Text(item.itemType),
+                                      subtitle:
+                                          Text(l10n.contentNotAvailable),
+                                    )
+                                  : MediaListItem(
+                                      item: mediaItem,
+                                      onTap: () {
+                                        final type =
+                                            item.itemType.toLowerCase();
+                                        int? mediaId;
+                                        if (mediaItem is BookResponseDTO) {
+                                          mediaId = mediaItem.idBook;
+                                        } else if (mediaItem
+                                            is MangaResponseDTO) {
+                                          mediaId = mediaItem.idManga;
+                                        } else if (mediaItem
+                                            is FanfictionResponseDTO) {
+                                          mediaId = mediaItem.idFanfic;
+                                        }
+                                        if (mediaId != null) {
+                                          context.push(
+                                              '/item/$type/$mediaId',
+                                              extra: mediaItem);
+                                        }
+                                      },
                                     ),
-                                    title: Text(item.itemType),
-                                    subtitle:
-                                        const Text('Contenido no disponible'),
-                                  )
-                                : MediaListItem(
-                                    item: mediaItem,
-                                    onTap: () {
-                                      final type =
-                                          item.itemType.toLowerCase();
-                                      int? mediaId;
-                                      if (mediaItem is BookResponseDTO) {
-                                        mediaId = mediaItem.idBook;
-                                      } else if (mediaItem
-                                          is MangaResponseDTO) {
-                                        mediaId = mediaItem.idManga;
-                                      } else if (mediaItem
-                                          is FanfictionResponseDTO) {
-                                        mediaId = mediaItem.idFanfic;
-                                      }
-                                      if (mediaId != null) {
-                                        context.push(
-                                            '/item/$type/$mediaId',
-                                            extra: mediaItem);
-                                      }
-                                    },
-                                  ),
+                            ),
                           ),
                           // Badge de posición
                           Positioned(
@@ -300,6 +303,7 @@ class _EmptyDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -321,7 +325,7 @@ class _EmptyDetail extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'Lista vacía',
+              l10n.emptyList,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary(context),
@@ -330,7 +334,7 @@ class _EmptyDetail extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pulsa el botón + para añadir obras desde tu catálogo.',
+              l10n.emptyListHint,
               textAlign: TextAlign.center,
               style: textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary(context),

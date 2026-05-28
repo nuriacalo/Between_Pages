@@ -28,6 +28,7 @@ class UserCatalogRepository {
           'mangaId': mangaId,
           'fanficId': fanficId,
         },
+        options: Options(responseType: ResponseType.plain), // <-- Evita que Dio intente leer JSON
       );
     } on DioException catch (e) {
       // Si el error es un 409 (Conflict) o similar, puede que el backend

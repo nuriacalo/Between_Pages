@@ -11,20 +11,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // For now, we'll use a placeholder.
 final lastReadItemProvider = StateProvider<dynamic>((ref) => null);
 
-class HomePage extends ConsumerStatefulWidget {
+// Proveedor para controlar la pestaña seleccionada en el BottomNavigationBar
+final homeTabProvider = StateProvider<int>((ref) => 0);
+
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends ConsumerState<HomePage> {
-  int _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final selectedIndex = ref.watch(homeTabProvider);
 
     final screens = [
       const FeedPage(),
@@ -35,7 +32,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: screens[selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -46,11 +43,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
         child: NavigationBar(
-          selectedIndex: _selectedIndex,
+          selectedIndex: selectedIndex,
           onDestinationSelected: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
+            ref.read(homeTabProvider.notifier).state = index;
           },
           destinations: [
             NavigationDestination(

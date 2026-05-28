@@ -76,7 +76,16 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null, query: query);
+    final queryChanged = query != state.query;
+
+    state = state.copyWith(
+      isLoading: true, 
+      error: null, 
+      query: query,
+      bookResults: queryChanged ? [] : state.bookResults,
+      mangaResults: queryChanged ? [] : state.mangaResults,
+      fanficResults: queryChanged ? [] : state.fanficResults,
+    );
 
     try {
       switch (state.contentType) {
@@ -145,7 +154,17 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
       }
     }
 
-    state = state.copyWith(mangaResults: allResults, isLoading: false);
+    // Filtrar para excluir mangas con contenido explícito (Hentai / Erótica)
+    final filteredResults = allResults.where((manga) {
+      final isExplicitGenre = manga.genres.any((genre) {
+        final g = genre.toLowerCase();
+        return g.contains('hentai') || g.contains('erotica');
+      });
+      
+      return !isExplicitGenre;
+    }).toList();
+
+    state = state.copyWith(mangaResults: filteredResults, isLoading: false);
   }
 
   /// Busca fanfics (actualmente solo en la BBDD local).
@@ -154,19 +173,32 @@ class UnifiedSearchNotifier extends StateNotifier<UnifiedSearchState> {
     state = state.copyWith(fanficResults: results, isLoading: false);
   }
 
-  /// Cambia el tipo de contenido a buscar y limpia los resultados anteriores.
+  /// Cambia el tipo de contenido a buscar. Mantiene los resultados cacheados si la query es la misma.
   void setContentType(SearchContentType contentType) {
     if (state.contentType != contentType) {
       state = state.copyWith(
         contentType: contentType,
-        bookResults: [],
-        mangaResults: [],
-        fanficResults: [],
         error: null,
       );
-      // Si hay una query, vuelve a buscar con el nuevo tipo
+      
+      // Si hay una query, vuelve a buscar con el nuevo tipo SOLO si no hay resultados previos
       if (state.query.isNotEmpty) {
-        search(state.query);
+        bool needsSearch = false;
+        switch (contentType) {
+          case SearchContentType.book:
+            needsSearch = state.bookResults.isEmpty;
+            break;
+          case SearchContentType.manga:
+            needsSearch = state.mangaResults.isEmpty;
+            break;
+          case SearchContentType.fanfic:
+            needsSearch = state.fanficResults.isEmpty;
+            break;
+        }
+
+        if (needsSearch) {
+          search(state.query);
+        }
       }
     }
   }

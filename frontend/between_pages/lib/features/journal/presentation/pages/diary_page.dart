@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 /// Datos comunes extraídos de cualquier tipo de journal para la página del Diario.
@@ -55,8 +56,9 @@ class _DiaryPageState extends State<DiaryPage> {
   }
 
   void _saveDiary() {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tu reflexión ha sido guardada en el Diario')),
+      SnackBar(content: Text(l10n.diarySaved)),
     );
     context.pop();
   }
@@ -65,6 +67,7 @@ class _DiaryPageState extends State<DiaryPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     final data = widget.data;
 
     return Scaffold(
@@ -78,7 +81,7 @@ class _DiaryPageState extends State<DiaryPage> {
             backgroundColor: colorScheme.surfaceContainerHighest,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                'Mi Diario',
+                l10n.myDiary,
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
@@ -110,19 +113,19 @@ class _DiaryPageState extends State<DiaryPage> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Header de celebración
-                _buildCelebrationCard(colorScheme, textTheme, data),
+              _buildCelebrationCard(colorScheme, textTheme, data, l10n),
                 const SizedBox(height: 32),
 
                 // Introducción
                 Text(
-                  'Tu experiencia de lectura',
+                l10n.readingExperience,
                   style: textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Toma un momento para reflexionar sobre esta historia.',
+                l10n.reflectionPrompt,
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -130,17 +133,17 @@ class _DiaryPageState extends State<DiaryPage> {
                 const SizedBox(height: 24),
 
                 // Estadísticas
-                _buildStatsCard(colorScheme, textTheme, data),
+              _buildStatsCard(colorScheme, textTheme, data, l10n),
                 const SizedBox(height: 32),
 
                 // Reflexión
-                _buildSectionTitle('¿Qué te ha dejado esta historia?', textTheme),
+              _buildSectionTitle(l10n.reflectionQuestion, textTheme),
                 const SizedBox(height: 12),
                 TextField(
                   controller: TextEditingController(text: _reflection),
                   maxLines: 5,
                   decoration: InputDecoration(
-                    hintText: 'Escribe tus pensamientos, emociones...',
+                  hintText: l10n.reflectionHint,
                     filled: true,
                     fillColor: colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
@@ -153,13 +156,13 @@ class _DiaryPageState extends State<DiaryPage> {
                 const SizedBox(height: 24),
 
                 // Cita favorita
-                _buildSectionTitle('Cita o escena favorita', textTheme),
+              _buildSectionTitle(l10n.favoriteQuoteTitle, textTheme),
                 const SizedBox(height: 12),
                 TextField(
                   controller: TextEditingController(text: _favoriteQuote),
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: '¿Hubo algún momento memorable?',
+                  hintText: l10n.favoriteQuoteHint,
                     filled: true,
                     fillColor: colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
@@ -173,7 +176,7 @@ class _DiaryPageState extends State<DiaryPage> {
                 const SizedBox(height: 24),
 
                 // Releer
-                _buildSectionTitle('¿Lo releerías?', textTheme),
+              _buildSectionTitle(l10n.rereadQuestion, textTheme),
                 const SizedBox(height: 12),
                 Slider(
                   value: _rereadLikelihood.toDouble(),
@@ -186,15 +189,15 @@ class _DiaryPageState extends State<DiaryPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Nunca', style: textTheme.bodySmall),
+                  Text(l10n.rereadNever, style: textTheme.bodySmall),
                     Text(
-                      _getRereadLabel(_rereadLikelihood),
+                    _getRereadLabel(_rereadLikelihood, l10n),
                       style: textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: data.accentColor,
                       ),
                     ),
-                    Text('Seguro', style: textTheme.bodySmall),
+                  Text(l10n.rereadSure, style: textTheme.bodySmall),
                   ],
                 ),
                 const SizedBox(height: 40),
@@ -205,7 +208,7 @@ class _DiaryPageState extends State<DiaryPage> {
                   child: FilledButton.icon(
                     onPressed: _saveDiary,
                     icon: const Icon(Icons.check),
-                    label: const Text('Guardar en mi Diario'),
+                  label: Text(l10n.saveInDiary),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -224,6 +227,7 @@ class _DiaryPageState extends State<DiaryPage> {
     ColorScheme colorScheme,
     TextTheme textTheme,
     DiaryJournalData data,
+    AppLocalizations l10n,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -236,7 +240,7 @@ class _DiaryPageState extends State<DiaryPage> {
           Icon(Icons.emoji_events, size: 48, color: data.accentColor),
           const SizedBox(height: 12),
           Text(
-            '¡Has terminado!',
+            l10n.youFinished,
             style: textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
@@ -259,6 +263,7 @@ class _DiaryPageState extends State<DiaryPage> {
     ColorScheme colorScheme,
     TextTheme textTheme,
     DiaryJournalData data,
+    AppLocalizations l10n,
   ) {
     return Card(
       child: Padding(
@@ -267,7 +272,7 @@ class _DiaryPageState extends State<DiaryPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Resumen de lectura',
+            l10n.readingSummary,
               style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -277,19 +282,19 @@ class _DiaryPageState extends State<DiaryPage> {
                 _buildStat(
                   icon: Icons.star,
                   value: '${data.rating ?? '-'}',
-                  label: 'Valoración',
+                label: l10n.rating,
                   color: Colors.amber,
                 ),
                 _buildStat(
                   icon: Icons.water_drop,
                   value: '${data.tearDrops ?? 0}',
-                  label: 'Lágrimas',
+                label: l10n.tears,
                   color: Colors.blue,
                 ),
                 _buildStat(
                   icon: Icons.local_fire_department,
                   value: '${data.spiceFlames ?? 0}',
-                  label: 'Spice',
+                label: l10n.spice,
                   color: Colors.red,
                 ),
               ],
@@ -342,12 +347,12 @@ class _DiaryPageState extends State<DiaryPage> {
     );
   }
 
-  String _getRereadLabel(int value) {
+  String _getRereadLabel(int value, AppLocalizations l10n) {
     return switch (value) {
-      <= 3 => 'Poco probable',
-      <= 6 => 'Quizás',
-      <= 8 => 'Probablemente',
-      _ => 'Definitivamente',
+      <= 3 => l10n.rereadUnlikely,
+      <= 6 => l10n.rereadMaybe,
+      <= 8 => l10n.rereadProbably,
+      _ => l10n.rereadDefinitely,
     };
   }
 }

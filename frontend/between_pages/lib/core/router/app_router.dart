@@ -13,12 +13,11 @@ import 'package:between_pages/features/journal/presentation/pages/diary_page.dar
 import 'package:between_pages/features/journal/presentation/pages/universal_reading_progress_page.dart';
 import 'package:between_pages/features/journal/presentation/pages/universal_session_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/lists_page.dart';
-import 'package:between_pages/features/lists/presentation/pages/create_list_page.dart'; // Verifica que el archivo exista con este nombre
+import 'package:between_pages/features/lists/presentation/pages/create_list_page.dart'; 
 import 'package:between_pages/features/lists/presentation/pages/list_detail_page.dart';
 import 'package:between_pages/features/lists/presentation/pages/add_content_to_list_page.dart';
 import 'package:between_pages/features/notes/presentation/pages/notes_page.dart';
 import 'package:between_pages/features/notes/presentation/pages/global_notes_page.dart';
-import 'package:between_pages/features/profile/presentation/pages/settings_page.dart';
 import 'package:between_pages/features/profile/presentation/pages/profile_edit_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,6 +83,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/journal/book/session',
         builder: (context, state) {
           final journal = state.extra as BookJournalResponseDto;
+          return UniversalSessionPage(data: journal.toSessionData());
+        },
+      ),
+      GoRoute(
+        path: '/journal/manga/session',
+        builder: (context, state) {
+          final journal = state.extra as MangaJournalResponseDTO;
+          return UniversalSessionPage(data: journal.toSessionData());
+        },
+      ),
+      GoRoute(
+        path: '/journal/fanfic/session',
+        builder: (context, state) {
+          final journal = state.extra as FanficJournalResponseDTO;
           return UniversalSessionPage(data: journal.toSessionData());
         },
       ),
@@ -156,7 +169,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/lists/create',
         builder: (context, state) =>
-            const CreateListPage(), // Cambia esto si tu clase se llama diferente
+            const CreateListPage(),
       ),
       GoRoute(
         path: '/list/:id',
@@ -183,10 +196,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           itemType: state.pathParameters['itemType']!.toUpperCase(),
           itemId: int.parse(state.pathParameters['itemId']!),
         ),
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsPage(),
       ),
       GoRoute(
         path: '/profile/edit',

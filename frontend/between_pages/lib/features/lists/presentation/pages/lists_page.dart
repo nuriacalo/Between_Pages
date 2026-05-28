@@ -4,6 +4,8 @@ import 'package:between_pages/features/lists/domain/list_response_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:between_pages/l10n/app_localizations.dart';
+
 
 class ListsPage extends ConsumerWidget {
   const ListsPage({super.key});
@@ -12,6 +14,7 @@ class ListsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final listsAsync = ref.watch(listProvider);
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -69,7 +72,7 @@ class ListsPage extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'COLECCIONES',
+                              l10n.collections,
                               style: textTheme.labelSmall?.copyWith(
                                 color: AppColors.accent(context),
                                 fontWeight: FontWeight.bold,
@@ -106,7 +109,7 @@ class ListsPage extends ConsumerWidget {
                                 size: 16, color: Colors.white),
                             const SizedBox(width: 5),
                             Text(
-                              'Nueva',
+                              l10n.newButton,
                               style: textTheme.labelMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,

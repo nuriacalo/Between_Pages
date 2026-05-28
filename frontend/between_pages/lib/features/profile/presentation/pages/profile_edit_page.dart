@@ -1,5 +1,6 @@
 import 'package:between_pages/core/theme/app_colors.dart';
 import 'package:between_pages/features/catalog/presentation/widgets/edit_form_widgets.dart';
+import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
 import 'package:between_pages/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -54,14 +55,27 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     setState(() => _isSaving = true);
 
     try {
-      // TODO: llamada real al repositorio
-      // await ref.read(userRepositoryProvider).updateProfile(
-      //   name:  _nameController.text.trim(),
-      //   email: _emailController.text.trim(),
-      // );
-      // ref.invalidate(userProfileProvider);
+      final currentUser = ref.read(userProfileProvider).value;
+      bool emailChanged = false;
 
-      await Future.delayed(const Duration(milliseconds: 600));
+      if (currentUser != null) {
+        final newEmail = _emailController.text.trim();
+        emailChanged = currentUser.email != newEmail;
+
+        await ref.read(authRepositoryProvider).updateProfile(
+          currentUser.idUser,
+          _nameController.text.trim(),
+          newEmail,
+        );
+
+        if (emailChanged) {
+          // Si el email cambia, el token JWT se vuelve inválido. Forzamos cerrar sesión.
+          await ref.read(authRepositoryProvider).logout();
+        } else {
+          // Invalidamos el provider para que vuelva a pedir los datos actualizados
+          ref.invalidate(userProfileProvider);
+        }
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +90,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
-      Navigator.pop(context);
+
+      if (emailChanged) {
+        // TODO: Redirigir a la pantalla de Login / Splash Screen porque se cerró la sesión
+        // Ejemplo si usas GoRouter: GoRouter.of(context).go('/login');
+        Navigator.of(context).popUntil((route) => route.isFirst); 
+      } else {
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
