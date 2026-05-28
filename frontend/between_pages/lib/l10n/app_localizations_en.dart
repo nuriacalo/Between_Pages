@@ -21,7 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchTitle => 'Search';
 
   @override
-  String get catalogTitle => 'Catalog';
+  String get catalogTitle => 'My Catalog';
 
   @override
   String get journalTitle => 'Journal';
@@ -620,4 +620,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveProgress => 'Save progress';
+
+  @override
+  String get diarySaved => 'Your reflection has been saved to the Journal';
+
+  @override
+  String get myDiary => 'My Journal';
+
+  @override
+  String get readingExperience => 'Your reading experience';
+
+  @override
+  String get reflectionPrompt => 'Take a moment to reflect on this story.';
+
+  @override
+  String get reflectionQuestion => 'What did this story leave you with?';
+
+  @override
+  String get reflectionHint => 'Write down your thoughts, emotions...';
+
+  @override
+  String get favoriteQuoteTitle => 'Favorite quote or scene';
+
+  @override
+  String get favoriteQuoteHint => 'Was there a memorable moment?';
+
+  @override
+  String get rereadQuestion => 'Would you reread it?';
+
+  @override
+  String get rereadNever => 'Never';
+
+  @override
+  String get rereadSure => 'For sure';
+
+  @override
+  String get rereadUnlikely => 'Unlikely';
+
+  @override
+  String get rereadMaybe => 'Maybe';
+
+  @override
+  String get rereadProbably => 'Probably';
+
+  @override
+  String get rereadDefinitely => 'Definitely';
+
+  @override
+  String get saveInDiary => 'Save in my Journal';
+
+  @override
+  String get youFinished => 'You finished!';
+
+  @override
+  String get readingSummary => 'Reading summary';
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get tears => 'Tears';
+
+  @override
+  String get spice => 'Spice';
+
+  @override
+  String get editListComingSoon => 'Edit list — coming soon';
+
+  @override
+  String get collection => 'COLLECTION';
+
+  @override
+  String get contentNotAvailable => 'Content not available';
+
+  @override
+  String get emptyList => 'Empty list';
+
+  @override
+  String get emptyListHint => 'Tap the + button to add items from your catalog.';
+
+  @override
+  String get oneItem => '1 item';
+
+  @override
+  String multipleItems(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get collections => 'COLLECTIONS';
+
+  @override
+  String get newButton => 'New';
 }

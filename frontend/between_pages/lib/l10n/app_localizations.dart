@@ -124,7 +124,7 @@ abstract class AppLocalizations {
   /// No description provided for @catalogTitle.
   ///
   /// In en, this message translates to:
-  /// **'Catalog'**
+  /// **'My Catalog'**
   String get catalogTitle;
 
   /// No description provided for @journalTitle.
@@ -1254,6 +1254,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save progress'**
   String get saveProgress;
+
+  /// No description provided for @diarySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reflection has been saved to the Journal'**
+  String get diarySaved;
+
+  /// No description provided for @myDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'My Journal'**
+  String get myDiary;
+
+  /// No description provided for @readingExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reading experience'**
+  String get readingExperience;
+
+  /// No description provided for @reflectionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a moment to reflect on this story.'**
+  String get reflectionPrompt;
+
+  /// No description provided for @reflectionQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What did this story leave you with?'**
+  String get reflectionQuestion;
+
+  /// No description provided for @reflectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write down your thoughts, emotions...'**
+  String get reflectionHint;
+
+  /// No description provided for @favoriteQuoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite quote or scene'**
+  String get favoriteQuoteTitle;
+
+  /// No description provided for @favoriteQuoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Was there a memorable moment?'**
+  String get favoriteQuoteHint;
+
+  /// No description provided for @rereadQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you reread it?'**
+  String get rereadQuestion;
+
+  /// No description provided for @rereadNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get rereadNever;
+
+  /// No description provided for @rereadSure.
+  ///
+  /// In en, this message translates to:
+  /// **'For sure'**
+  String get rereadSure;
+
+  /// No description provided for @rereadUnlikely.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlikely'**
+  String get rereadUnlikely;
+
+  /// No description provided for @rereadMaybe.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe'**
+  String get rereadMaybe;
+
+  /// No description provided for @rereadProbably.
+  ///
+  /// In en, this message translates to:
+  /// **'Probably'**
+  String get rereadProbably;
+
+  /// No description provided for @rereadDefinitely.
+  ///
+  /// In en, this message translates to:
+  /// **'Definitely'**
+  String get rereadDefinitely;
+
+  /// No description provided for @saveInDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Save in my Journal'**
+  String get saveInDiary;
+
+  /// No description provided for @youFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished!'**
+  String get youFinished;
+
+  /// No description provided for @readingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading summary'**
+  String get readingSummary;
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// No description provided for @tears.
+  ///
+  /// In en, this message translates to:
+  /// **'Tears'**
+  String get tears;
+
+  /// No description provided for @spice.
+  ///
+  /// In en, this message translates to:
+  /// **'Spice'**
+  String get spice;
+
+  /// No description provided for @editListComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit list — coming soon'**
+  String get editListComingSoon;
+
+  /// No description provided for @collection.
+  ///
+  /// In en, this message translates to:
+  /// **'COLLECTION'**
+  String get collection;
+
+  /// No description provided for @contentNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Content not available'**
+  String get contentNotAvailable;
+
+  /// No description provided for @emptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty list'**
+  String get emptyList;
+
+  /// No description provided for @emptyListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button to add items from your catalog.'**
+  String get emptyListHint;
+
+  /// No description provided for @oneItem.
+  ///
+  /// In en, this message translates to:
+  /// **'1 item'**
+  String get oneItem;
+
+  /// No description provided for @multipleItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String multipleItems(int count);
+
+  /// No description provided for @collections.
+  ///
+  /// In en, this message translates to:
+  /// **'COLLECTIONS'**
+  String get collections;
+
+  /// No description provided for @newButton.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get newButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -21,7 +21,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searchTitle => 'Buscar';
 
   @override
-  String get catalogTitle => 'Catálogo';
+  String get catalogTitle => 'Mi Catálogo';
 
   @override
   String get journalTitle => 'Journal';
@@ -620,4 +620,96 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveProgress => 'Guardar progreso';
+
+  @override
+  String get diarySaved => 'Tu reflexión ha sido guardada en el Diario';
+
+  @override
+  String get myDiary => 'Mi Diario';
+
+  @override
+  String get readingExperience => 'Tu experiencia de lectura';
+
+  @override
+  String get reflectionPrompt => 'Toma un momento para reflexionar sobre esta historia.';
+
+  @override
+  String get reflectionQuestion => '¿Qué te ha dejado esta historia?';
+
+  @override
+  String get reflectionHint => 'Escribe tus pensamientos, emociones...';
+
+  @override
+  String get favoriteQuoteTitle => 'Cita o escena favorita';
+
+  @override
+  String get favoriteQuoteHint => '¿Hubo algún momento memorable?';
+
+  @override
+  String get rereadQuestion => '¿Lo releerías?';
+
+  @override
+  String get rereadNever => 'Nunca';
+
+  @override
+  String get rereadSure => 'Seguro';
+
+  @override
+  String get rereadUnlikely => 'Poco probable';
+
+  @override
+  String get rereadMaybe => 'Quizás';
+
+  @override
+  String get rereadProbably => 'Probablemente';
+
+  @override
+  String get rereadDefinitely => 'Definitivamente';
+
+  @override
+  String get saveInDiary => 'Guardar en mi Diario';
+
+  @override
+  String get youFinished => '¡Has terminado!';
+
+  @override
+  String get readingSummary => 'Resumen de lectura';
+
+  @override
+  String get rating => 'Valoración';
+
+  @override
+  String get tears => 'Lágrimas';
+
+  @override
+  String get spice => 'Spice';
+
+  @override
+  String get editListComingSoon => 'Editar lista — próximamente';
+
+  @override
+  String get collection => 'COLECCIÓN';
+
+  @override
+  String get contentNotAvailable => 'Contenido no disponible';
+
+  @override
+  String get emptyList => 'Lista vacía';
+
+  @override
+  String get emptyListHint => 'Pulsa el botón + para añadir obras desde tu catálogo.';
+
+  @override
+  String get oneItem => '1 obra';
+
+  @override
+  String multipleItems(int count) {
+    return '$count obras';
+  }
+
+  @override
+  String get collections => 'COLECCIONES';
+
+  @override
+  String get newButton => 'Nueva';
 }
