@@ -1,6 +1,8 @@
 
 import 'package:between_pages/features/auth/application/repositories/auth_repository.dart';
 import 'package:between_pages/features/profile/application/providers/user_provider.dart';
+import 'package:between_pages/features/journal/application/providers/journal_providers.dart';
+import 'package:between_pages/features/profile/application/providers/gamification_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthController extends StateNotifier<AsyncValue<void>> {
@@ -21,6 +23,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(isLoggedInProvider);
       // Invalidamos el perfil para que se recargue con el nuevo token
       _ref.invalidate(userProfileProvider);
+      
+      // Invalidamos los proveedores principales del feed para forzar una recarga
+      _ref.invalidate(allJournalsProvider);
+      _ref.invalidate(gamificationProvider);
+
       // Volvemos a poner el estado en "data" (Éxito).
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
@@ -51,6 +58,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(isLoggedInProvider);
       // Limpiamos el perfil del usuario
       _ref.invalidate(userProfileProvider);
+
+      // Limpiamos los estados cacheados al cerrar sesión
+      _ref.invalidate(allJournalsProvider);
+      _ref.invalidate(gamificationProvider);
+
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
