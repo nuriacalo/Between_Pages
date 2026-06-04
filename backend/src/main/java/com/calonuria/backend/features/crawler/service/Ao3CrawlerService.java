@@ -101,7 +101,7 @@ public class Ao3CrawlerService {
             Elements freeformTags = doc.select(".freeform.tags a.tag");
             for (Element tagEl : freeformTags) {
                 FanficTag tag = new FanficTag();
-                tag.setFanfic(saved); // CORREGIDO AQUÍ
+                tag.setFanfic(saved);
                 tag.setTag(tagEl.text().trim());
                 fanficTagRepository.save(tag);
                 saved.getTags().add(tag); // Lo añadimos a la entidad para que llegue al frontend en la primera carga

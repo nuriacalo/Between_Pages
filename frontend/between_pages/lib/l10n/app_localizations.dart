@@ -127,6 +127,12 @@ abstract class AppLocalizations {
   /// **'My Catalog'**
   String get catalogTitle;
 
+  /// No description provided for @catalogTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get catalogTab;
+
   /// No description provided for @journalTitle.
   ///
   /// In en, this message translates to:

@@ -4,6 +4,7 @@
     "homeDescription": "Explore the latest book reviews and recommendations.",
     "searchTitle": "Search",
     "catalogTitle": "My Catalog",
+    "catalogTab": "Catalog",
     "journalTitle": "Journal",
     "searchPlaceholder": "Search by title, author, or genre...",
     "profileTitle": "Profile",
