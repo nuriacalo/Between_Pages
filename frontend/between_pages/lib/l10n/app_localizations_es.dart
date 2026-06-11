@@ -24,6 +24,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get catalogTitle => 'Mi Catálogo';
 
   @override
+  String get catalogTab => 'Catálogo';
+
+  @override
   String get journalTitle => 'Journal';
 
   @override

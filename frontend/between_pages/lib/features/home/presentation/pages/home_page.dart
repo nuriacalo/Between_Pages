@@ -54,7 +54,7 @@ class HomePage extends ConsumerWidget {
                 icon: const Icon(Icons.search), label: l10n.searchTitle),
             NavigationDestination(
                 icon: const Icon(Icons.library_books),
-                label: l10n.catalogTitle),
+                label: l10n.catalogTab),
             NavigationDestination(
                 icon: const Icon(Icons.book), label: l10n.journalTitle),
             NavigationDestination(

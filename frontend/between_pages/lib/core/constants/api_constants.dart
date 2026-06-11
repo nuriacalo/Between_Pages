@@ -3,7 +3,7 @@ class ApiConstants {
     'API_BASE_URL',
     // IP de red local
     //  defaultValue: 'http://10.18.69.198:8080/api',
-    defaultValue: 'http://192.168.0.18:8080/api',
+    defaultValue: 'https://monorail-unrushed-badly.ngrok-free.dev/api',
   );
 
   // JIKAN API (MyAnimeList - Unofficial)

@@ -112,7 +112,7 @@ class AuthInterceptor extends Interceptor {
       );
 
       final response = await dio.post(
-        ApiConstants.refresh, // Corrección: Usa la constante en lugar del path estricto con '/'
+        ApiConstants.refresh, // Usa la constante en lugar del path estricto con '/'
         data: {'refreshToken': refreshToken},
       );
 

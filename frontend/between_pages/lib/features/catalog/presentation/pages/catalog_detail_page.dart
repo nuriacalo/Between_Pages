@@ -223,6 +223,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                 googleBooksId: book.googleBooksId,
                 status: status,
                 currentPage: 0,
+                endDate: status == 'FINISHED' ? DateTime.now().toIso8601String() : null,
               ).toJson(),
             );
             ref.invalidate(allBooksProvider);
@@ -236,6 +237,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                 malId: m.malId,
                 status: status,
                 currentChapter: 0,
+                endDate: status == 'FINISHED' ? DateTime.now().toIso8601String() : null,
               ).toJson(),
             );
             ref.invalidate(allMangaProvider);
@@ -252,6 +254,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                 ao3Id: f.ao3Id,
                 status: status,
                 currentChapter: 0,
+                endDate: status == 'FINISHED' ? DateTime.now().toIso8601String() : null,
               ).toJson(),
             );
             ref.invalidate(allFanficsProvider);
@@ -333,6 +336,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                   googleBooksId: j.book.googleBooksId,
                   status: newStatus,
                   currentPage: j.currentPage,
+                  endDate: newStatus == 'FINISHED' ? DateTime.now().toIso8601String() : null,
                 ).toJson(),
               );
         case CatalogItemType.manga:
@@ -347,6 +351,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                   malId: j.manga?.malId,
                   status: newStatus,
                   currentChapter: j.currentChapter,
+                  endDate: newStatus == 'FINISHED' ? DateTime.now().toIso8601String() : null,
                 ).toJson(),
               );
         case CatalogItemType.fanfic:
@@ -361,6 +366,7 @@ class _CatalogDetailPageState extends ConsumerState<CatalogDetailPage> {
                   ao3Id: j.fanfic.ao3Id,
                   status: newStatus,
                   currentChapter: j.currentChapter,
+                  endDate: newStatus == 'FINISHED' ? DateTime.now().toIso8601String() : null,
                 ).toJson(),
               );
       }

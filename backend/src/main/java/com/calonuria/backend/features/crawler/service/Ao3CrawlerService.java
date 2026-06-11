@@ -11,6 +11,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -25,13 +26,18 @@ public class Ao3CrawlerService {
 
     private static final String BASE_URL = "https://archiveofourown.org/works/";
 
+    @Transactional
     public Fanfiction crawlWork(String ao3Input) {
         String ao3Id = extractId(ao3Input);
 
         Optional<Fanfiction> existing = fanfictionRepository.findByAo3Id(ao3Id);
         if (existing.isPresent()) {
             log.info("La fanfic con ao3_id {} ya existe en la BD.", ao3Id);
-            return existing.get();
+            Fanfiction fanfic = existing.get();
+            // Forzamos la inicialización de colecciones Lazy para evitar LazyInitializationException en el mapeo a DTO
+            fanfic.getGenres().size();
+            fanfic.getTags().size();
+            return fanfic;
         }
 
         String url = BASE_URL + ao3Id + "?view_adult=true";
@@ -95,10 +101,14 @@ public class Ao3CrawlerService {
             Elements freeformTags = doc.select(".freeform.tags a.tag");
             for (Element tagEl : freeformTags) {
                 FanficTag tag = new FanficTag();
-                tag.setFanfic(saved); // CORREGIDO AQUÍ
+                tag.setFanfic(saved);
                 tag.setTag(tagEl.text().trim());
                 fanficTagRepository.save(tag);
+                saved.getTags().add(tag); // Lo añadimos a la entidad para que llegue al frontend en la primera carga
             }
+            
+            // Inicializamos la colección vacía por seguridad del proxy de Hibernate
+            saved.getGenres().size();
 
             log.info("Fanfic '{}' guardada con id {}", saved.getTitle(), saved.getId());
             return saved;

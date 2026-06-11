@@ -41,11 +41,18 @@ class _SearchPageState extends ConsumerState<SearchPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // 1. Set the initial content type to 'book' when the page loads.
+    // This prevents using a stale state from a previous search.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(unifiedSearchProvider.notifier).setContentType(_tabs[0]);
+    });
+
+    // 2. Update the content type only when the tab animation has finished.
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) return;
-      ref
-          .read(unifiedSearchProvider.notifier)
-          .setContentType(_tabs[_tabController.index]);
+      if (!_tabController.indexIsChanging) {
+        ref.read(unifiedSearchProvider.notifier).setContentType(_tabs[_tabController.index]);
+      }
     });
   }
 
@@ -297,6 +304,12 @@ class _SearchPageState extends ConsumerState<SearchPage>
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.colorFanfic,
+                      side: BorderSide(
+                        color: AppColors.colorFanfic.withValues(alpha: 0.4),
+                      ),
+                    ),
                     child: Text(l10n.cancelButton),
                   ),
                 ),

@@ -191,13 +191,21 @@ class FeedPage extends ConsumerWidget {
     final currentStreak = gamification?.currentStreak ?? 0;
     final weekActivity = gamification?.weekActivity ?? List.filled(7, false);
 
-    final finishedBooks =
-        booksAsync.whenOrNull(
-          data: (list) => list
-              .whereType<BookJournalResponseDto>()
-              .where((b) => b.status.isFinished)
-              .length,
-        ) ??
+    final finishedItems = allJournalsAsync.whenOrNull(data: (journals) {
+          final books = journals[JournalType.book]
+                  ?.where((b) => (b as BookJournalResponseDto).status.isFinished)
+                  .length ??
+              0;
+          final mangas = journals[JournalType.manga]
+                  ?.where((m) => (m as MangaJournalResponseDTO).status.isFinished)
+                  .length ??
+              0;
+          final fanfics = journals[JournalType.fanfic]
+                  ?.where((f) => (f as FanficJournalResponseDTO).status.isFinished)
+                  .length ??
+              0;
+          return books + mangas + fanfics;
+        }) ??
         0;
 
     // Build unified reading list
@@ -275,7 +283,7 @@ class FeedPage extends ConsumerWidget {
                       Expanded(
                         flex: 4,
                         child: _GoalCard(
-                          booksRead: finishedBooks,
+                          booksRead: finishedItems,
                           goal: goal,
                           onEdit: () async {
                             final newGoal = await showDialog<int>(
